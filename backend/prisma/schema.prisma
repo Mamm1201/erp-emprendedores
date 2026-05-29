@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -134,10 +135,13 @@ model Branch {
   id           String    @id @default(cuid())
   clientId     String
   name         String
-  address      String?
-  city         String?
   contactName  String?
   contactPhone String?
+  email        String?
+  address      String?
+  city         String?
+  department   String?
+  notes        String?
   isPrimary    Boolean   @default(false)
   deletedAt    DateTime?
   createdAt    DateTime  @default(now())
@@ -148,6 +152,7 @@ model Branch {
   workOrders WorkOrder[]
 
   @@index([clientId])
+  @@index([clientId, name])
   @@map("branches")
 }
 
@@ -167,6 +172,15 @@ model Quotation {
   discountTotal Decimal         @default(0) @db.Decimal(12, 2)
   taxTotal      Decimal         @default(0) @db.Decimal(12, 2)
   total         Decimal         @default(0) @db.Decimal(12, 2)
+  clientLegalName     String?
+  clientTaxId         String?
+  branchName          String?
+  branchAddress       String?
+  branchCity          String?
+  branchDepartment    String?
+  branchContactName   String?
+  branchContactPhone  String?
+  snapshotAt          DateTime?
   createdById   String?
   updatedById   String?
   deletedAt     DateTime?

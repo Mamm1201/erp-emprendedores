@@ -35,8 +35,9 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# Prisma generated client
+# Prisma generated client (legacy path)
 /generated
+/src/generated
 
 # dotenv environment variable files
 .env
