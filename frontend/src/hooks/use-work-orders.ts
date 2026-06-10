@@ -5,6 +5,7 @@ import type { WorkOrder, WorkOrderStatus, PaginatedResponse } from '@/lib/types'
 export interface WorkOrderFormData {
   clientId: string;
   branchId?: string;
+  quotationId?: string;
   title: string;
   description?: string;
   scheduledAt?: string;

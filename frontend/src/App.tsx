@@ -6,7 +6,8 @@ import { WorkOrdersPage } from '@/pages/WorkOrdersPage';
 import { MaintenancePlansPage } from '@/pages/MaintenancePlansPage';
 import { EquipmentPage } from '@/pages/EquipmentPage';
 import { ServiceRecordsPage } from '@/pages/ServiceRecordsPage';
-import { PlaceholderPage } from '@/pages/PlaceholderPage';
+import { QuotationsPage } from '@/pages/QuotationsPage';
+import { QuotationFormPage } from '@/pages/QuotationFormPage';
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,9 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'clientes', element: <ClientsPage /> },
+      { path: 'cotizaciones', element: <QuotationsPage /> },
+      { path: 'cotizaciones/nueva', element: <QuotationFormPage /> },
+      { path: 'cotizaciones/:id', element: <QuotationFormPage /> },
       { path: 'ordenes', element: <WorkOrdersPage /> },
       { path: 'actas', element: <ServiceRecordsPage /> },
       { path: 'planes', element: <MaintenancePlansPage /> },

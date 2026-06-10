@@ -1,5 +1,54 @@
 export type ClientType = 'COMPANY' | 'PERSON';
 
+export type QuotationStatus =
+  | 'DRAFT'
+  | 'SENT'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'EXPIRED'
+  | 'CONVERTED'
+  | 'CANCELLED';
+
+export interface QuotationItem {
+  id: string;
+  quotationId: string;
+  lineOrder: number;
+  description: string;
+  quantity: string;
+  unitPrice: string;
+  discountAmount: string;
+  taxRate: string;
+  lineSubtotal: string;
+  lineTotal: string;
+}
+
+export interface Quotation {
+  id: string;
+  number: string;
+  clientId: string;
+  branchId: string | null;
+  status: QuotationStatus;
+  issueDate: string;
+  validUntil: string | null;
+  notes: string | null;
+  terms: string | null;
+  subtotal: string;
+  discountTotal: string;
+  taxTotal: string;
+  total: string;
+  clientLegalName: string | null;
+  clientTaxId: string | null;
+  branchName: string | null;
+  branchCity: string | null;
+  snapshotAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  client: { id: string; legalName: string; tradeName: string | null };
+  branch: { id: string; name: string; city: string | null } | null;
+  items?: QuotationItem[];
+  workOrder?: { id: string; number: string; status: string } | null;
+}
+
 export type MaintenanceFrequency =
   | 'MONTHLY'
   | 'QUARTERLY'

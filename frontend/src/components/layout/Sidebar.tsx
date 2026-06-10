@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
+  FileText,
   ClipboardList,
   ClipboardCheck,
   Wrench,
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils';
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/clientes', label: 'Clientes', icon: Users },
+  { to: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
   { to: '/ordenes', label: 'Órdenes de trabajo', icon: ClipboardList },
   { to: '/actas', label: 'Actas técnicas', icon: ClipboardCheck },
   { to: '/planes', label: 'Planes de mantenimiento', icon: CalendarClock },

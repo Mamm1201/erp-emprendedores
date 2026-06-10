@@ -105,6 +105,13 @@ export class WorkOrdersService {
         WORK_ORDER_NUMBER_PREFIX,
       );
 
+      if (dto.quotationId) {
+        await tx.quotation.update({
+          where: { id: dto.quotationId },
+          data: { status: 'CONVERTED' },
+        });
+      }
+
       return tx.workOrder.create({
         data: {
           number,
