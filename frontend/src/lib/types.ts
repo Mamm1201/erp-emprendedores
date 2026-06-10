@@ -38,6 +38,29 @@ export interface Payment {
   updatedAt: string;
 }
 
+export interface PaymentWithInvoice extends Payment {
+  invoice: {
+    id: string;
+    number: string;
+    client: { id: string; legalName: string; tradeName: string | null };
+  };
+}
+
+export interface FinancialStatusGroup {
+  count: number;
+  total: string;
+}
+
+export interface FinancialSummary {
+  byStatus: Partial<Record<InvoiceStatus, FinancialStatusGroup>>;
+  overdue: { count: number; total: string };
+  totalReceivable: string;
+  partiallyPaidAmount: string;
+  paidThisMonth: string;
+  paidLastMonth: string;
+  revenueByMonth: Array<{ yearMonth: string; amount: string }>;
+}
+
 export interface Invoice {
   id: string;
   number: string;

@@ -17,6 +17,7 @@ import { QueryInvoicesDto } from './dto/query-invoices.dto';
 import { UpdateInvoiceStatusDto } from './dto/update-invoice-status.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { VoidPaymentDto } from './dto/void-payment.dto';
+import { QueryPaymentsDto } from './dto/query-payments.dto';
 
 @Controller('invoices')
 export class InvoicesController {
@@ -25,6 +26,16 @@ export class InvoicesController {
   @Get()
   findAll(@Query() query: QueryInvoicesDto) {
     return this.invoicesService.findAll(query);
+  }
+
+  @Get('summary')
+  getSummary() {
+    return this.invoicesService.getSummary();
+  }
+
+  @Get('payments')
+  findPayments(@Query() query: QueryPaymentsDto) {
+    return this.invoicesService.findPayments(query);
   }
 
   @Get(':id')

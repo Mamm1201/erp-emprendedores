@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type {
+  FinancialSummary,
   Invoice,
   InvoiceStatus,
   Payment,
   PaymentMethod,
+  PaymentWithInvoice,
   PaginatedResponse,
 } from '@/lib/types';
 
@@ -146,6 +148,48 @@ export function useVoidPayment() {
     onSuccess: (_r, vars) => {
       qc.invalidateQueries({ queryKey: ['invoices', vars.invoiceId] });
       qc.invalidateQueries({ queryKey: ['invoices'] });
+      qc.invalidateQueries({ queryKey: ['payments'] });
+      qc.invalidateQueries({ queryKey: ['invoices-summary'] });
     },
+  });
+}
+
+// ─── Payments list ────────────────────────────────────────────────────────────
+
+interface PaymentFilters {
+  page?: number;
+  method?: PaymentMethod | '';
+  fromDate?: string;
+  toDate?: string;
+  clientId?: string;
+  includeVoided?: boolean;
+}
+
+export function useAllPayments(filters: PaymentFilters = {}) {
+  const params = new URLSearchParams({ page: String(filters.page ?? 1) });
+  if (filters.method) params.set('method', filters.method);
+  if (filters.fromDate) params.set('fromDate', filters.fromDate);
+  if (filters.toDate) params.set('toDate', filters.toDate);
+  if (filters.clientId) params.set('clientId', filters.clientId);
+  if (filters.includeVoided) params.set('includeVoided', 'true');
+
+  return useQuery({
+    queryKey: ['payments', filters],
+    queryFn: () =>
+      api.get<PaginatedResponse<PaymentWithInvoice>>(
+        `/invoices/payments?${params}`,
+      ),
+    staleTime: 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+}
+
+// ─── Financial summary ────────────────────────────────────────────────────────
+
+export function useFinancialSummary() {
+  return useQuery({
+    queryKey: ['invoices-summary'],
+    queryFn: () => api.get<FinancialSummary>('/invoices/summary'),
+    staleTime: 2 * 60 * 1000,
   });
 }
