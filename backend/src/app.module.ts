@@ -10,6 +10,7 @@ import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-
 import { ServiceRecordsModule } from './modules/service-records/service-records.module';
 import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { PrismaModule } from './prisma/prisma.module';
     MaintenancePlansModule,
     ServiceRecordsModule,
     InvoicesModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

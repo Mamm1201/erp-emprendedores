@@ -46,6 +46,51 @@ export interface PaymentWithInvoice extends Payment {
   };
 }
 
+export interface DashboardData {
+  quotations: {
+    draft: number;
+    sent: number;
+    approved: number;
+    total: number;
+  };
+  workOrders: {
+    draft: number;
+    scheduled: number;
+    inProgress: number;
+    completed: number;
+    completedWithoutInvoice: number;
+    total: number;
+  };
+  invoices: {
+    draft: number;
+    issued: number;
+    partiallyPaid: number;
+    paid: number;
+    totalReceivable: string;
+    paidThisMonth: string;
+    overdue: { count: number; total: string };
+  };
+  recentPayments: Array<{
+    id: string;
+    amount: string;
+    paidAt: string;
+    method: PaymentMethod;
+    reference: string | null;
+    invoice: {
+      id: string;
+      number: string;
+      client: { legalName: string; tradeName: string | null };
+    };
+  }>;
+  upcomingVisits: Array<{
+    id: string;
+    nextVisitDate: string;
+    frequency: MaintenanceFrequency;
+    client: { legalName: string; tradeName: string | null };
+    branch: { name: string; city: string | null } | null;
+  }>;
+}
+
 export interface FinancialStatusGroup {
   count: number;
   total: string;
