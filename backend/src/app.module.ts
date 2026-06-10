@@ -5,6 +5,10 @@ import { AppService } from './app.service';
 import { BranchesModule } from './modules/branches/branches.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { QuotationsModule } from './modules/quotations/quotations.module';
+import { EquipmentModule } from './modules/equipment/equipment.module';
+import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-plans.module';
+import { ServiceRecordsModule } from './modules/service-records/service-records.module';
+import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -14,6 +18,10 @@ import { PrismaModule } from './prisma/prisma.module';
     ClientsModule,
     BranchesModule,
     QuotationsModule,
+    WorkOrdersModule,
+    EquipmentModule,
+    MaintenancePlansModule,
+    ServiceRecordsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

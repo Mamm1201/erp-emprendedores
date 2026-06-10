@@ -1,0 +1,377 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma, WorkOrderStatus } from '../../generated/prisma/client';
+import {
+  calculateLineTotals,
+  sumMoney,
+  toMoney,
+} from '../../common/utils/money.util';
+import { PrismaService } from '../../prisma/prisma.service';
+import {
+  WORK_ORDER_DEFAULT_LIMIT,
+  WORK_ORDER_DEFAULT_PAGE,
+  WORK_ORDER_DOCUMENT_TYPE,
+  WORK_ORDER_ITEM_SELECT,
+  WORK_ORDER_NUMBER_PREFIX,
+  WORK_ORDER_SELECT,
+} from './work-orders.constants';
+import { nextDocumentNumber } from '../quotations/quotations-document.service';
+import { CreateWorkOrderDto } from './dto/create-work-order.dto';
+import { QueryWorkOrdersDto } from './dto/query-work-orders.dto';
+import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
+import { UpdateWorkOrderStatusDto } from './dto/update-work-order-status.dto';
+import { WorkOrderItemDto } from './dto/work-order-item.dto';
+
+const ALLOWED_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
+  [WorkOrderStatus.DRAFT]: [WorkOrderStatus.SCHEDULED, WorkOrderStatus.CANCELLED],
+  [WorkOrderStatus.SCHEDULED]: [WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.CANCELLED],
+  [WorkOrderStatus.IN_PROGRESS]: [WorkOrderStatus.COMPLETED, WorkOrderStatus.CANCELLED],
+  [WorkOrderStatus.COMPLETED]: [],
+  [WorkOrderStatus.CANCELLED]: [],
+};
+
+const EDITABLE_STATUSES = new Set<WorkOrderStatus>([
+  WorkOrderStatus.DRAFT,
+  WorkOrderStatus.SCHEDULED,
+]);
+
+@Injectable()
+export class WorkOrdersService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll(query: QueryWorkOrdersDto) {
+    const page = query.page ?? WORK_ORDER_DEFAULT_PAGE;
+    const limit = query.limit ?? WORK_ORDER_DEFAULT_LIMIT;
+    const skip = (page - 1) * limit;
+    const where = this.buildListWhere(query);
+
+    const [data, total] = await Promise.all([
+      this.prisma.workOrder.findMany({
+        where,
+        select: WORK_ORDER_SELECT,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.workOrder.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async findOne(id: string) {
+    const workOrder = await this.prisma.workOrder.findFirst({
+      where: { id, deletedAt: null },
+      select: {
+        ...WORK_ORDER_SELECT,
+        items: {
+          select: WORK_ORDER_ITEM_SELECT,
+          orderBy: { lineOrder: 'asc' },
+        },
+        invoice: { select: { id: true, number: true, status: true } },
+        serviceRecord: { select: { id: true } },
+      },
+    });
+
+    if (!workOrder) {
+      throw new NotFoundException(`WorkOrder with id "${id}" not found`);
+    }
+
+    return workOrder;
+  }
+
+  async create(dto: CreateWorkOrderDto) {
+    await this.ensureActiveClient(dto.clientId);
+    await this.resolveBranch(dto.clientId, dto.branchId);
+
+    const { items, totals } = this.buildItemsPayload(dto.items ?? []);
+
+    return this.prisma.$transaction(async (tx) => {
+      const number = await nextDocumentNumber(
+        tx,
+        WORK_ORDER_DOCUMENT_TYPE,
+        WORK_ORDER_NUMBER_PREFIX,
+      );
+
+      return tx.workOrder.create({
+        data: {
+          number,
+          clientId: dto.clientId,
+          branchId: dto.branchId ?? null,
+          quotationId: dto.quotationId ?? null,
+          status: WorkOrderStatus.DRAFT,
+          title: dto.title,
+          description: dto.description ?? null,
+          scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
+          assignedToId: dto.assignedToId ?? null,
+          subtotal: totals.subtotal,
+          discountTotal: totals.discountTotal,
+          taxTotal: totals.taxTotal,
+          total: totals.total,
+          items: items.length > 0 ? { create: items } : undefined,
+        },
+        select: {
+          ...WORK_ORDER_SELECT,
+          items: {
+            select: WORK_ORDER_ITEM_SELECT,
+            orderBy: { lineOrder: 'asc' },
+          },
+        },
+      });
+    });
+  }
+
+  async update(id: string, dto: UpdateWorkOrderDto) {
+    const workOrder = await this.findEditableWorkOrder(id);
+
+    if (dto.branchId) {
+      await this.resolveBranch(workOrder.clientId, dto.branchId);
+    }
+
+    const itemsPayload = dto.items ? this.buildItemsPayload(dto.items) : null;
+
+    return this.prisma.$transaction(async (tx) => {
+      if (itemsPayload) {
+        await tx.workOrderItem.deleteMany({ where: { workOrderId: id } });
+      }
+
+      return tx.workOrder.update({
+        where: { id },
+        data: {
+          ...(dto.branchId !== undefined && { branchId: dto.branchId }),
+          ...(dto.title !== undefined && { title: dto.title }),
+          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.scheduledAt !== undefined && {
+            scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
+          }),
+          ...(dto.assignedToId !== undefined && { assignedToId: dto.assignedToId }),
+          ...(itemsPayload && {
+            subtotal: itemsPayload.totals.subtotal,
+            discountTotal: itemsPayload.totals.discountTotal,
+            taxTotal: itemsPayload.totals.taxTotal,
+            total: itemsPayload.totals.total,
+            items: { create: itemsPayload.items },
+          }),
+        },
+        select: {
+          ...WORK_ORDER_SELECT,
+          items: {
+            select: WORK_ORDER_ITEM_SELECT,
+            orderBy: { lineOrder: 'asc' },
+          },
+        },
+      });
+    });
+  }
+
+  async updateStatus(id: string, dto: UpdateWorkOrderStatusDto) {
+    const workOrder = await this.findOne(id);
+
+    const allowed = ALLOWED_TRANSITIONS[workOrder.status];
+    if (!allowed.includes(dto.status)) {
+      throw new BadRequestException(
+        `Cannot transition WorkOrder from ${workOrder.status} to ${dto.status}`,
+      );
+    }
+
+    const timestamps: Prisma.WorkOrderUpdateInput = {};
+    if (dto.status === WorkOrderStatus.IN_PROGRESS) {
+      timestamps.startedAt = new Date();
+    }
+    if (dto.status === WorkOrderStatus.COMPLETED) {
+      timestamps.completedAt = new Date();
+    }
+
+    const updated = await this.prisma.workOrder.update({
+      where: { id },
+      data: { status: dto.status, ...timestamps },
+      select: {
+        ...WORK_ORDER_SELECT,
+        items: { select: WORK_ORDER_ITEM_SELECT, orderBy: { lineOrder: 'asc' } },
+        invoice: { select: { id: true, number: true, status: true } },
+        serviceRecord: { select: { id: true } },
+      },
+    });
+
+    if (dto.status === WorkOrderStatus.COMPLETED) {
+      await this.recalculateNextVisit(updated.clientId, updated.branchId);
+    }
+
+    return updated;
+  }
+
+  async remove(id: string) {
+    const workOrder = await this.findOne(id);
+
+    if (workOrder.status !== WorkOrderStatus.DRAFT) {
+      throw new BadRequestException(
+        'Only DRAFT work orders can be deleted. Use status transition to CANCELLED.',
+      );
+    }
+
+    return this.prisma.workOrder.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+      select: { id: true, number: true, deletedAt: true },
+    });
+  }
+
+  private async recalculateNextVisit(
+    clientId: string,
+    branchId: string | null,
+  ): Promise<void> {
+    const plan = await this.prisma.maintenancePlan.findFirst({
+      where: {
+        clientId,
+        ...(branchId ? { branchId } : {}),
+        isActive: true,
+      },
+      select: { id: true, frequency: true, nextVisitDate: true },
+    });
+
+    if (!plan) return;
+
+    const MONTHS_BY_FREQUENCY: Record<string, number> = {
+      MONTHLY: 1,
+      QUARTERLY: 3,
+      EVERY_4_MONTHS: 4,
+      BIANNUAL: 6,
+      ANNUAL: 12,
+    };
+
+    const months = MONTHS_BY_FREQUENCY[plan.frequency];
+    if (!months) return;
+
+    const base = new Date(plan.nextVisitDate);
+    base.setMonth(base.getMonth() + months);
+
+    await this.prisma.maintenancePlan.update({
+      where: { id: plan.id },
+      data: { nextVisitDate: base },
+    });
+  }
+
+  private buildListWhere(query: QueryWorkOrdersDto): Prisma.WorkOrderWhereInput {
+    const where: Prisma.WorkOrderWhereInput = { deletedAt: null };
+
+    if (query.clientId) where.clientId = query.clientId;
+    if (query.branchId) where.branchId = query.branchId;
+    if (query.status) where.status = query.status;
+    if (query.assignedToId) where.assignedToId = query.assignedToId;
+
+    if (query.fromDate || query.toDate) {
+      where.scheduledAt = {
+        ...(query.fromDate && { gte: new Date(query.fromDate) }),
+        ...(query.toDate && { lte: new Date(query.toDate) }),
+      };
+    }
+
+    if (query.search?.trim()) {
+      const term = query.search.trim();
+      where.OR = [
+        { number: { contains: term, mode: 'insensitive' } },
+        { title: { contains: term, mode: 'insensitive' } },
+        { description: { contains: term, mode: 'insensitive' } },
+      ];
+    }
+
+    return where;
+  }
+
+  private buildItemsPayload(items: WorkOrderItemDto[]) {
+    const lineResults = items.map((item, index) => {
+      const quantity = toMoney(item.quantity);
+      const unitPrice = toMoney(item.unitPrice);
+      const discountAmount = toMoney(item.discountAmount ?? 0);
+      const taxRate = toMoney(item.taxRate ?? 0);
+
+      const totals = calculateLineTotals({ quantity, unitPrice, discountAmount, taxRate });
+
+      return {
+        create: {
+          lineOrder: item.lineOrder ?? index,
+          description: item.description,
+          quantity,
+          unitPrice,
+          discountAmount,
+          taxRate,
+          lineSubtotal: totals.lineSubtotal,
+          lineTotal: totals.lineTotal,
+        },
+        discountAmount,
+        lineSubtotal: totals.lineSubtotal,
+        lineTax: totals.lineTax,
+      };
+    });
+
+    const subtotal = sumMoney(lineResults.map((l) => l.lineSubtotal));
+    const discountTotal = sumMoney(lineResults.map((l) => l.discountAmount));
+    const taxTotal = sumMoney(lineResults.map((l) => l.lineTax));
+    const total = sumMoney(lineResults.map((l) => l.create.lineTotal));
+
+    return {
+      items: lineResults.map((l) => l.create),
+      totals: { subtotal, discountTotal, taxTotal, total },
+    };
+  }
+
+  private async ensureActiveClient(clientId: string) {
+    const client = await this.prisma.client.findFirst({
+      where: { id: clientId, deletedAt: null },
+      select: { id: true, legalName: true },
+    });
+
+    if (!client) {
+      throw new NotFoundException(`Client with id "${clientId}" not found`);
+    }
+
+    return client;
+  }
+
+  private async resolveBranch(clientId: string, branchId?: string) {
+    if (!branchId) return null;
+
+    const branch = await this.prisma.branch.findFirst({
+      where: { id: branchId, clientId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!branch) {
+      throw new BadRequestException(
+        `Branch "${branchId}" not found for this client`,
+      );
+    }
+
+    return branch;
+  }
+
+  private async findEditableWorkOrder(id: string) {
+    const workOrder = await this.prisma.workOrder.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, status: true, clientId: true, branchId: true },
+    });
+
+    if (!workOrder) {
+      throw new NotFoundException(`WorkOrder with id "${id}" not found`);
+    }
+
+    if (!EDITABLE_STATUSES.has(workOrder.status)) {
+      throw new BadRequestException(
+        `WorkOrder in status ${workOrder.status} cannot be edited`,
+      );
+    }
+
+    return workOrder;
+  }
+}

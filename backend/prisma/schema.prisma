@@ -122,10 +122,11 @@ model Client {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  branches   Branch[]
-  quotations Quotation[]
-  workOrders WorkOrder[]
-  invoices   Invoice[]
+  branches         Branch[]
+  quotations       Quotation[]
+  workOrders       WorkOrder[]
+  invoices         Invoice[]
+  maintenancePlans MaintenancePlan[]
 
   @@index([legalName])
   @@map("clients")
@@ -147,9 +148,11 @@ model Branch {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  client     Client      @relation(fields: [clientId], references: [id])
-  quotations Quotation[]
-  workOrders WorkOrder[]
+  client           Client            @relation(fields: [clientId], references: [id])
+  quotations       Quotation[]
+  workOrders       WorkOrder[]
+  equipment        Equipment[]
+  maintenancePlans MaintenancePlan[]
 
   @@index([clientId])
   @@index([clientId, name])
@@ -250,9 +253,10 @@ model WorkOrder {
   items      WorkOrderItem[]
   invoice    Invoice?
   expenses   Expense[]
-  assignedTo User?            @relation("WorkOrderAssignedTo", fields: [assignedToId], references: [id])
-  createdBy  User?            @relation("WorkOrderCreatedBy", fields: [createdById], references: [id])
-  updatedBy  User?            @relation("WorkOrderUpdatedBy", fields: [updatedById], references: [id])
+  assignedTo    User?            @relation("WorkOrderAssignedTo", fields: [assignedToId], references: [id])
+  createdBy     User?            @relation("WorkOrderCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User?            @relation("WorkOrderUpdatedBy", fields: [updatedById], references: [id])
+  serviceRecord ServiceRecord?
 
   @@index([clientId, status])
   @@index([assignedToId])
@@ -376,4 +380,123 @@ model Expense {
   @@index([expenseDate])
   @@index([category])
   @@map("expenses")
+}
+
+// ─── Enums CMMS ───────────────────────────────────────────────────────────────
+
+enum EquipmentType {
+  NURSE_CALL
+  MEDICAL_ALERT
+  GENERATOR
+  UPS
+  ELECTRICAL
+  OTHER
+}
+
+enum EquipmentStatus {
+  ACTIVE
+  INACTIVE
+  DECOMMISSIONED
+}
+
+enum MaintenanceFrequency {
+  MONTHLY
+  QUARTERLY
+  EVERY_4_MONTHS
+  BIANNUAL
+  ANNUAL
+}
+
+enum ChecklistResult {
+  OK
+  WARNING
+  FAIL
+  NA
+}
+
+// ─── Hoja de vida del equipo ──────────────────────────────────────────────────
+
+model Equipment {
+  id           String          @id @default(cuid())
+  branchId     String
+  type         EquipmentType
+  brand        String?
+  model        String?
+  serialNumber String?
+  installDate  DateTime?       @db.Date
+  location     String?
+  notes        String?
+  status       EquipmentStatus @default(ACTIVE)
+  deletedAt    DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  branch         Branch          @relation(fields: [branchId], references: [id])
+  serviceRecords ServiceRecord[]
+
+  @@index([branchId])
+  @@index([type])
+  @@map("equipment")
+}
+
+// ─── Plan de mantenimiento preventivo ────────────────────────────────────────
+
+model MaintenancePlan {
+  id                String               @id @default(cuid())
+  clientId          String
+  branchId          String?
+  frequency         MaintenanceFrequency
+  contractStartDate DateTime             @db.Date
+  contractEndDate   DateTime?            @db.Date
+  nextVisitDate     DateTime             @db.Date
+  isActive          Boolean              @default(true)
+  notes             String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  client Client  @relation(fields: [clientId], references: [id])
+  branch Branch? @relation(fields: [branchId], references: [id])
+
+  @@index([clientId])
+  @@index([nextVisitDate])
+  @@index([isActive])
+  @@map("maintenance_plans")
+}
+
+// ─── Acta técnica de la visita ────────────────────────────────────────────────
+
+model ServiceRecord {
+  id                  String    @id @default(cuid())
+  workOrderId         String    @unique
+  equipmentId         String?
+  findings            String?
+  activitiesPerformed String?
+  recommendations     String?
+  clientSignedAt      DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  workOrder      WorkOrder       @relation(fields: [workOrderId], references: [id])
+  equipment      Equipment?      @relation(fields: [equipmentId], references: [id])
+  checklistItems ChecklistItem[]
+
+  @@index([equipmentId])
+  @@map("service_records")
+}
+
+// ─── Items del checklist del acta ────────────────────────────────────────────
+
+model ChecklistItem {
+  id              String          @id @default(cuid())
+  serviceRecordId String
+  description     String
+  result          ChecklistResult @default(NA)
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  serviceRecord ServiceRecord @relation(fields: [serviceRecordId], references: [id], onDelete: Cascade)
+
+  @@index([serviceRecordId])
+  @@map("checklist_items")
 }
