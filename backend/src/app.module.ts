@@ -9,6 +9,7 @@ import { EquipmentModule } from './modules/equipment/equipment.module';
 import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-plans.module';
 import { ServiceRecordsModule } from './modules/service-records/service-records.module';
 import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
+import { InvoicesModule } from './modules/invoices/invoices.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { PrismaModule } from './prisma/prisma.module';
     EquipmentModule,
     MaintenancePlansModule,
     ServiceRecordsModule,
+    InvoicesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

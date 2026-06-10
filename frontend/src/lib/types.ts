@@ -1,5 +1,66 @@
 export type ClientType = 'COMPANY' | 'PERSON';
 
+export type InvoiceStatus =
+  | 'DRAFT'
+  | 'ISSUED'
+  | 'PARTIALLY_PAID'
+  | 'PAID'
+  | 'VOID';
+
+export type PaymentMethod = 'CASH' | 'TRANSFER' | 'CHECK' | 'CARD' | 'OTHER';
+
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  lineOrder: number;
+  description: string;
+  quantity: string;
+  unitPrice: string;
+  discountAmount: string;
+  taxRate: string;
+  lineSubtotal: string;
+  lineTotal: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Payment {
+  id: string;
+  invoiceId: string;
+  amount: string;
+  paidAt: string;
+  method: PaymentMethod;
+  reference: string | null;
+  notes: string | null;
+  voidedAt: string | null;
+  voidReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Invoice {
+  id: string;
+  number: string;
+  workOrderId: string;
+  clientId: string;
+  status: InvoiceStatus;
+  issueDate: string;
+  dueDate: string;
+  notes: string | null;
+  subtotal: string;
+  discountTotal: string;
+  taxTotal: string;
+  total: string;
+  voidedAt: string | null;
+  voidReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+  client: { id: string; legalName: string; tradeName: string | null };
+  workOrder: { id: string; number: string; status: string };
+  items?: InvoiceItem[];
+  payments?: Payment[];
+}
+
 export type QuotationStatus =
   | 'DRAFT'
   | 'SENT'
@@ -154,6 +215,7 @@ export interface WorkOrder {
   client: { id: string; legalName: string; tradeName: string | null };
   branch: { id: string; name: string; city: string | null } | null;
   serviceRecord: { id: string } | null;
+  invoice: { id: string; number: string; status: string } | null;
 }
 
 export type ChecklistResult = 'OK' | 'WARNING' | 'FAIL' | 'NA';

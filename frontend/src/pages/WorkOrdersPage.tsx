@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -267,9 +268,12 @@ function DeleteConfirmDialog({
 
 function StatusActions({ workOrder }: { workOrder: WorkOrder }) {
   const updateStatus = useUpdateWorkOrderStatus();
+  const navigate = useNavigate();
   const next = NEXT_STATUS[workOrder.status];
   const canCancel = CANCELLABLE.includes(workOrder.status);
   const isBusy = updateStatus.isPending;
+  const canCreateInvoice =
+    workOrder.status === 'COMPLETED' && !workOrder.invoice;
 
   return (
     <div className="flex justify-end gap-1 flex-wrap">
@@ -283,6 +287,28 @@ function StatusActions({ workOrder }: { workOrder: WorkOrder }) {
         >
           {next.label}
           <ChevronRight className="h-3 w-3" />
+        </Button>
+      )}
+      {canCreateInvoice && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1 text-xs h-7 text-green-700 border-green-300 hover:bg-green-50"
+          onClick={() =>
+            navigate(`/cuentas-cobro/nueva?workOrderId=${workOrder.id}`)
+          }
+        >
+          Crear CC
+        </Button>
+      )}
+      {workOrder.invoice && workOrder.status === 'COMPLETED' && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="gap-1 text-xs h-7 font-mono"
+          onClick={() => navigate(`/cuentas-cobro/${workOrder.invoice!.id}`)}
+        >
+          {workOrder.invoice.number}
         </Button>
       )}
       {canCancel && (

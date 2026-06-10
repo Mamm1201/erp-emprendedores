@@ -8,6 +8,9 @@ import { EquipmentPage } from '@/pages/EquipmentPage';
 import { ServiceRecordsPage } from '@/pages/ServiceRecordsPage';
 import { QuotationsPage } from '@/pages/QuotationsPage';
 import { QuotationFormPage } from '@/pages/QuotationFormPage';
+import { InvoicesPage } from '@/pages/InvoicesPage';
+import { InvoiceCreatePage } from '@/pages/InvoiceCreatePage';
+import { InvoiceDetailPage } from '@/pages/InvoiceDetailPage';
 
 const router = createBrowserRouter([
   {
@@ -19,6 +22,9 @@ const router = createBrowserRouter([
       { path: 'cotizaciones', element: <QuotationsPage /> },
       { path: 'cotizaciones/nueva', element: <QuotationFormPage /> },
       { path: 'cotizaciones/:id', element: <QuotationFormPage /> },
+      { path: 'cuentas-cobro', element: <InvoicesPage /> },
+      { path: 'cuentas-cobro/nueva', element: <InvoiceCreatePage /> },
+      { path: 'cuentas-cobro/:id', element: <InvoiceDetailPage /> },
       { path: 'ordenes', element: <WorkOrdersPage /> },
       { path: 'actas', element: <ServiceRecordsPage /> },
       { path: 'planes', element: <MaintenancePlansPage /> },
