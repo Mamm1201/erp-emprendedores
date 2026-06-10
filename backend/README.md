@@ -1,98 +1,135 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend — ERP Mantenimiento Hospitalario
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST construida con NestJS 11, Prisma 7 y PostgreSQL 16.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Variables de entorno
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+Copiar `.env.example` a `.env` y ajustar si es necesario:
 
 ```bash
-$ npm install
+cp .env.example .env
 ```
 
-## Compile and run the project
+| Variable | Descripción | Default |
+|---|---|---|
+| `DATABASE_URL` | Cadena de conexión PostgreSQL | `postgresql://erp_user:erp_dev_password@localhost:5433/erp_emprendedores` |
+| `PORT` | Puerto del servidor | `3000` |
+| `CORS_ORIGIN` | URL del frontend permitida | `http://localhost:5173` |
+
+## Scripts disponibles
 
 ```bash
-# development
-$ npm run start
+npm run start:dev        # Servidor en modo watch (desarrollo)
+npm run start:prod       # Servidor en modo producción (requiere build previo)
+npm run build            # Compila TypeScript a dist/
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run db:migrate       # Aplica migraciones pendientes
+npm run db:generate      # Regenera el cliente Prisma
+npm run db:seed          # Carga datos iniciales en la BD
+npm run db:studio        # Abre Prisma Studio (GUI de la BD) en http://localhost:5555
+npm run db:validate      # Valida el schema.prisma sin aplicar cambios
 ```
 
-## Run tests
+## Estructura de módulos
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```
+src/modules/
+├── clients/             CRUD de clientes (IPS)
+├── branches/            CRUD de sedes (anidado bajo clients)
+├── quotations/          Cotizaciones con items de línea
+├── work-orders/         Órdenes de trabajo + transiciones de status
+├── equipment/           Hojas de vida de equipos por sede
+├── maintenance-plans/   Planes de mantenimiento preventivo
+└── service-records/     Actas técnicas + checklist de visita
 ```
 
-## Deployment
+## Endpoints principales
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Clientes
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/clients` | Listar clientes (búsqueda con `?search=`) |
+| POST | `/clients` | Crear cliente |
+| GET | `/clients/:id` | Ver cliente |
+| PATCH | `/clients/:id` | Actualizar cliente |
+| DELETE | `/clients/:id` | Soft-delete |
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Sedes
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/clients/:clientId/branches` | Listar sedes de un cliente |
+| POST | `/clients/:clientId/branches` | Crear sede |
+| PATCH | `/clients/:clientId/branches/:id` | Actualizar sede |
+| DELETE | `/clients/:clientId/branches/:id` | Soft-delete |
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+### Equipos
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/clients/:clientId/branches/:branchId/equipment` | Listar equipos de una sede |
+| POST | `/clients/:clientId/branches/:branchId/equipment` | Registrar equipo |
+| PATCH | `.../equipment/:id` | Actualizar equipo (incluye `status`) |
+| DELETE | `.../equipment/:id` | Soft-delete |
+
+### Planes de mantenimiento
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/maintenance-plans` | Listar planes (`?clientId=`, `?isActive=true`) |
+| GET | `/maintenance-plans/upcoming?days=30` | **Próximas visitas** — dashboard principal |
+| POST | `/maintenance-plans` | Crear plan |
+| PATCH | `/maintenance-plans/:id` | Actualizar (`nextVisitDate`, `isActive`, etc.) |
+
+### Órdenes de trabajo
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/work-orders` | Listar (`?clientId=`, `?status=`, `?assignedToId=`) |
+| POST | `/work-orders` | Crear OT |
+| PATCH | `/work-orders/:id` | Editar OT (solo en DRAFT/SCHEDULED) |
+| PATCH | `/work-orders/:id/status` | Cambiar status |
+| DELETE | `/work-orders/:id` | Soft-delete (solo DRAFT) |
+
+**Transiciones de status válidas:**
 ```
+DRAFT → SCHEDULED → IN_PROGRESS → COMPLETED
+                 ↘              ↘
+               CANCELLED       CANCELLED
+```
+Al pasar a `COMPLETED`, el sistema recalcula automáticamente el `nextVisitDate` del plan de mantenimiento activo para esa sede.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Actas técnicas
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/work-orders/:workOrderId/service-record` | Crear acta (genera checklist automático si hay `equipmentId`) |
+| GET | `/work-orders/:workOrderId/service-record` | Ver acta de una OT |
+| PATCH | `/work-orders/:workOrderId/service-record` | Actualizar hallazgos/recomendaciones |
+| PATCH | `/work-orders/:workOrderId/service-record/checklist/:itemId` | Marcar ítem del checklist |
+| GET | `/equipment/:equipmentId/service-records` | Historial de un equipo |
 
-## Resources
+### Cotizaciones
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/quotations` | Listar cotizaciones |
+| POST | `/quotations` | Crear cotización con ítems |
+| PATCH | `/quotations/:id` | Editar cotización |
+| PATCH | `/quotations/:id/status` | Cambiar status (DRAFT→SENT→APPROVED→CONVERTED) |
 
-Check out a few resources that may come in handy when working with NestJS:
+## Frecuencias de mantenimiento
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Valor | Descripción | Clientes actuales |
+|---|---|---|
+| `QUARTERLY` | Trimestral (cada 3 meses) | Clínica Emmanuel |
+| `EVERY_4_MONTHS` | Cuatrimestral (cada 4 meses) | INDE, Clínica Avellaneda |
+| `MONTHLY` | Mensual | — |
+| `BIANNUAL` | Semestral | — |
+| `ANNUAL` | Anual | — |
 
-## Support
+## Tipos de equipo con checklist predeterminado
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Al crear una acta técnica con `equipmentId`, se generan automáticamente los ítems de verificación:
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| Tipo | Ítems generados |
+|---|---|
+| `NURSE_CALL` | Alimentación central, pulsadores, indicadores, audio, cableado, limpieza |
+| `MEDICAL_ALERT` | Alimentación, señales por código, indicadores y paneles, cableado, limpieza |
+| `GENERATOR` | Aceite, refrigerante, batería, prueba de carga, filtro de aire, fugas |
+| `UPS` | Prueba de batería, tiempo de respaldo, temperatura, alarmas, conexiones |
+| `ELECTRICAL` | Tablero principal, breakers, tensión en circuitos críticos, tierra, cableado |

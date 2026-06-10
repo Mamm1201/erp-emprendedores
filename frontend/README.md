@@ -1,73 +1,85 @@
-# React + TypeScript + Vite
+# Frontend — ERP Mantenimiento Hospitalario
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz web construida con React 19, Vite 8 y Tailwind CSS 4.
 
-Currently, two official plugins are available:
+## Variables de entorno
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| Variable | Descripción | Default |
+|---|---|---|
+| `VITE_API_URL` | URL base del backend | `http://localhost:3000` |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts disponibles
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev       # Servidor de desarrollo con HMR — http://localhost:5173
+npm run build     # Compila para producción (genera dist/)
+npm run preview   # Previsualiza el build de producción
+npm run lint      # Ejecuta ESLint
 ```
+
+## Estructura del proyecto
+
+```
+src/
+├── components/
+│   ├── layout/
+│   │   ├── AppLayout.tsx     Contenedor principal: sidebar + área de contenido
+│   │   └── Sidebar.tsx       Menú de navegación lateral
+│   └── ui/
+│       ├── badge.tsx         Etiqueta de estado con variantes de color
+│       ├── button.tsx        Botón con variantes (default, outline, ghost, etc.)
+│       ├── card.tsx          Tarjeta con header, content
+│       └── table.tsx         Tabla de datos
+├── hooks/
+│   └── use-upcoming-visits.ts  TanStack Query — GET /maintenance-plans/upcoming
+├── lib/
+│   ├── api.ts      Cliente HTTP (get, post, patch, delete) sobre fetch
+│   ├── types.ts    Tipos TypeScript compartidos (Client, Branch, WorkOrder, etc.)
+│   └── utils.ts    Función cn() para combinar clases Tailwind
+├── pages/
+│   ├── DashboardPage.tsx   Próximas visitas con tarjetas de resumen
+│   └── PlaceholderPage.tsx Página temporal para rutas en desarrollo
+├── App.tsx         Router — define todas las rutas
+└── main.tsx        Punto de entrada — QueryClientProvider + RouterProvider
+```
+
+## Stack de librerías
+
+| Librería | Uso |
+|---|---|
+| `react-router-dom` | Routing (createBrowserRouter) |
+| `@tanstack/react-query` | Caché y fetching de datos del servidor |
+| `react-hook-form` | Formularios (próximamente) |
+| `zod` | Validación de esquemas (próximamente) |
+| `date-fns` | Formateo y cálculo de fechas |
+| `lucide-react` | Íconos |
+| `class-variance-authority` | Variantes de componentes UI |
+| `tailwind-merge` + `clsx` | Combinación segura de clases Tailwind |
+
+## Rutas disponibles
+
+| Ruta | Página | Estado |
+|---|---|---|
+| `/` | Dashboard — próximas visitas | Implementado |
+| `/clientes` | Gestión de clientes (IPS) | En desarrollo |
+| `/ordenes` | Órdenes de trabajo | En desarrollo |
+| `/planes` | Planes de mantenimiento | En desarrollo |
+| `/equipos` | Equipos por sede | En desarrollo |
+
+## Convenciones
+
+- **Hooks de datos**: un archivo por recurso en `src/hooks/`. Usan TanStack Query con `queryKey` estructurado como `[recurso, filtros]`.
+- **Tipos**: todos los tipos de API viven en `src/lib/types.ts`. No se duplican en componentes.
+- **API client**: siempre usar `api.get()`, `api.post()`, etc. de `src/lib/api.ts`. Nunca llamar `fetch` directamente en componentes.
+- **Componentes UI**: los componentes base están en `src/components/ui/`. Para páginas completas, crear carpeta en `src/pages/`.
+
+## Cómo agregar una nueva pantalla
+
+1. Crear `src/pages/NombrePage.tsx`
+2. Si necesita datos, crear `src/hooks/use-nombre.ts` con TanStack Query
+3. Agregar la ruta en `src/App.tsx`
+4. Agregar el enlace en `src/components/layout/Sidebar.tsx`
