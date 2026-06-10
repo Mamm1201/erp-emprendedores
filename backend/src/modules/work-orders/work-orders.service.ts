@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { addMonths } from 'date-fns';
 import { Prisma, WorkOrderStatus } from '../../generated/prisma/client';
 import {
   calculateLineTotals,
@@ -176,7 +177,14 @@ export class WorkOrdersService {
   }
 
   async updateStatus(id: string, dto: UpdateWorkOrderStatusDto) {
-    const workOrder = await this.findOne(id);
+    const workOrder = await this.prisma.workOrder.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, status: true, clientId: true, branchId: true },
+    });
+
+    if (!workOrder) {
+      throw new NotFoundException(`WorkOrder with id "${id}" not found`);
+    }
 
     const allowed = ALLOWED_TRANSITIONS[workOrder.status];
     if (!allowed.includes(dto.status)) {
@@ -193,22 +201,24 @@ export class WorkOrdersService {
       timestamps.completedAt = new Date();
     }
 
-    const updated = await this.prisma.workOrder.update({
-      where: { id },
-      data: { status: dto.status, ...timestamps },
-      select: {
-        ...WORK_ORDER_SELECT,
-        items: { select: WORK_ORDER_ITEM_SELECT, orderBy: { lineOrder: 'asc' } },
-        invoice: { select: { id: true, number: true, status: true } },
-        serviceRecord: { select: { id: true } },
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.workOrder.update({
+        where: { id },
+        data: { status: dto.status, ...timestamps },
+        select: {
+          ...WORK_ORDER_SELECT,
+          items: { select: WORK_ORDER_ITEM_SELECT, orderBy: { lineOrder: 'asc' } },
+          invoice: { select: { id: true, number: true, status: true } },
+          serviceRecord: { select: { id: true } },
+        },
+      });
+
+      if (dto.status === WorkOrderStatus.COMPLETED) {
+        await this.recalculateNextVisit(tx, workOrder.clientId, workOrder.branchId);
+      }
+
+      return updated;
     });
-
-    if (dto.status === WorkOrderStatus.COMPLETED) {
-      await this.recalculateNextVisit(updated.clientId, updated.branchId);
-    }
-
-    return updated;
   }
 
   async remove(id: string) {
@@ -228,10 +238,11 @@ export class WorkOrdersService {
   }
 
   private async recalculateNextVisit(
+    tx: Prisma.TransactionClient,
     clientId: string,
     branchId: string | null,
   ): Promise<void> {
-    const plan = await this.prisma.maintenancePlan.findFirst({
+    const plan = await tx.maintenancePlan.findFirst({
       where: {
         clientId,
         ...(branchId ? { branchId } : {}),
@@ -253,12 +264,11 @@ export class WorkOrdersService {
     const months = MONTHS_BY_FREQUENCY[plan.frequency];
     if (!months) return;
 
-    const base = new Date(plan.nextVisitDate);
-    base.setMonth(base.getMonth() + months);
+    const nextDate = addMonths(new Date(plan.nextVisitDate), months);
 
-    await this.prisma.maintenancePlan.update({
+    await tx.maintenancePlan.update({
       where: { id: plan.id },
-      data: { nextVisitDate: base },
+      data: { nextVisitDate: nextDate },
     });
   }
 

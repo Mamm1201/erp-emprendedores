@@ -10,6 +10,7 @@ import {
 import { MaintenancePlansService } from './maintenance-plans.service';
 import { CreateMaintenancePlanDto } from './dto/create-maintenance-plan.dto';
 import { QueryMaintenancePlansDto } from './dto/query-maintenance-plans.dto';
+import { QueryUpcomingDto } from './dto/query-upcoming.dto';
 import { UpdateMaintenancePlanDto } from './dto/update-maintenance-plan.dto';
 
 @Controller('maintenance-plans')
@@ -24,9 +25,8 @@ export class MaintenancePlansController {
   }
 
   @Get('upcoming')
-  findUpcoming(@Query('days') days?: string) {
-    const d = days ? parseInt(days, 10) : 30;
-    return this.maintenancePlansService.findUpcoming(d);
+  findUpcoming(@Query() query: QueryUpcomingDto) {
+    return this.maintenancePlansService.findUpcoming(query.days);
   }
 
   @Get(':id')
