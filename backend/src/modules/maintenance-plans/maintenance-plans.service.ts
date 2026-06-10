@@ -54,11 +54,7 @@ export class MaintenancePlansService {
         isActive: true,
         nextVisitDate: { gte: today, lte: until },
       },
-      select: {
-        ...MAINTENANCE_PLAN_SELECT,
-        client: { select: { id: true, legalName: true, tradeName: true } },
-        branch: { select: { id: true, name: true, city: true } },
-      },
+      select: MAINTENANCE_PLAN_SELECT,
       orderBy: { nextVisitDate: 'asc' },
     });
 

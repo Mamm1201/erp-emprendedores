@@ -12,6 +12,8 @@ export const MAINTENANCE_PLAN_SELECT = {
   notes: true,
   createdAt: true,
   updatedAt: true,
+  client: { select: { id: true, legalName: true, tradeName: true } },
+  branch: { select: { id: true, name: true, city: true } },
 } satisfies Prisma.MaintenancePlanSelect;
 
 export const MAINTENANCE_PLAN_DEFAULT_PAGE = 1;

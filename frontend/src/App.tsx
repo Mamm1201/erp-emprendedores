@@ -1,6 +1,10 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { ClientsPage } from '@/pages/ClientsPage';
+import { WorkOrdersPage } from '@/pages/WorkOrdersPage';
+import { MaintenancePlansPage } from '@/pages/MaintenancePlansPage';
+import { EquipmentPage } from '@/pages/EquipmentPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 
 const router = createBrowserRouter([
@@ -9,10 +13,10 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'clientes', element: <PlaceholderPage title="Clientes" /> },
-      { path: 'ordenes', element: <PlaceholderPage title="Órdenes de trabajo" /> },
-      { path: 'planes', element: <PlaceholderPage title="Planes de mantenimiento" /> },
-      { path: 'equipos', element: <PlaceholderPage title="Equipos" /> },
+      { path: 'clientes', element: <ClientsPage /> },
+      { path: 'ordenes', element: <WorkOrdersPage /> },
+      { path: 'planes', element: <MaintenancePlansPage /> },
+      { path: 'equipos', element: <EquipmentPage /> },
     ],
   },
 ]);

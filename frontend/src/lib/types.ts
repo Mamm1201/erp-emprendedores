@@ -1,3 +1,5 @@
+export type ClientType = 'COMPANY' | 'PERSON';
+
 export type MaintenanceFrequency =
   | 'MONTHLY'
   | 'QUARTERLY'
@@ -31,6 +33,7 @@ export interface PaginatedResponse<T> {
 
 export interface Client {
   id: string;
+  type: ClientType;
   legalName: string;
   tradeName: string | null;
   taxId: string | null;
@@ -69,12 +72,11 @@ export interface MaintenancePlan {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface UpcomingVisit extends MaintenancePlan {
   client: { id: string; legalName: string; tradeName: string | null };
   branch: { id: string; name: string; city: string | null } | null;
 }
+
+export type UpcomingVisit = MaintenancePlan;
 
 export interface UpcomingVisitsResponse {
   data: UpcomingVisit[];
@@ -93,10 +95,15 @@ export interface WorkOrder {
   scheduledAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
+  subtotal: string;
+  discountTotal: string;
+  taxTotal: string;
   total: string;
   assignedToId: string | null;
   createdAt: string;
   updatedAt: string;
+  client: { id: string; legalName: string; tradeName: string | null };
+  branch: { id: string; name: string; city: string | null } | null;
 }
 
 export interface Equipment {
