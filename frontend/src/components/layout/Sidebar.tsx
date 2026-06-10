@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Users,
   ClipboardList,
+  ClipboardCheck,
   Wrench,
   CalendarClock,
 } from 'lucide-react';
@@ -12,6 +13,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/clientes', label: 'Clientes', icon: Users },
   { to: '/ordenes', label: 'Órdenes de trabajo', icon: ClipboardList },
+  { to: '/actas', label: 'Actas técnicas', icon: ClipboardCheck },
   { to: '/planes', label: 'Planes de mantenimiento', icon: CalendarClock },
   { to: '/equipos', label: 'Equipos', icon: Wrench },
 ];

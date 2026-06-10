@@ -104,6 +104,32 @@ export interface WorkOrder {
   updatedAt: string;
   client: { id: string; legalName: string; tradeName: string | null };
   branch: { id: string; name: string; city: string | null } | null;
+  serviceRecord: { id: string } | null;
+}
+
+export type ChecklistResult = 'OK' | 'WARNING' | 'FAIL' | 'NA';
+
+export interface ChecklistItem {
+  id: string;
+  serviceRecordId: string;
+  description: string;
+  result: ChecklistResult;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ServiceRecord {
+  id: string;
+  workOrderId: string;
+  equipmentId: string | null;
+  findings: string | null;
+  activitiesPerformed: string | null;
+  recommendations: string | null;
+  clientSignedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  checklistItems: ChecklistItem[];
 }
 
 export interface Equipment {
