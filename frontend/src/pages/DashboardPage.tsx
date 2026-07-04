@@ -56,11 +56,11 @@ function KpiCard({
   onClick?: () => void;
 }) {
   const accentClasses: Record<string, string> = {
-    blue: 'text-blue-600 bg-blue-50',
-    green: 'text-green-600 bg-green-50',
-    red: 'text-red-600 bg-red-50',
-    amber: 'text-amber-600 bg-amber-50',
-    purple: 'text-purple-600 bg-purple-50',
+    blue:   'text-stech-blue bg-stech-blue/10',
+    green:  'text-node-teal bg-node-teal/10',
+    red:    'text-alert-red bg-alert-red/10',
+    amber:  'text-amber-signal bg-amber-signal/10',
+    purple: 'text-stech-blue bg-stech-blue/10',
   };
   const iconClass = accent ? accentClasses[accent] : 'text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted)/0.5)]';
 
@@ -112,14 +112,14 @@ function PipelineStep({
       className={cn(
         'flex flex-col items-center gap-1 px-4 py-3 rounded-lg border transition-colors text-center min-w-[100px]',
         alert && count > 0
-          ? 'bg-amber-50 border-amber-200 text-amber-800'
+          ? 'bg-amber-signal/10 border-amber-signal/30 text-amber-signal'
           : 'hover:bg-[hsl(var(--muted)/0.5)]',
       )}
     >
       <span
         className={cn(
           'text-2xl font-bold tabular-nums',
-          alert && count > 0 ? 'text-amber-700' : color,
+          alert && count > 0 ? 'text-amber-signal' : color,
         )}
       >
         {count}
@@ -189,16 +189,16 @@ export function DashboardPage() {
           tabIndex={0}
           onClick={() => navigate('/cuentas-cobro')}
           onKeyDown={(e) => e.key === 'Enter' && navigate('/cuentas-cobro')}
-          className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-3 cursor-pointer hover:bg-red-100 transition-colors"
+          className="flex items-center gap-3 rounded-lg border border-alert-red/20 bg-alert-red/10 p-3 cursor-pointer hover:bg-alert-red/15 transition-colors"
         >
-          <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
-          <p className="text-sm text-red-800 flex-1">
+          <AlertTriangle className="h-4 w-4 text-alert-red shrink-0" />
+          <p className="text-sm text-alert-red flex-1">
             <span className="font-semibold">
               {invoices.overdue.count} cuenta{invoices.overdue.count !== 1 ? 's' : ''} de cobro vencida{invoices.overdue.count !== 1 ? 's' : ''}
             </span>
             {' — '}total vencido: <span className="font-semibold">{formatMoney(invoices.overdue.total)}</span>
           </p>
-          <ArrowRight className="h-4 w-4 text-red-500 shrink-0" />
+          <ArrowRight className="h-4 w-4 text-alert-red shrink-0" />
         </div>
       )}
 
@@ -251,7 +251,7 @@ export function DashboardPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Flujo del negocio</h2>
           {pendingAction > 0 && (
-            <span className="text-xs text-amber-700 font-medium bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+            <span className="text-xs text-amber-signal font-medium bg-amber-signal/10 px-2 py-0.5 rounded-full border border-amber-signal/30">
               {pendingAction} acción{pendingAction !== 1 ? 'es' : ''} pendiente{pendingAction !== 1 ? 's' : ''}
             </span>
           )}
@@ -260,7 +260,7 @@ export function DashboardPage() {
           <PipelineStep
             label="Cotizaciones aprobadas"
             count={quotations.approved}
-            color="text-purple-700"
+            color="text-stech-blue"
             alert
             onClick={() => navigate('/cotizaciones')}
           />
@@ -268,14 +268,14 @@ export function DashboardPage() {
           <PipelineStep
             label="OTs en progreso"
             count={workOrders.inProgress}
-            color="text-blue-700"
+            color="text-stech-blue"
             onClick={() => navigate('/ordenes')}
           />
           <ArrowRight className="h-4 w-4 text-[hsl(var(--muted-foreground))] shrink-0" />
           <PipelineStep
             label="OTs sin facturar"
             count={workOrders.completedWithoutInvoice}
-            color="text-amber-700"
+            color="text-amber-signal"
             alert
             onClick={() => navigate('/cuentas-cobro/nueva')}
           />
@@ -283,7 +283,7 @@ export function DashboardPage() {
           <PipelineStep
             label="CC emitidas"
             count={invoices.issued + invoices.partiallyPaid}
-            color="text-green-700"
+            color="text-node-teal"
             onClick={() => navigate('/cuentas-cobro')}
           />
         </div>
@@ -396,7 +396,7 @@ export function DashboardPage() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-green-700 tabular-nums">
+                    <p className="text-sm font-semibold text-node-teal tabular-nums">
                       {formatMoney(p.amount)}
                     </p>
                     <p className="text-xs text-[hsl(var(--muted-foreground))]">

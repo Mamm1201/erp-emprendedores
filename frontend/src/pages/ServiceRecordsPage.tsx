@@ -66,26 +66,26 @@ const RESULT_CONFIG: Record<
   OK: {
     label: 'OK',
     icon: CheckCircle2,
-    class: 'border-gray-200 text-gray-400 hover:border-green-400 hover:text-green-600',
-    activeClass: 'border-green-500 bg-green-50 text-green-700',
+    class: 'border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-node-teal/50 hover:text-node-teal',
+    activeClass: 'border-node-teal bg-node-teal/10 text-node-teal',
   },
   WARNING: {
     label: 'Alerta',
     icon: AlertTriangle,
-    class: 'border-gray-200 text-gray-400 hover:border-yellow-400 hover:text-yellow-600',
-    activeClass: 'border-yellow-500 bg-yellow-50 text-yellow-700',
+    class: 'border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-amber-signal/50 hover:text-amber-signal',
+    activeClass: 'border-amber-signal bg-amber-signal/10 text-amber-signal',
   },
   FAIL: {
     label: 'Falla',
     icon: XCircle,
-    class: 'border-gray-200 text-gray-400 hover:border-red-400 hover:text-red-600',
-    activeClass: 'border-red-500 bg-red-50 text-red-700',
+    class: 'border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-alert-red/50 hover:text-alert-red',
+    activeClass: 'border-alert-red bg-alert-red/10 text-alert-red',
   },
   NA: {
     label: 'N/A',
     icon: MinusCircle,
-    class: 'border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-600',
-    activeClass: 'border-gray-400 bg-gray-50 text-gray-600',
+    class: 'border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
+    activeClass: 'border-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]',
   },
 };
 

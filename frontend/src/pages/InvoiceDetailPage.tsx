@@ -390,7 +390,7 @@ export function InvoiceDetailPage() {
         </div>
         <div>
           <p className="text-[hsl(var(--muted-foreground))] text-xs mb-0.5">Vencimiento</p>
-          <p className={overdue ? 'text-red-600 font-medium' : ''}>
+          <p className={overdue ? 'text-alert-red font-medium' : ''}>
             {format(parseISO(invoice.dueDate), 'd MMM yyyy', { locale: es })}
             {overdue && ' ⚠'}
           </p>
@@ -407,7 +407,7 @@ export function InvoiceDetailPage() {
         {invoice.voidedAt && (
           <div>
             <p className="text-[hsl(var(--muted-foreground))] text-xs mb-0.5">Anulada el</p>
-            <p className="text-red-600">
+            <p className="text-alert-red">
               {format(parseISO(invoice.voidedAt), 'd MMM yyyy', { locale: es })}
             </p>
           </div>
@@ -459,7 +459,7 @@ export function InvoiceDetailPage() {
               <span className="tabular-nums">{formatMoney(invoice.subtotal)}</span>
             </div>
             {parseFloat(invoice.discountTotal) > 0 && (
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-node-teal">
                 <span>Descuentos</span>
                 <span className="tabular-nums">− {formatMoney(invoice.discountTotal)}</span>
               </div>
@@ -520,7 +520,7 @@ export function InvoiceDetailPage() {
         {(invoice.status === 'PARTIALLY_PAID' || invoice.status === 'PAID') && (
           <div className="border-t pt-3 flex justify-end gap-6 text-sm">
             <div className="text-[hsl(var(--muted-foreground))]">
-              Pagado: <span className="font-semibold text-green-600 tabular-nums">{formatMoney(paidTotal)}</span>
+              Pagado: <span className="font-semibold text-node-teal tabular-nums">{formatMoney(paidTotal)}</span>
             </div>
             {pending > 0.01 && (
               <div className="text-[hsl(var(--muted-foreground))]">

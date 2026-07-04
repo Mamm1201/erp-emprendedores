@@ -11,6 +11,7 @@ import { ServiceRecordsModule } from './modules/service-records/service-records.
 import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -25,6 +26,7 @@ import { PrismaModule } from './prisma/prisma.module';
     MaintenancePlansModule,
     ServiceRecordsModule,
     InvoicesModule,
+    ExpensesModule,
     DashboardModule,
   ],
   controllers: [AppController],

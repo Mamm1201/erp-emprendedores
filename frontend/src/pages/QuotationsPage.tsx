@@ -84,7 +84,7 @@ function QuotationActions({ quotation, onDelete }: { quotation: Quotation; onDel
       )}
       {quotation.status === 'SENT' && (
         <>
-          <Button size="sm" variant="outline" className="text-xs h-7 gap-1 text-green-700 border-green-300 hover:bg-green-50" disabled={isBusy}
+          <Button size="sm" variant="outline" className="text-xs h-7 gap-1 text-node-teal border-node-teal/30 hover:bg-node-teal/10" disabled={isBusy}
             onClick={() => updateStatus.mutate({ id: quotation.id, status: 'APPROVED' })}>
             Aprobar
           </Button>
@@ -95,7 +95,7 @@ function QuotationActions({ quotation, onDelete }: { quotation: Quotation; onDel
         </>
       )}
       {quotation.status === 'APPROVED' && (
-        <Button size="sm" className="text-xs h-7 gap-1 bg-green-600 hover:bg-green-700" disabled={isBusy}
+        <Button size="sm" className="text-xs h-7 gap-1 bg-node-teal hover:bg-node-teal-deep text-white" disabled={isBusy}
           onClick={convertToWorkOrder}>
           {createWO.isPending ? 'Creando OT…' : 'Generar OT'}
           <ChevronRight className="h-3 w-3" />

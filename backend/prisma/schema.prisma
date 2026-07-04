@@ -370,6 +370,7 @@ model Expense {
   expenseDate DateTime        @default(now()) @db.Date
   vendorName  String?
   createdById String?
+  deletedAt   DateTime?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
@@ -379,6 +380,7 @@ model Expense {
   @@index([workOrderId])
   @@index([expenseDate])
   @@index([category])
+  @@index([deletedAt])
   @@map("expenses")
 }
 

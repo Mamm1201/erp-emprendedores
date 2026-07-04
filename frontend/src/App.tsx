@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ClientsPage } from '@/pages/ClientsPage';
 import { WorkOrdersPage } from '@/pages/WorkOrdersPage';
+import { WorkOrderDetailPage } from '@/pages/WorkOrderDetailPage';
 import { MaintenancePlansPage } from '@/pages/MaintenancePlansPage';
 import { EquipmentPage } from '@/pages/EquipmentPage';
 import { ServiceRecordsPage } from '@/pages/ServiceRecordsPage';
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { path: 'cuentas-cobro/:id', element: <InvoiceDetailPage /> },
       { path: 'pagos', element: <PaymentsPage /> },
       { path: 'ordenes', element: <WorkOrdersPage /> },
+      { path: 'ordenes/:id', element: <WorkOrderDetailPage /> },
       { path: 'actas', element: <ServiceRecordsPage /> },
       { path: 'planes', element: <MaintenancePlansPage /> },
       { path: 'equipos', element: <EquipmentPage /> },

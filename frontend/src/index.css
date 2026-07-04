@@ -1,37 +1,136 @@
 @import "tailwindcss";
 
+/* =============================================================================
+   STECH NODES Design System — Tokens v1.0
+   Fuente: Manual de Identidad Visual v1.0 (brand/visual-identity-manual-v1.md)
+   Decisión Ejecutiva 015 — Dirección visual: Systems Intelligence
+   ============================================================================= */
+
+/* ── Tailwind custom utilities ─────────────────────────────────────────────── */
+/* Registra los tokens como utilities de Tailwind: text-stech-blue, bg-node-teal, etc. */
+@theme {
+  /* Brand colors */
+  --color-stech-blue:       #0A5C9E;
+  --color-stech-blue-light: #1A7BC4;
+  --color-node-teal:        #0ABFA8;
+  --color-node-teal-deep:   #0A7A6E;
+  --color-amber-signal:     #D4820A;
+  --color-alert-red:        #C0392B;
+
+  /* Neutrals */
+  --color-deep-space:       #030D18;
+  --color-surface-dark:     #071626;
+  --color-border-dark:      #0E2540;
+  --color-text-secondary:   #4A6A8A;
+  --color-light-surface:    #F0EDE8;
+
+  /* Typography — STECH NODES Display + Mono */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+/* ── CSS variables — shadcn component system ───────────────────────────────── */
+/* Los componentes consumen estas variables via hsl(var(--xxx)).               */
+/* El bloque .dark está preparado pero no activado en esta etapa.              */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    /* Backgrounds */
+    --background:          37 21% 93%;    /* Light Surface  #F0EDE8 */
+    --foreground:          211 78% 5%;    /* Deep Space     #030D18 */
+
+    /* Card / Panel */
+    --card:                0 0% 100%;
+    --card-foreground:     211 78% 5%;
+
+    /* Popover */
+    --popover:             0 0% 100%;
+    --popover-foreground:  211 78% 5%;
+
+    /* Primary — STECH Blue */
+    --primary:             207 88% 33%;   /* #0A5C9E */
+    --primary-foreground:  0 0% 100%;
+
+    /* Secondary — light neutral */
+    --secondary:           37 15% 88%;
+    --secondary-foreground: 211 78% 5%;
+
+    /* Muted — subtle background for ghost states */
+    --muted:               37 12% 88%;
+    --muted-foreground:    210 30% 42%;   /* Text Secondary #4A6A8A */
+
+    /* Accent — Node Teal */
+    --accent:              172 90% 39%;   /* #0ABFA8 */
+    --accent-foreground:   0 0% 100%;
+
+    /* Destructive — Alert Red (solo para señalización de error, nunca en marca) */
+    --destructive:         6 63% 46%;     /* #C0392B */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221 83% 53%;
-    --radius: 0.5rem;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 221 83% 53%;
+
+    /* Border / Input / Ring */
+    --border:              210 22% 84%;
+    --input:               210 22% 84%;
+    --ring:                207 88% 33%;   /* STECH Blue */
+
+    /* Shape */
+    --radius:              0.5rem;
+
+    /* STECH NODES custom semantic tokens */
+    --stech-teal:          172 90% 39%;   /* Node Teal    #0ABFA8 */
+    --stech-amber:         36 91% 44%;    /* Amber Signal #D4820A */
+
+    /* Sidebar — siempre dark independientemente del modo de página */
+    --sidebar-background:          211 78% 5%;    /* Deep Space      #030D18 */
+    --sidebar-foreground:          37 21% 93%;    /* Light Surface   #F0EDE8 */
+    --sidebar-primary:             207 88% 33%;   /* STECH Blue      #0A5C9E */
+    --sidebar-primary-foreground:  0 0% 100%;
+    --sidebar-accent:              211 69% 9%;    /* Surface Dark    #071626 */
+    --sidebar-accent-foreground:   172 90% 39%;   /* Node Teal       #0ABFA8 */
+    --sidebar-border:              212 64% 15%;   /* Border dark     #0E2540 */
+    --sidebar-ring:                172 90% 39%;   /* Node Teal       #0ABFA8 */
   }
 
+  /* Dark mode — preparado, no activado.
+     Activar añadiendo clase "dark" al elemento <html> cuando corresponda. */
+  .dark {
+    --background:          211 78% 5%;    /* Deep Space      #030D18 */
+    --foreground:          37 21% 93%;    /* Light Surface   #F0EDE8 */
+
+    --card:                211 69% 9%;    /* Surface Dark    #071626 */
+    --card-foreground:     37 21% 93%;
+
+    --popover:             211 69% 9%;
+    --popover-foreground:  37 21% 93%;
+
+    --primary:             207 88% 33%;   /* STECH Blue — igual en ambos modos */
+    --primary-foreground:  0 0% 100%;
+
+    --secondary:           212 64% 15%;   /* Border dark     #0E2540 */
+    --secondary-foreground: 37 21% 93%;
+
+    --muted:               212 64% 15%;
+    --muted-foreground:    210 30% 42%;   /* Text Secondary  #4A6A8A */
+
+    --accent:              172 90% 39%;   /* Node Teal */
+    --accent-foreground:   0 0% 100%;
+
+    --destructive:         6 63% 46%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border:              212 64% 15%;   /* Border dark     #0E2540 */
+    --input:               212 64% 15%;
+    --ring:                172 90% 39%;   /* Node Teal en dark */
+
+    --sidebar-background:          211 78% 5%;
+    --sidebar-foreground:          37 21% 93%;
+    --sidebar-primary:             207 88% 33%;
+    --sidebar-primary-foreground:  0 0% 100%;
+    --sidebar-accent:              211 69% 9%;
+    --sidebar-accent-foreground:   172 90% 39%;
+    --sidebar-border:              212 64% 15%;
+    --sidebar-ring:                172 90% 39%;
+  }
+
+  /* ── Reset ───────────────────────────────────────────────────────────────── */
   * {
     border-color: hsl(var(--border));
   }
@@ -39,9 +138,15 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11"; /* Inter optical features */
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Fuente monoespaciada para datos numéricos — aplicar con clase font-mono */
+  :where(.font-mono, [class*="tabular-nums"]) {
+    font-family: var(--font-mono);
   }
 }

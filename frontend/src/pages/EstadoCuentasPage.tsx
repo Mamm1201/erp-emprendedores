@@ -26,9 +26,9 @@ function SummaryCard({
   onClick?: () => void;
 }) {
   const colorMap = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-200',
-    red: 'bg-red-50 text-red-600 border-red-200',
-    green: 'bg-green-50 text-green-600 border-green-200',
+    blue:  'bg-stech-blue/10 text-stech-blue border-stech-blue/30',
+    red:   'bg-alert-red/10 text-alert-red border-alert-red/30',
+    green: 'bg-node-teal/10 text-node-teal border-node-teal/30',
     gray: 'bg-[hsl(var(--muted)/0.5)] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]',
   };
 
@@ -262,21 +262,21 @@ export function EstadoCuentasPage() {
 
       {/* Overdue alert */}
       {hasOverdue && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
+        <div className="rounded-lg border border-alert-red/20 bg-alert-red/10 p-4 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-alert-red mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-red-800">
+            <p className="text-sm font-medium text-alert-red">
               {s.overdue.count} cuenta{s.overdue.count !== 1 ? 's' : ''} de cobro vencida
               {s.overdue.count !== 1 ? 's' : ''}
             </p>
-            <p className="text-sm text-red-700 mt-0.5">
+            <p className="text-sm text-alert-red mt-0.5">
               Total pendiente vencido: <span className="font-semibold">{formatMoney(s.overdue.total)}</span>
             </p>
           </div>
           <Button
             size="sm"
             variant="outline"
-            className="text-red-700 border-red-300 hover:bg-red-100 shrink-0"
+            className="text-alert-red border-alert-red/30 hover:bg-alert-red/10 shrink-0"
             onClick={() => navigate('/cuentas-cobro')}
           >
             Ver facturas

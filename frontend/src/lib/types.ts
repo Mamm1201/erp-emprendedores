@@ -261,6 +261,42 @@ export interface UpcomingVisitsResponse {
   meta: { days: number; from: string; until: string };
 }
 
+export type ExpenseCategory =
+  | 'MATERIALS'
+  | 'LABOR'
+  | 'TRANSPORT'
+  | 'TOOLS'
+  | 'SUBCONTRACT'
+  | 'OFFICE'
+  | 'OTHER';
+
+export interface Expense {
+  id: string;
+  workOrderId: string;
+  category: ExpenseCategory;
+  description: string;
+  amount: string;
+  expenseDate: string;
+  vendorName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkOrderItem {
+  id: string;
+  workOrderId: string;
+  lineOrder: number;
+  description: string;
+  quantity: string;
+  unitPrice: string;
+  discountAmount: string;
+  taxRate: string;
+  lineSubtotal: string;
+  lineTotal: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface WorkOrder {
   id: string;
   number: string;
@@ -284,6 +320,7 @@ export interface WorkOrder {
   branch: { id: string; name: string; city: string | null } | null;
   serviceRecord: { id: string } | null;
   invoice: { id: string; number: string; status: string } | null;
+  items?: WorkOrderItem[];
 }
 
 export type ChecklistResult = 'OK' | 'WARNING' | 'FAIL' | 'NA';

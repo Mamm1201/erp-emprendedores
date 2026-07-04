@@ -163,7 +163,7 @@ export function InvoicesPage() {
                     {format(parseISO(inv.issueDate), 'd MMM yyyy', { locale: es })}
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell text-xs whitespace-nowrap">
-                    <span className={overdue ? 'text-red-600 font-medium' : 'text-[hsl(var(--muted-foreground))]'}>
+                    <span className={overdue ? 'text-alert-red font-medium' : 'text-[hsl(var(--muted-foreground))]'}>
                       {format(parseISO(inv.dueDate), 'd MMM yyyy', { locale: es })}
                       {overdue && ' ⚠'}
                     </span>

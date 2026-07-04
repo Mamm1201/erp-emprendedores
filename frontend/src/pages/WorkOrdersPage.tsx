@@ -293,7 +293,7 @@ function StatusActions({ workOrder }: { workOrder: WorkOrder }) {
         <Button
           size="sm"
           variant="outline"
-          className="gap-1 text-xs h-7 text-green-700 border-green-300 hover:bg-green-50"
+          className="gap-1 text-xs h-7 text-node-teal border-node-teal/30 hover:bg-node-teal/10"
           onClick={() =>
             navigate(`/cuentas-cobro/nueva?workOrderId=${workOrder.id}`)
           }
@@ -444,7 +444,12 @@ export function WorkOrdersPage() {
                 className="border-b last:border-0 hover:bg-[hsl(var(--muted)/0.3)] transition-colors"
               >
                 <td className="px-4 py-3 font-mono text-xs font-medium whitespace-nowrap">
-                  {wo.number}
+                  <button
+                    onClick={() => navigate(`/ordenes/${wo.id}`)}
+                    className="text-[hsl(var(--primary))] hover:underline underline-offset-2"
+                  >
+                    {wo.number}
+                  </button>
                 </td>
                 <td className="px-4 py-3">
                   <p className="font-medium line-clamp-1">{wo.title}</p>

@@ -67,7 +67,7 @@ function TotalsFooter({ items }: { items: FormSchema['items'] }) {
         {discountTotal > 0 && (
           <div className="flex justify-between text-[hsl(var(--muted-foreground))]">
             <span>Descuentos</span>
-            <span className="tabular-nums text-green-600">− {formatMoney(discountTotal)}</span>
+            <span className="tabular-nums text-node-teal">− {formatMoney(discountTotal)}</span>
           </div>
         )}
         {taxTotal > 0 && (

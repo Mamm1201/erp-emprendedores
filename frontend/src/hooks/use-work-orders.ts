@@ -11,6 +11,14 @@ export interface WorkOrderFormData {
   scheduledAt?: string;
 }
 
+export interface WorkOrderUpdateData {
+  branchId?: string;
+  title?: string;
+  description?: string;
+  scheduledAt?: string;
+  assignedToId?: string;
+}
+
 interface WorkOrderFilters {
   search?: string;
   status?: WorkOrderStatus | '';
@@ -30,6 +38,27 @@ export function useWorkOrders(filters: WorkOrderFilters = {}) {
   });
 }
 
+export function useWorkOrder(id: string | null) {
+  return useQuery({
+    queryKey: ['work-orders', id],
+    queryFn: () => api.get<WorkOrder>(`/work-orders/${id}`),
+    enabled: !!id,
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useUpdateWorkOrder(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: WorkOrderUpdateData) =>
+      api.patch<WorkOrder>(`/work-orders/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['work-orders', id] });
+      qc.invalidateQueries({ queryKey: ['work-orders'] });
+    },
+  });
+}
+
 export function useCreateWorkOrder() {
   const qc = useQueryClient();
   return useMutation({
@@ -43,7 +72,8 @@ export function useUpdateWorkOrderStatus() {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: WorkOrderStatus }) =>
       api.patch<WorkOrder>(`/work-orders/${id}/status`, { status }),
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['work-orders', id] });
       qc.invalidateQueries({ queryKey: ['work-orders'] });
       qc.invalidateQueries({ queryKey: ['maintenance-plans'] });
     },
