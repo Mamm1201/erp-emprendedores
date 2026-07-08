@@ -1,3 +1,27 @@
+export type UserRole = 'ADMIN' | 'COMMERCIAL' | 'TECHNICIAN' | 'BILLING';
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface Technician {
+  id: string;
+  name: string;
+}
+
 export type ClientType = 'COMPANY' | 'PERSON';
 
 export type InvoiceStatus =
@@ -170,6 +194,12 @@ export interface Quotation {
   branchName: string | null;
   branchCity: string | null;
   snapshotAt: string | null;
+  sentAt: string | null;
+  approvedAt: string | null;
+  rejectedAt: string | null;
+  cancelledAt: string | null;
+  rejectionNotes: string | null;
+  cancellationNotes: string | null;
   createdAt: string;
   updatedAt: string;
   client: { id: string; legalName: string; tradeName: string | null };
@@ -314,6 +344,7 @@ export interface WorkOrder {
   taxTotal: string;
   total: string;
   assignedToId: string | null;
+  assignedTo: { id: string; name: string } | null;
   createdAt: string;
   updatedAt: string;
   client: { id: string; legalName: string; tradeName: string | null };
@@ -361,4 +392,31 @@ export interface Equipment {
   status: EquipmentStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export type FileEntityType =
+  | 'EQUIPMENT'
+  | 'WORK_ORDER'
+  | 'SERVICE_RECORD'
+  | 'CLIENT'
+  | 'QUOTATION'
+  | 'INVOICE';
+
+export type FileCategory = 'PHOTO' | 'DOCUMENT' | 'CERTIFICATE' | 'MANUAL';
+
+export interface FileAttachment {
+  id: string;
+  entityType: FileEntityType;
+  entityId: string;
+  category: FileCategory;
+  originalName: string;
+  storagePath: string;
+  mimeType: string;
+  sizeBytes: number;
+  description: string | null;
+  takenAt: string | null;
+  uploadedById: string;
+  uploadedBy: { id: string; name: string };
+  createdAt: string;
+  url: string;
 }

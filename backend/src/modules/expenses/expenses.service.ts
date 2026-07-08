@@ -33,7 +33,7 @@ export class ExpensesService {
     });
   }
 
-  async create(workOrderId: string, dto: CreateExpenseDto) {
+  async create(workOrderId: string, dto: CreateExpenseDto, userId: string) {
     const workOrder = await this.ensureWorkOrderExists(workOrderId);
     this.assertEditable(workOrder.status);
 
@@ -47,6 +47,7 @@ export class ExpensesService {
           ? new Date(dto.expenseDate)
           : new Date(),
         vendorName: dto.vendorName,
+        createdById: userId,
       },
       select: EXPENSE_SELECT,
     });

@@ -220,7 +220,7 @@ function CreateServiceRecordModal({
   );
   const equipmentList = equipmentData?.data ?? [];
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateSchema>({
+  const { register, handleSubmit, reset } = useForm({
     resolver: zodResolver(createSchema),
     defaultValues: { equipmentId: '', findings: '', activitiesPerformed: '', recommendations: '', clientSignedAt: '' },
   });

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ClipboardCheck, Loader2, Plus } from 'lucide-react';
+import { ClipboardCheck, Loader2, Plus, PenLine, CheckCircle2 } from 'lucide-react';
 
 import type { ChecklistResult } from '@/lib/types';
+import { FileAttachmentSection } from '@/components/shared/FileAttachmentSection';
 import {
   useServiceRecord,
   useCreateServiceRecord,
@@ -137,8 +138,8 @@ export function ServiceRecordCard({ workOrderId }: ServiceRecordCardProps) {
   }
 
   function saveField(field: keyof UpdateServiceRecordData) {
-    return (value: string) =>
-      updateRecord.mutateAsync({ workOrderId, data: { [field]: value || undefined } });
+    return (value: string): Promise<void> =>
+      updateRecord.mutateAsync({ workOrderId, data: { [field]: value || undefined } }).then(() => {});
   }
 
   return (
@@ -228,15 +229,48 @@ export function ServiceRecordCard({ workOrderId }: ServiceRecordCardProps) {
               </div>
             )}
 
-            {/* Signature status */}
-            {record.clientSignedAt && (
-              <p className="text-xs text-node-teal">
-                Firmado por el cliente el{' '}
-                {new Date(record.clientSignedAt).toLocaleDateString('es-CO', {
-                  day: 'numeric', month: 'long', year: 'numeric',
-                })}
-              </p>
-            )}
+            {/* Signature status / action */}
+            <div className="flex items-center justify-between gap-3 border rounded-md px-4 py-3">
+              {record.clientSignedAt ? (
+                <div className="flex items-center gap-2 text-node-teal text-sm">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>
+                    Firmado por el cliente el{' '}
+                    {new Date(record.clientSignedAt).toLocaleDateString('es-CO', {
+                      day: 'numeric', month: 'long', year: 'numeric',
+                    })}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                    El cliente aún no ha firmado el acta.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 shrink-0 text-node-teal border-node-teal/30 hover:bg-node-teal/10"
+                    onClick={() => updateRecord.mutate({ workOrderId, data: { clientSignedAt: new Date().toISOString() } })}
+                    disabled={updateRecord.isPending}
+                  >
+                    {updateRecord.isPending
+                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      : <PenLine className="h-3.5 w-3.5" />}
+                    Marcar firma
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Evidencias del acta */}
+            <div className="border-t pt-4 mt-2">
+              <FileAttachmentSection
+                entityType="SERVICE_RECORD"
+                entityId={record.id}
+                label="Evidencias del acta"
+                defaultCategory="PHOTO"
+              />
+            </div>
           </div>
         )}
       </CardContent>

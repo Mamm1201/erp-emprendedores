@@ -24,7 +24,7 @@ export class MaintenancePlansService {
       this.prisma.maintenancePlan.findMany({
         where,
         select: MAINTENANCE_PLAN_SELECT,
-        orderBy: { nextVisitDate: 'asc' },
+        orderBy: { startDate: 'asc' },
         skip,
         take: limit,
       }),
@@ -45,17 +45,33 @@ export class MaintenancePlansService {
   async findUpcoming(days: number = 30) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const until = new Date(today);
     until.setDate(until.getDate() + days);
 
-    const data = await this.prisma.maintenancePlan.findMany({
+    const data = await this.prisma.maintenanceVisit.findMany({
       where: {
-        isActive: true,
-        nextVisitDate: { gte: today, lte: until },
+        status: 'PENDING',
+        scheduledDate: { gte: today, lte: until },
+        plan: { isActive: true },
       },
-      select: MAINTENANCE_PLAN_SELECT,
-      orderBy: { nextVisitDate: 'asc' },
+      select: {
+        id: true,
+        scheduledDate: true,
+        status: true,
+        plan: {
+          select: {
+            id: true,
+            frequency: true,
+            contract: {
+              select: {
+                client: { select: { legalName: true, tradeName: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { scheduledDate: 'asc' },
+      take: 50,
     });
 
     return { data, meta: { days, from: today, until } };
@@ -75,17 +91,20 @@ export class MaintenancePlansService {
   }
 
   async create(dto: CreateMaintenancePlanDto) {
-    await this.ensureActiveClient(dto.clientId);
-    await this.resolveBranch(dto.clientId, dto.branchId);
+    const contract = await this.prisma.maintenanceContract.findFirst({
+      where: { id: dto.contractId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!contract) {
+      throw new NotFoundException(`MaintenanceContract with id "${dto.contractId}" not found`);
+    }
 
     return this.prisma.maintenancePlan.create({
       data: {
-        clientId: dto.clientId,
-        branchId: dto.branchId ?? null,
+        contractId: dto.contractId,
         frequency: dto.frequency,
-        contractStartDate: new Date(dto.contractStartDate),
-        contractEndDate: dto.contractEndDate ? new Date(dto.contractEndDate) : null,
-        nextVisitDate: new Date(dto.nextVisitDate),
+        startDate: new Date(dto.startDate),
         isActive: dto.isActive ?? true,
         notes: dto.notes ?? null,
       },
@@ -104,15 +123,6 @@ export class MaintenancePlansService {
       where: { id },
       data: {
         ...(dto.frequency !== undefined && { frequency: dto.frequency }),
-        ...(dto.contractStartDate !== undefined && {
-          contractStartDate: new Date(dto.contractStartDate),
-        }),
-        ...(dto.contractEndDate !== undefined && {
-          contractEndDate: dto.contractEndDate ? new Date(dto.contractEndDate) : null,
-        }),
-        ...(dto.nextVisitDate !== undefined && {
-          nextVisitDate: new Date(dto.nextVisitDate),
-        }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
         ...(dto.notes !== undefined && { notes: dto.notes }),
       },
@@ -120,44 +130,12 @@ export class MaintenancePlansService {
     });
   }
 
-  private buildListWhere(
-    query: QueryMaintenancePlansDto,
-  ): Prisma.MaintenancePlanWhereInput {
+  private buildListWhere(query: QueryMaintenancePlansDto): Prisma.MaintenancePlanWhereInput {
     const where: Prisma.MaintenancePlanWhereInput = {};
 
-    if (query.clientId) where.clientId = query.clientId;
-    if (query.branchId) where.branchId = query.branchId;
+    if (query.contractId) where.contractId = query.contractId;
     if (query.isActive !== undefined) where.isActive = query.isActive;
 
     return where;
-  }
-
-  private async ensureActiveClient(clientId: string): Promise<void> {
-    const client = await this.prisma.client.findFirst({
-      where: { id: clientId, deletedAt: null },
-      select: { id: true },
-    });
-
-    if (!client) {
-      throw new NotFoundException(`Client with id "${clientId}" not found`);
-    }
-  }
-
-  private async resolveBranch(
-    clientId: string,
-    branchId?: string,
-  ): Promise<void> {
-    if (!branchId) return;
-
-    const branch = await this.prisma.branch.findFirst({
-      where: { id: branchId, clientId, deletedAt: null },
-      select: { id: true },
-    });
-
-    if (!branch) {
-      throw new NotFoundException(
-        `Branch "${branchId}" not found for this client`,
-      );
-    }
   }
 }

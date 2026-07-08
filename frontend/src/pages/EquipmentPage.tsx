@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Plus, Pencil, Trash2, Wrench, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Wrench, ChevronDown, Paperclip } from 'lucide-react';
 
 import {
   useEquipment,
@@ -29,6 +29,7 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import { FileAttachmentSection } from '@/components/shared/FileAttachmentSection';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -305,6 +306,7 @@ export function EquipmentPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Equipment | null>(null);
   const [deleting, setDeleting] = useState<Equipment | null>(null);
+  const [attachmentsEq, setAttachmentsEq] = useState<Equipment | null>(null);
 
   const { data: clientsData } = useClients('', 1);
   const clients = clientsData?.data ?? [];
@@ -510,6 +512,14 @@ export function EquipmentPage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => setAttachmentsEq(eq)}
+                          title="Adjuntos"
+                        >
+                          <Paperclip className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => openEdit(eq)}
                           title="Editar"
                         >
@@ -555,6 +565,26 @@ export function EquipmentPage() {
               if (!open) setDeleting(null);
             }}
           />
+          <Dialog open={!!attachmentsEq} onOpenChange={(open) => { if (!open) setAttachmentsEq(null); }}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>
+                  Adjuntos —{' '}
+                  {attachmentsEq
+                    ? `${TYPE_LABELS[attachmentsEq.type]}${attachmentsEq.brand ? ` ${attachmentsEq.brand}` : ''}${attachmentsEq.model ? ` ${attachmentsEq.model}` : ''}`
+                    : ''}
+                </DialogTitle>
+              </DialogHeader>
+              {attachmentsEq && (
+                <FileAttachmentSection
+                  entityType="EQUIPMENT"
+                  entityId={attachmentsEq.id}
+                  label="Documentación"
+                  defaultCategory="DOCUMENT"
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>

@@ -17,6 +17,7 @@ export const WORK_ORDER_SELECT = {
   taxTotal: true,
   total: true,
   assignedToId: true,
+  assignedTo: { select: { id: true, name: true } },
   createdAt: true,
   updatedAt: true,
   client: { select: { id: true, legalName: true, tradeName: true } },

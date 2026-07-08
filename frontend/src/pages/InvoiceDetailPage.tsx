@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArrowLeft, PlusCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, PlusCircle, XCircle, FileDown } from 'lucide-react';
 
 import {
   useInvoice,
@@ -15,6 +15,7 @@ import {
 } from '@/hooks/use-invoices';
 import type { InvoiceStatus, Payment, PaymentMethod } from '@/lib/types';
 import { formatMoney } from '@/lib/money';
+import { getApiToken } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -60,10 +61,28 @@ const METHOD_LABELS: Record<PaymentMethod, string> = {
 const SELECT_CLASS =
   'flex h-9 w-full rounded-md border border-[hsl(var(--input))] bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:opacity-50';
 
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
+async function downloadInvoicePdf(invoiceId: string, invoiceNumber: string) {
+  const token = getApiToken();
+  const res = await fetch(`${BASE_URL}/documents/invoices/${invoiceId}/pdf`, {
+    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) return;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cuenta-cobro-${invoiceNumber}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ─── PaymentDialog ─────────────────────────────────────────────────────────────
 
 const paySchema = z.object({
-  amount: z.number({ invalid_type_error: 'Ingresa un monto' }).min(0.01),
+  amount: z.number().min(0.01, 'Ingresa un monto'),
   paidAt: z.string().optional().or(z.literal('')),
   method: z.string().optional(),
   reference: z.string().max(200).optional().or(z.literal('')),
@@ -88,7 +107,7 @@ function PaymentDialog({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<PaySchema>({
+  } = useForm({
     resolver: zodResolver(paySchema),
     defaultValues: { amount: 0, paidAt: '', method: 'TRANSFER', reference: '', notes: '' },
   });
@@ -379,6 +398,15 @@ export function InvoiceDetailPage() {
               Anular
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => downloadInvoicePdf(invoice.id, invoice.number)}
+          >
+            <FileDown className="h-4 w-4" />
+            Descargar CC
+          </Button>
         </div>
       </div>
 
@@ -399,7 +427,7 @@ export function InvoiceDetailPage() {
           <p className="text-[hsl(var(--muted-foreground))] text-xs mb-0.5">OT vinculada</p>
           <button
             className="font-mono text-[hsl(var(--primary))] hover:underline"
-            onClick={() => navigate(`/ordenes`)}
+            onClick={() => navigate(`/ordenes/${invoice.workOrder.id}`)}
           >
             {invoice.workOrder.number}
           </button>

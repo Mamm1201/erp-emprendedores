@@ -102,7 +102,7 @@ export class InvoicesService {
     return invoice;
   }
 
-  async create(dto: CreateInvoiceDto) {
+  async create(dto: CreateInvoiceDto, userId: string) {
     const workOrder = await this.prisma.workOrder.findFirst({
       where: { id: dto.workOrderId, deletedAt: null },
       select: {
@@ -150,6 +150,7 @@ export class InvoicesService {
           status: InvoiceStatus.DRAFT,
           dueDate: new Date(dto.dueDate),
           notes: dto.notes ?? null,
+          createdById: userId,
           subtotal: itemsPayload.totals.subtotal,
           discountTotal: itemsPayload.totals.discountTotal,
           taxTotal: itemsPayload.totals.taxTotal,
@@ -233,7 +234,7 @@ export class InvoicesService {
     });
   }
 
-  async createPayment(invoiceId: string, dto: CreatePaymentDto) {
+  async createPayment(invoiceId: string, dto: CreatePaymentDto, userId: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
       select: { id: true, status: true, total: true },
@@ -261,6 +262,7 @@ export class InvoicesService {
           method: dto.method ?? PaymentMethod.TRANSFER,
           reference: dto.reference ?? null,
           notes: dto.notes ?? null,
+          createdById: userId,
         },
         select: PAYMENT_SELECT,
       });

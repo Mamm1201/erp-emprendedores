@@ -2,18 +2,21 @@ import { Prisma } from '../../generated/prisma/client';
 
 export const MAINTENANCE_PLAN_SELECT = {
   id: true,
-  clientId: true,
-  branchId: true,
+  contractId: true,
   frequency: true,
-  contractStartDate: true,
-  contractEndDate: true,
-  nextVisitDate: true,
+  startDate: true,
   isActive: true,
   notes: true,
   createdAt: true,
   updatedAt: true,
-  client: { select: { id: true, legalName: true, tradeName: true } },
-  branch: { select: { id: true, name: true, city: true } },
+  contract: {
+    select: {
+      id: true,
+      number: true,
+      status: true,
+      client: { select: { id: true, legalName: true, tradeName: true } },
+    },
+  },
 } satisfies Prisma.MaintenancePlanSelect;
 
 export const MAINTENANCE_PLAN_DEFAULT_PAGE = 1;

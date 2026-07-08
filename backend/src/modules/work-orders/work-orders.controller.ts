@@ -10,6 +10,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/auth.service';
 import { WorkOrdersService } from './work-orders.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { QueryWorkOrdersDto } from './dto/query-work-orders.dto';
@@ -31,13 +33,17 @@ export class WorkOrdersController {
   }
 
   @Post()
-  create(@Body() dto: CreateWorkOrderDto) {
-    return this.workOrdersService.create(dto);
+  create(@Body() dto: CreateWorkOrderDto, @CurrentUser() user: AuthUser) {
+    return this.workOrdersService.create(dto, user.id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateWorkOrderDto) {
-    return this.workOrdersService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateWorkOrderDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.workOrdersService.update(id, dto, user.id);
   }
 
   @Patch(':id/status')

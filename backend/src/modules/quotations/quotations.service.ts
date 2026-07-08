@@ -76,7 +76,7 @@ export class QuotationsService {
     return quotation;
   }
 
-  async create(dto: CreateQuotationDto) {
+  async create(dto: CreateQuotationDto, userId: string) {
     await this.ensureActiveClient(dto.clientId);
     await this.resolveBranch(dto.clientId, dto.branchId);
     const { items, totals } = this.buildItemsPayload(dto.items);
@@ -97,6 +97,7 @@ export class QuotationsService {
           discountTotal: totals.discountTotal,
           taxTotal: totals.taxTotal,
           total: totals.total,
+          createdById: userId,
           items: { create: items },
         },
         select: {
@@ -110,7 +111,7 @@ export class QuotationsService {
     });
   }
 
-  async update(id: string, dto: UpdateQuotationDto) {
+  async update(id: string, dto: UpdateQuotationDto, userId: string) {
     const quotation = await this.findEditableQuotation(id);
 
     if (dto.branchId) {
@@ -137,6 +138,7 @@ export class QuotationsService {
           }),
           ...(dto.notes !== undefined && { notes: dto.notes }),
           ...(dto.terms !== undefined && { terms: dto.terms }),
+          updatedById: userId,
           ...(itemsPayload && {
             subtotal: itemsPayload.totals.subtotal,
             discountTotal: itemsPayload.totals.discountTotal,
@@ -167,13 +169,27 @@ export class QuotationsService {
       );
     }
 
-    if (
-      dto.status === QuotationStatus.CANCELLED &&
-      quotation.workOrder
-    ) {
+    if (dto.status === QuotationStatus.CANCELLED && quotation.workOrder) {
       throw new BadRequestException(
         'Cannot cancel a quotation that already has a work order',
       );
+    }
+
+    const now = new Date();
+    const lifecycleData: Prisma.QuotationUpdateInput = {};
+
+    if (dto.status === QuotationStatus.SENT) {
+      lifecycleData.sentAt = now;
+    } else if (dto.status === QuotationStatus.APPROVED) {
+      lifecycleData.approvedAt = now;
+    } else if (dto.status === QuotationStatus.REJECTED) {
+      lifecycleData.rejectedAt = now;
+      if (dto.notes) lifecycleData.rejectionNotes = dto.notes;
+    } else if (dto.status === QuotationStatus.CANCELLED) {
+      lifecycleData.cancelledAt = now;
+      if (dto.notes) lifecycleData.cancellationNotes = dto.notes;
+    } else if (dto.status === QuotationStatus.EXPIRED) {
+      lifecycleData.cancelledAt = now;
     }
 
     const snapshotData =
@@ -188,6 +204,7 @@ export class QuotationsService {
       where: { id },
       data: {
         status: dto.status,
+        ...lifecycleData,
         ...snapshotData,
       },
       select: {

@@ -81,16 +81,28 @@ export class DashboardService {
           },
         },
       }),
-      this.prisma.maintenancePlan.findMany({
-        where: { isActive: true, nextVisitDate: { lte: next30Days } },
-        orderBy: { nextVisitDate: 'asc' },
+      this.prisma.maintenanceVisit.findMany({
+        where: {
+          status: 'PENDING',
+          scheduledDate: { lte: next30Days },
+          plan: { isActive: true },
+        },
+        orderBy: { scheduledDate: 'asc' },
         take: 8,
         select: {
           id: true,
-          nextVisitDate: true,
-          frequency: true,
-          client: { select: { legalName: true, tradeName: true } },
-          branch: { select: { name: true, city: true } },
+          scheduledDate: true,
+          status: true,
+          plan: {
+            select: {
+              frequency: true,
+              contract: {
+                select: {
+                  client: { select: { legalName: true, tradeName: true } },
+                },
+              },
+            },
+          },
         },
       }),
       this.prisma.workOrder.count({

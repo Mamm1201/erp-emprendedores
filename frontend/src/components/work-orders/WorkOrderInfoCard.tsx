@@ -57,7 +57,6 @@ export function WorkOrderInfoCard({ workOrder }: WorkOrderInfoCardProps) {
     completedAt,
     branch,
     quotationId,
-    assignedToId,
     createdAt,
   } = workOrder;
 
@@ -119,7 +118,7 @@ export function WorkOrderInfoCard({ workOrder }: WorkOrderInfoCardProps) {
           <InfoRow
             icon={User}
             label="Técnico asignado"
-            value="Sin asignar"
+            value={workOrder.assignedTo?.name ?? 'Sin asignar'}
           />
 
           {quotationId && (

@@ -18,7 +18,13 @@ export class ServiceRecordsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findByWorkOrder(workOrderId: string) {
-    await this.ensureWorkOrderExists(workOrderId);
+    const workOrderExists = await this.prisma.workOrder.findFirst({
+      where: { id: workOrderId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!workOrderExists) {
+      throw new NotFoundException(`WorkOrder with id "${workOrderId}" not found`);
+    }
 
     const record = await this.prisma.serviceRecord.findUnique({
       where: { workOrderId },
@@ -51,7 +57,7 @@ export class ServiceRecordsService {
     }
 
     const data = await this.prisma.serviceRecord.findMany({
-      where: { equipmentId },
+      where: { workOrder: { equipmentId } },
       select: {
         ...SERVICE_RECORD_SELECT,
         checklistItems: {
@@ -66,7 +72,14 @@ export class ServiceRecordsService {
   }
 
   async create(workOrderId: string, dto: CreateServiceRecordDto) {
-    await this.ensureWorkOrderExists(workOrderId);
+    const workOrder = await this.prisma.workOrder.findFirst({
+      where: { id: workOrderId, deletedAt: null },
+      select: { id: true, equipmentId: true },
+    });
+
+    if (!workOrder) {
+      throw new NotFoundException(`WorkOrder with id "${workOrderId}" not found`);
+    }
 
     const existing = await this.prisma.serviceRecord.findUnique({
       where: { workOrderId },
@@ -81,13 +94,12 @@ export class ServiceRecordsService {
 
     const checklistItems = await this.resolveChecklistItems(
       dto.checklistItems,
-      dto.equipmentId,
+      workOrder.equipmentId ?? undefined,
     );
 
     return this.prisma.serviceRecord.create({
       data: {
         workOrderId,
-        equipmentId: dto.equipmentId ?? null,
         findings: dto.findings ?? null,
         activitiesPerformed: dto.activitiesPerformed ?? null,
         recommendations: dto.recommendations ?? null,
@@ -203,18 +215,5 @@ export class ServiceRecordsService {
     }
 
     return [];
-  }
-
-  private async ensureWorkOrderExists(workOrderId: string): Promise<void> {
-    const workOrder = await this.prisma.workOrder.findFirst({
-      where: { id: workOrderId, deletedAt: null },
-      select: { id: true },
-    });
-
-    if (!workOrder) {
-      throw new NotFoundException(
-        `WorkOrder with id "${workOrderId}" not found`,
-      );
-    }
   }
 }

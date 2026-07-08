@@ -34,7 +34,7 @@ import {
 const expenseSchema = z.object({
   category:    z.enum(['MATERIALS', 'LABOR', 'TRANSPORT', 'TOOLS', 'SUBCONTRACT', 'OFFICE', 'OTHER']),
   description: z.string().min(1, 'La descripción es obligatoria').max(500),
-  amount:      z.coerce.number({ invalid_type_error: 'Ingresa un monto válido' }).positive('El monto debe ser mayor a 0'),
+  amount:      z.coerce.number().positive('El monto debe ser mayor a 0'),
   expenseDate: z.string().optional(),
   vendorName:  z.string().max(200).optional().or(z.literal('')),
 });
@@ -65,7 +65,7 @@ function ExpenseFormModal({ workOrderId, open, onOpenChange, editing }: ExpenseF
   const updateExpense = useUpdateExpense(workOrderId);
   const isPending     = createExpense.isPending || updateExpense.isPending;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ExpenseSchema>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(expenseSchema),
   });
 

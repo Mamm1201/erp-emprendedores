@@ -26,6 +26,7 @@ enum DocumentType {
   QUOTATION
   WORK_ORDER
   INVOICE
+  MAINTENANCE_CONTRACT
 }
 
 enum QuotationStatus {
@@ -44,6 +45,12 @@ enum WorkOrderStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum WorkOrderType {
+  PREVENTIVE
+  CORRECTIVE
+  INSPECTION
 }
 
 enum InvoiceStatus {
@@ -72,6 +79,71 @@ enum ExpenseCategory {
   OTHER
 }
 
+// ─── Enums CMMS ───────────────────────────────────────────────────────────────
+
+enum EquipmentType {
+  NURSE_CALL
+  MEDICAL_ALERT
+  GENERATOR
+  UPS
+  ELECTRICAL
+  OTHER
+}
+
+enum EquipmentStatus {
+  ACTIVE
+  INACTIVE
+  DECOMMISSIONED
+}
+
+enum EquipmentCriticality {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum MaintenanceFrequency {
+  MONTHLY
+  QUARTERLY
+  EVERY_4_MONTHS
+  BIANNUAL
+  ANNUAL
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum ServiceHoursLevel {
+  BUSINESS_HOURS
+  EXTENDED
+  FULL_TIME
+}
+
+enum MaintenanceVisitStatus {
+  PENDING
+  GENERATED
+  COMPLETED
+  CANCELLED
+}
+
+enum ChecklistResult {
+  OK
+  WARNING
+  FAIL
+  NA
+}
+
 // ─── Secuencias comerciales ──────────────────────────────────────────────────
 
 model DocumentSequence {
@@ -84,25 +156,29 @@ model DocumentSequence {
   @@map("document_sequences")
 }
 
-// ─── Usuarios (auditoría; sin módulo auth en MVP) ─────────────────────────────
+// ─── Usuarios ─────────────────────────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  role      UserRole @default(COMMERCIAL)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String
+  passwordHash     String
+  refreshTokenHash String?
+  role             UserRole @default(COMMERCIAL)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  quotationsCreated Quotation[] @relation("QuotationCreatedBy")
-  quotationsUpdated Quotation[] @relation("QuotationUpdatedBy")
-  workOrdersCreated WorkOrder[] @relation("WorkOrderCreatedBy")
-  workOrdersUpdated WorkOrder[] @relation("WorkOrderUpdatedBy")
-  workOrdersAssigned WorkOrder[] @relation("WorkOrderAssignedTo")
-  invoicesCreated   Invoice[]   @relation("InvoiceCreatedBy")
-  paymentsCreated   Payment[]   @relation("PaymentCreatedBy")
-  expensesCreated   Expense[]   @relation("ExpenseCreatedBy")
+  quotationsCreated  Quotation[]           @relation("QuotationCreatedBy")
+  quotationsUpdated  Quotation[]           @relation("QuotationUpdatedBy")
+  workOrdersCreated  WorkOrder[]           @relation("WorkOrderCreatedBy")
+  workOrdersUpdated  WorkOrder[]           @relation("WorkOrderUpdatedBy")
+  workOrdersAssigned WorkOrder[]           @relation("WorkOrderAssignedTo")
+  invoicesCreated    Invoice[]             @relation("InvoiceCreatedBy")
+  paymentsCreated    Payment[]             @relation("PaymentCreatedBy")
+  expensesCreated    Expense[]             @relation("ExpenseCreatedBy")
+  fileAttachments    FileAttachment[]
+  contractsSigned    MaintenanceContract[] @relation("ContractSignedBy")
 
   @@map("users")
 }
@@ -122,11 +198,11 @@ model Client {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  branches         Branch[]
-  quotations       Quotation[]
-  workOrders       WorkOrder[]
-  invoices         Invoice[]
-  maintenancePlans MaintenancePlan[]
+  branches             Branch[]
+  quotations           Quotation[]
+  workOrders           WorkOrder[]
+  invoices             Invoice[]
+  maintenanceContracts MaintenanceContract[]
 
   @@index([legalName])
   @@map("clients")
@@ -148,11 +224,10 @@ model Branch {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  client           Client            @relation(fields: [clientId], references: [id])
-  quotations       Quotation[]
-  workOrders       WorkOrder[]
-  equipment        Equipment[]
-  maintenancePlans MaintenancePlan[]
+  client     Client      @relation(fields: [clientId], references: [id])
+  quotations Quotation[]
+  workOrders WorkOrder[]
+  equipment  Equipment[]
 
   @@index([clientId])
   @@index([clientId, name])
@@ -162,19 +237,19 @@ model Branch {
 // ─── Cotización ──────────────────────────────────────────────────────────────
 
 model Quotation {
-  id            String          @id @default(cuid())
-  number        String          @unique
-  clientId      String
-  branchId      String?
-  status        QuotationStatus @default(DRAFT)
-  issueDate     DateTime        @default(now()) @db.Date
-  validUntil    DateTime?       @db.Date
-  notes         String?
-  terms         String?
-  subtotal      Decimal         @default(0) @db.Decimal(12, 2)
-  discountTotal Decimal         @default(0) @db.Decimal(12, 2)
-  taxTotal      Decimal         @default(0) @db.Decimal(12, 2)
-  total         Decimal         @default(0) @db.Decimal(12, 2)
+  id                  String          @id @default(cuid())
+  number              String          @unique
+  clientId            String
+  branchId            String?
+  status              QuotationStatus @default(DRAFT)
+  issueDate           DateTime        @default(now()) @db.Date
+  validUntil          DateTime?       @db.Date
+  notes               String?
+  terms               String?
+  subtotal            Decimal         @default(0) @db.Decimal(12, 2)
+  discountTotal       Decimal         @default(0) @db.Decimal(12, 2)
+  taxTotal            Decimal         @default(0) @db.Decimal(12, 2)
+  total               Decimal         @default(0) @db.Decimal(12, 2)
   clientLegalName     String?
   clientTaxId         String?
   branchName          String?
@@ -184,18 +259,25 @@ model Quotation {
   branchContactName   String?
   branchContactPhone  String?
   snapshotAt          DateTime?
-  createdById   String?
-  updatedById   String?
-  deletedAt     DateTime?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  sentAt              DateTime?
+  approvedAt          DateTime?
+  rejectedAt          DateTime?
+  cancelledAt         DateTime?
+  rejectionNotes      String?         @db.VarChar(1000)
+  cancellationNotes   String?         @db.VarChar(500)
+  createdById         String?
+  updatedById         String?
+  deletedAt           DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 
-  client    Client          @relation(fields: [clientId], references: [id])
-  branch    Branch?         @relation(fields: [branchId], references: [id])
-  workOrder WorkOrder?
-  items     QuotationItem[]
-  createdBy User?           @relation("QuotationCreatedBy", fields: [createdById], references: [id])
-  updatedBy User?           @relation("QuotationUpdatedBy", fields: [updatedById], references: [id])
+  client              Client              @relation(fields: [clientId], references: [id])
+  branch              Branch?             @relation(fields: [branchId], references: [id])
+  workOrder           WorkOrder?
+  maintenanceContract MaintenanceContract?
+  items               QuotationItem[]
+  createdBy           User?               @relation("QuotationCreatedBy", fields: [createdById], references: [id])
+  updatedBy           User?               @relation("QuotationUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([clientId, status])
   @@index([issueDate])
@@ -230,6 +312,7 @@ model WorkOrder {
   clientId      String
   branchId      String?
   quotationId   String?         @unique
+  type          WorkOrderType   @default(CORRECTIVE)
   status        WorkOrderStatus @default(DRAFT)
   title         String
   description   String?
@@ -240,6 +323,7 @@ model WorkOrder {
   discountTotal Decimal         @default(0) @db.Decimal(12, 2)
   taxTotal      Decimal         @default(0) @db.Decimal(12, 2)
   total         Decimal         @default(0) @db.Decimal(12, 2)
+  equipmentId   String?
   assignedToId  String?
   createdById   String?
   updatedById   String?
@@ -247,20 +331,23 @@ model WorkOrder {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
-  client     Client           @relation(fields: [clientId], references: [id])
-  branch     Branch?          @relation(fields: [branchId], references: [id])
-  quotation  Quotation?       @relation(fields: [quotationId], references: [id])
-  items      WorkOrderItem[]
-  invoice    Invoice?
-  expenses   Expense[]
-  assignedTo    User?            @relation("WorkOrderAssignedTo", fields: [assignedToId], references: [id])
-  createdBy     User?            @relation("WorkOrderCreatedBy", fields: [createdById], references: [id])
-  updatedBy     User?            @relation("WorkOrderUpdatedBy", fields: [updatedById], references: [id])
-  serviceRecord ServiceRecord?
+  client           Client            @relation(fields: [clientId], references: [id])
+  branch           Branch?           @relation(fields: [branchId], references: [id])
+  quotation        Quotation?        @relation(fields: [quotationId], references: [id])
+  equipment        Equipment?        @relation(fields: [equipmentId], references: [id])
+  items            WorkOrderItem[]
+  invoice          Invoice?
+  expenses         Expense[]
+  assignedTo       User?             @relation("WorkOrderAssignedTo", fields: [assignedToId], references: [id])
+  createdBy        User?             @relation("WorkOrderCreatedBy", fields: [createdById], references: [id])
+  updatedBy        User?             @relation("WorkOrderUpdatedBy", fields: [updatedById], references: [id])
+  serviceRecord    ServiceRecord?
+  maintenanceVisit MaintenanceVisit?
 
   @@index([clientId, status])
   @@index([assignedToId])
   @@index([completedAt])
+  @@index([equipmentId])
   @@map("work_orders")
 }
 
@@ -289,7 +376,8 @@ model WorkOrderItem {
 model Invoice {
   id            String        @id @default(cuid())
   number        String        @unique
-  workOrderId   String        @unique
+  workOrderId   String?       @unique
+  contractId    String?
   clientId      String
   status        InvoiceStatus @default(DRAFT)
   issueDate     DateTime      @default(now()) @db.Date
@@ -305,13 +393,15 @@ model Invoice {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  workOrder WorkOrder     @relation(fields: [workOrderId], references: [id])
-  client    Client        @relation(fields: [clientId], references: [id])
+  workOrder WorkOrder?          @relation(fields: [workOrderId], references: [id])
+  contract  MaintenanceContract? @relation(fields: [contractId], references: [id])
+  client    Client               @relation(fields: [clientId], references: [id])
   items     InvoiceItem[]
   payments  Payment[]
-  createdBy User?         @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
+  createdBy User?                @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
 
   @@index([clientId, status])
+  @@index([contractId])
   @@index([dueDate])
   @@index([issueDate])
   @@map("invoices")
@@ -384,85 +474,146 @@ model Expense {
   @@map("expenses")
 }
 
-// ─── Enums CMMS ───────────────────────────────────────────────────────────────
-
-enum EquipmentType {
-  NURSE_CALL
-  MEDICAL_ALERT
-  GENERATOR
-  UPS
-  ELECTRICAL
-  OTHER
-}
-
-enum EquipmentStatus {
-  ACTIVE
-  INACTIVE
-  DECOMMISSIONED
-}
-
-enum MaintenanceFrequency {
-  MONTHLY
-  QUARTERLY
-  EVERY_4_MONTHS
-  BIANNUAL
-  ANNUAL
-}
-
-enum ChecklistResult {
-  OK
-  WARNING
-  FAIL
-  NA
-}
-
 // ─── Hoja de vida del equipo ──────────────────────────────────────────────────
 
 model Equipment {
-  id           String          @id @default(cuid())
-  branchId     String
-  type         EquipmentType
-  brand        String?
-  model        String?
-  serialNumber String?
-  installDate  DateTime?       @db.Date
-  location     String?
-  notes        String?
-  status       EquipmentStatus @default(ACTIVE)
-  deletedAt    DateTime?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id                String               @id @default(cuid())
+  branchId          String
+  type              EquipmentType
+  brand             String?
+  model             String?
+  serialNumber      String?
+  installDate       DateTime?            @db.Date
+  location          String?
+  notes             String?
+  status            EquipmentStatus      @default(ACTIVE)
+  criticality       EquipmentCriticality @default(MEDIUM)
+  warrantyExpiresAt DateTime?            @db.Date
+  deletedAt         DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
-  branch         Branch          @relation(fields: [branchId], references: [id])
-  serviceRecords ServiceRecord[]
+  branch            Branch                    @relation(fields: [branchId], references: [id])
+  workOrders        WorkOrder[]
+  contractEquipment ContractEquipment[]
+  planEquipment     MaintenancePlanEquipment[]
 
   @@index([branchId])
   @@index([type])
+  @@index([criticality])
   @@map("equipment")
+}
+
+// ─── Contratos de mantenimiento ───────────────────────────────────────────────
+
+model MaintenanceContract {
+  id                 String         @id @default(cuid())
+  number             String         @unique
+  clientId           String
+  status             ContractStatus @default(DRAFT)
+  billingCycle       BillingCycle
+  value              Decimal        @db.Decimal(12, 2)
+  startDate          DateTime       @db.Date
+  endDate            DateTime       @db.Date
+  signedAt           DateTime?
+  signedById         String?
+  quotationId        String?        @unique
+  correctiveIncluded Boolean        @default(false)
+  partsIncluded      Boolean        @default(false)
+  transportIncluded  Boolean        @default(false)
+  serviceHours       ServiceHoursLevel @default(BUSINESS_HOURS)
+  slaHoursCritical   Int?
+  slaHoursHigh       Int?
+  slaHoursMedium     Int?
+  slaHoursLow        Int?
+  notes              String?
+  deletedAt          DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  client            Client              @relation(fields: [clientId], references: [id])
+  signedBy          User?               @relation("ContractSignedBy", fields: [signedById], references: [id])
+  quotation         Quotation?          @relation(fields: [quotationId], references: [id])
+  contractEquipment ContractEquipment[]
+  maintenancePlans  MaintenancePlan[]
+  invoices          Invoice[]
+
+  @@index([clientId, status])
+  @@index([endDate])
+  @@map("maintenance_contracts")
+}
+
+model ContractEquipment {
+  id          String   @id @default(cuid())
+  contractId  String
+  equipmentId String
+  addedAt     DateTime @default(now())
+  notes       String?
+
+  contract  MaintenanceContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  equipment Equipment           @relation(fields: [equipmentId], references: [id])
+
+  @@unique([contractId, equipmentId])
+  @@index([equipmentId])
+  @@map("contract_equipment")
 }
 
 // ─── Plan de mantenimiento preventivo ────────────────────────────────────────
 
 model MaintenancePlan {
-  id                String               @id @default(cuid())
-  clientId          String
-  branchId          String?
-  frequency         MaintenanceFrequency
-  contractStartDate DateTime             @db.Date
-  contractEndDate   DateTime?            @db.Date
-  nextVisitDate     DateTime             @db.Date
-  isActive          Boolean              @default(true)
-  notes             String?
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
+  id          String               @id @default(cuid())
+  contractId  String
+  frequency   MaintenanceFrequency
+  startDate   DateTime             @db.Date
+  isActive    Boolean              @default(true)
+  notes       String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 
-  client Client  @relation(fields: [clientId], references: [id])
-  branch Branch? @relation(fields: [branchId], references: [id])
+  contract      MaintenanceContract       @relation(fields: [contractId], references: [id])
+  visits        MaintenanceVisit[]
+  planEquipment MaintenancePlanEquipment[]
 
-  @@index([clientId])
-  @@index([nextVisitDate])
+  @@index([contractId])
   @@index([isActive])
   @@map("maintenance_plans")
+}
+
+model MaintenancePlanEquipment {
+  id          String   @id @default(cuid())
+  planId      String
+  equipmentId String
+  addedAt     DateTime @default(now())
+  notes       String?
+
+  plan      MaintenancePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  equipment Equipment       @relation(fields: [equipmentId], references: [id])
+
+  @@unique([planId, equipmentId])
+  @@index([equipmentId])
+  @@map("maintenance_plan_equipment")
+}
+
+// ─── Visitas de mantenimiento ─────────────────────────────────────────────────
+
+model MaintenanceVisit {
+  id            String                 @id @default(cuid())
+  planId        String
+  scheduledDate DateTime               @db.Date
+  windowEnd     DateTime?              @db.Date
+  status        MaintenanceVisitStatus @default(PENDING)
+  workOrderId   String?                @unique
+  completedAt   DateTime?
+  notes         String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  plan      MaintenancePlan @relation(fields: [planId], references: [id])
+  workOrder WorkOrder?      @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
+
+  @@index([planId, scheduledDate])
+  @@index([status, scheduledDate])
+  @@map("maintenance_visits")
 }
 
 // ─── Acta técnica de la visita ────────────────────────────────────────────────
@@ -470,7 +621,6 @@ model MaintenancePlan {
 model ServiceRecord {
   id                  String    @id @default(cuid())
   workOrderId         String    @unique
-  equipmentId         String?
   findings            String?
   activitiesPerformed String?
   recommendations     String?
@@ -479,10 +629,8 @@ model ServiceRecord {
   updatedAt           DateTime  @updatedAt
 
   workOrder      WorkOrder       @relation(fields: [workOrderId], references: [id])
-  equipment      Equipment?      @relation(fields: [equipmentId], references: [id])
   checklistItems ChecklistItem[]
 
-  @@index([equipmentId])
   @@map("service_records")
 }
 
@@ -501,4 +649,41 @@ model ChecklistItem {
 
   @@index([serviceRecordId])
   @@map("checklist_items")
+}
+
+// ─── Gestión de evidencias / adjuntos ────────────────────────────────────────
+
+enum FileEntityType {
+  EQUIPMENT
+  WORK_ORDER
+  SERVICE_RECORD
+  CLIENT
+  QUOTATION
+  INVOICE
+}
+
+enum FileCategory {
+  PHOTO
+  DOCUMENT
+  CERTIFICATE
+  MANUAL
+}
+
+model FileAttachment {
+  id           String         @id @default(cuid())
+  entityType   FileEntityType
+  entityId     String
+  category     FileCategory
+  originalName String
+  storagePath  String
+  mimeType     String
+  sizeBytes    Int
+  description  String?        @db.VarChar(500)
+  takenAt      DateTime?
+  uploadedById String
+  uploadedBy   User           @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime       @default(now())
+
+  @@index([entityType, entityId])
+  @@map("file_attachments")
 }

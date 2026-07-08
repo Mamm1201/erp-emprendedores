@@ -58,12 +58,12 @@ export function InvoiceCreatePage() {
   const selectedWo = woData?.data?.find((wo) => wo.id === selectedWoId);
 
   async function onSubmit(values: FormSchema) {
-    await create.mutateAsync({
+    const invoice = await create.mutateAsync({
       workOrderId: values.workOrderId,
       dueDate: values.dueDate,
       notes: values.notes || undefined,
     });
-    navigate('/cuentas-cobro');
+    navigate(`/cuentas-cobro/${invoice.id}`);
   }
 
   return (

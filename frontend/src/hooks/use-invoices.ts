@@ -108,6 +108,7 @@ export function useUpdateInvoiceStatus() {
     onSuccess: (_r, vars) => {
       qc.invalidateQueries({ queryKey: ['invoices'] });
       qc.invalidateQueries({ queryKey: ['invoices', vars.id] });
+      qc.invalidateQueries({ queryKey: ['work-orders'] });
     },
   });
 }
@@ -125,6 +126,7 @@ export function useCreatePayment() {
     onSuccess: (_r, vars) => {
       qc.invalidateQueries({ queryKey: ['invoices', vars.invoiceId] });
       qc.invalidateQueries({ queryKey: ['invoices'] });
+      qc.invalidateQueries({ queryKey: ['work-orders'] });
     },
   });
 }

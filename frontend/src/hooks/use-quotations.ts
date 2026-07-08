@@ -71,9 +71,12 @@ export function useUpdateQuotation() {
 export function useUpdateQuotationStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: QuotationStatus }) =>
-      api.patch<Quotation>(`/quotations/${id}/status`, { status }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['quotations'] }),
+    mutationFn: ({ id, status, notes }: { id: string; status: QuotationStatus; notes?: string }) =>
+      api.patch<Quotation>(`/quotations/${id}/status`, { status, notes }),
+    onSuccess: (_r, vars) => {
+      qc.invalidateQueries({ queryKey: ['quotations'] });
+      qc.invalidateQueries({ queryKey: ['quotations', vars.id] });
+    },
   });
 }
 

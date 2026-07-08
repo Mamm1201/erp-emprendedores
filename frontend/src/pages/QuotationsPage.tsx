@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -15,6 +15,7 @@ import { formatMoney } from '@/lib/money';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import {
   Dialog,
@@ -56,9 +57,77 @@ const STATUS_FILTERS: { value: QuotationStatus | ''; label: string }[] = [
   { value: 'CANCELLED', label: 'Canceladas' },
 ];
 
+// ─── Notes dialog for rejection / cancellation ───────────────────────────────
+
+type PendingAction = { quotation: Quotation; nextStatus: 'REJECTED' | 'CANCELLED' };
+
+function NotesActionDialog({
+  pending,
+  onOpenChange,
+}: {
+  pending: PendingAction | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const updateStatus = useUpdateQuotationStatus();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const title = pending?.nextStatus === 'REJECTED' ? 'Rechazar cotización' : 'Cancelar cotización';
+  const placeholder =
+    pending?.nextStatus === 'REJECTED'
+      ? 'Motivo del rechazo (precio, presupuesto, competidor…)'
+      : 'Motivo de cancelación';
+
+  async function handleConfirm() {
+    if (!pending) return;
+    await updateStatus.mutateAsync({
+      id: pending.quotation.id,
+      status: pending.nextStatus,
+      notes: textareaRef.current?.value.trim() || undefined,
+    });
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={!!pending} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          Cotización <span className="font-medium text-[hsl(var(--foreground))]">{pending?.quotation.number}</span>
+        </p>
+        <Textarea ref={textareaRef} rows={3} placeholder={placeholder} className="text-sm" />
+        {updateStatus.error && (
+          <p className="text-sm text-[hsl(var(--destructive))]">{updateStatus.error.message}</p>
+        )}
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" disabled={updateStatus.isPending}>Volver</Button>
+          </DialogClose>
+          <Button
+            variant={pending?.nextStatus === 'REJECTED' ? 'destructive' : 'outline'}
+            onClick={handleConfirm}
+            disabled={updateStatus.isPending}
+          >
+            {updateStatus.isPending ? 'Guardando…' : 'Confirmar'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Status actions per row ───────────────────────────────────────────────────
 
-function QuotationActions({ quotation, onDelete }: { quotation: Quotation; onDelete: () => void }) {
+function QuotationActions({
+  quotation,
+  onDelete,
+  onNoteAction,
+}: {
+  quotation: Quotation;
+  onDelete: () => void;
+  onNoteAction: (pending: PendingAction) => void;
+}) {
   const updateStatus = useUpdateQuotationStatus();
   const createWO = useCreateWorkOrder();
   const navigate = useNavigate();
@@ -89,7 +158,7 @@ function QuotationActions({ quotation, onDelete }: { quotation: Quotation; onDel
             Aprobar
           </Button>
           <Button size="sm" variant="ghost" className="text-xs h-7 text-[hsl(var(--destructive))] hover:text-[hsl(var(--destructive))]" disabled={isBusy}
-            onClick={() => updateStatus.mutate({ id: quotation.id, status: 'REJECTED' })}>
+            onClick={() => onNoteAction({ quotation, nextStatus: 'REJECTED' })}>
             Rechazar
           </Button>
         </>
@@ -103,7 +172,7 @@ function QuotationActions({ quotation, onDelete }: { quotation: Quotation; onDel
       )}
       {(quotation.status === 'SENT' || quotation.status === 'APPROVED') && (
         <Button size="sm" variant="ghost" className="text-xs h-7 text-[hsl(var(--muted-foreground))]" disabled={isBusy}
-          onClick={() => updateStatus.mutate({ id: quotation.id, status: 'CANCELLED' })}>
+          onClick={() => onNoteAction({ quotation, nextStatus: 'CANCELLED' })}>
           Cancelar
         </Button>
       )}
@@ -154,6 +223,7 @@ export function QuotationsPage() {
   const [statusFilter, setStatusFilter] = useState<QuotationStatus | ''>('');
   const [page, setPage] = useState(1);
   const [deleting, setDeleting] = useState<Quotation | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => { setSearch(searchInput); setPage(1); }, 350);
@@ -259,7 +329,7 @@ export function QuotationsPage() {
                       onClick={() => navigate(`/cotizaciones/${q.id}`)} title="Ver detalle">
                       <Eye className="h-3.5 w-3.5" />
                     </Button>
-                    <QuotationActions quotation={q} onDelete={() => setDeleting(q)} />
+                    <QuotationActions quotation={q} onDelete={() => setDeleting(q)} onNoteAction={setPendingAction} />
                   </div>
                 </td>
               </tr>
@@ -280,6 +350,7 @@ export function QuotationsPage() {
       )}
 
       <DeleteConfirmDialog quotation={deleting} onOpenChange={(open) => { if (!open) setDeleting(null); }} />
+      <NotesActionDialog pending={pendingAction} onOpenChange={(open) => { if (!open) setPendingAction(null); }} />
     </div>
   );
 }

@@ -10,6 +10,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/auth.service';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
@@ -44,8 +46,8 @@ export class InvoicesController {
   }
 
   @Post()
-  create(@Body() dto: CreateInvoiceDto) {
-    return this.invoicesService.create(dto);
+  create(@Body() dto: CreateInvoiceDto, @CurrentUser() user: AuthUser) {
+    return this.invoicesService.create(dto, user.id);
   }
 
   @Patch(':id')
@@ -59,8 +61,12 @@ export class InvoicesController {
   }
 
   @Post(':id/payments')
-  createPayment(@Param('id') id: string, @Body() dto: CreatePaymentDto) {
-    return this.invoicesService.createPayment(id, dto);
+  createPayment(
+    @Param('id') id: string,
+    @Body() dto: CreatePaymentDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.invoicesService.createPayment(id, dto, user.id);
   }
 
   @Patch(':id/payments/:paymentId/void')

@@ -3,7 +3,6 @@ import { EquipmentType, Prisma } from '../../generated/prisma/client';
 export const SERVICE_RECORD_SELECT = {
   id: true,
   workOrderId: true,
-  equipmentId: true,
   findings: true,
   activitiesPerformed: true,
   recommendations: true,

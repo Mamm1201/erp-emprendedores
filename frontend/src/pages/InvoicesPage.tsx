@@ -5,7 +5,7 @@ import { es } from 'date-fns/locale';
 import { Plus, Search, Eye } from 'lucide-react';
 
 import { useInvoices } from '@/hooks/use-invoices';
-import type { Invoice, InvoiceStatus } from '@/lib/types';
+import type { InvoiceStatus } from '@/lib/types';
 import { formatMoney } from '@/lib/money';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,12 +40,7 @@ const STATUS_FILTERS: { value: InvoiceStatus | ''; label: string }[] = [
   { value: 'VOID', label: 'Anuladas' },
 ];
 
-function paidAmount(invoice: Invoice): number {
-  if (!invoice.payments) return 0;
-  return invoice.payments
-    .filter((p) => !p.voidedAt)
-    .reduce((sum, p) => sum + parseFloat(p.amount), 0);
-}
+
 
 export function InvoicesPage() {
   const navigate = useNavigate();

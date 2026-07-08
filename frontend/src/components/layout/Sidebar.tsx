@@ -10,8 +10,12 @@ import {
   ClipboardCheck,
   Wrench,
   CalendarClock,
+  LogOut,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { NodeMark } from './NodeMark';
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
@@ -28,59 +32,24 @@ const NAV_ITEMS = [
   { to: '/equipos', label: 'Equipos', icon: Wrench },
 ];
 
-// ─── NodeMark ─────────────────────────────────────────────────────────────────
-// Marca de nodo STECH NODES — elemento iconográfico del sistema visual.
-// Reutilizable en cualquier producto de la familia (Readiness, Pathways, etc.)
-
-function NodeMark({ className }: { className?: string }) {
-  return (
-    <svg
-      width="28"
-      height="28"
-      viewBox="0 0 28 28"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      className={className}
-    >
-      {/* Connection lines — drawn first so nodes render on top */}
-      <line x1="14" y1="14" x2="5"  y2="7"  stroke="currentColor" strokeWidth="1"   strokeOpacity="0.35" />
-      <line x1="14" y1="14" x2="23" y2="7"  stroke="currentColor" strokeWidth="1"   strokeOpacity="0.35" />
-      <line x1="14" y1="14" x2="5"  y2="21" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.35" />
-      <line x1="14" y1="14" x2="23" y2="21" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.35" />
-
-      {/* Peripheral nodes */}
-      <circle cx="5"  cy="7"  r="2.5" fill="currentColor" fillOpacity="0.4" />
-      <circle cx="23" cy="7"  r="2.5" fill="currentColor" fillOpacity="0.4" />
-      <circle cx="5"  cy="21" r="2.5" fill="currentColor" fillOpacity="0.25" />
-      <circle cx="23" cy="21" r="2.5" fill="currentColor" fillOpacity="0.25" />
-
-      {/* Central node — hub */}
-      <circle cx="14" cy="14" r="5"   fill="currentColor" fillOpacity="0.15" />
-      <circle cx="14" cy="14" r="3"   fill="currentColor" />
-    </svg>
-  );
-}
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: 'Administrador',
+  COMMERCIAL: 'Comercial',
+  TECHNICIAN: 'Técnico',
+  BILLING: 'Facturación',
+};
 
 // ─── BrandHeader ──────────────────────────────────────────────────────────────
-// Cabecera de marca reutilizable para todos los productos de la familia STECH NODES.
-// productName: "Ops" | "Readiness" | "Pathways" | etc.
 
-interface BrandHeaderProps {
-  productName: string;
-}
-
-function BrandHeader({ productName }: BrandHeaderProps) {
+function BrandHeader({ productName }: { productName: string }) {
   return (
     <div className="px-5 py-5 border-b border-[hsl(var(--sidebar-border))]">
       <div className="flex items-center gap-3">
         <NodeMark className="text-[hsl(var(--sidebar-accent-foreground))] shrink-0" />
         <div className="min-w-0">
-          {/* Marca principal — Inter ExtraBold, tracking amplio, máximo protagonismo */}
           <p className="text-sm font-extrabold tracking-widest uppercase text-[hsl(var(--sidebar-foreground))] leading-none">
             STECH NODES
           </p>
-          {/* Nombre del producto — Node Teal, jerarquía secundaria */}
           <p className="text-xs font-medium tracking-[0.18em] uppercase text-[hsl(var(--sidebar-accent-foreground))] mt-1 leading-none">
             {productName}
           </p>
@@ -93,6 +62,9 @@ function BrandHeader({ productName }: BrandHeaderProps) {
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 export function Sidebar() {
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   return (
     <aside className="w-60 shrink-0 flex flex-col bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] min-h-screen">
 
@@ -117,16 +89,47 @@ export function Sidebar() {
             {label}
           </NavLink>
         ))}
+
+        {/* Enlace exclusivo para ADMIN */}
+        {isAdmin && (
+          <NavLink
+            to="/usuarios"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+                isActive
+                  ? 'bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))] font-medium'
+                  : 'text-[hsl(var(--sidebar-foreground)/0.65)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]',
+              )
+            }
+          >
+            <ShieldCheck className="h-4 w-4 shrink-0" />
+            Usuarios
+          </NavLink>
+        )}
       </nav>
 
       {/* Footer — usuario activo */}
-      <div className="px-5 py-4 border-t border-[hsl(var(--sidebar-border))]">
+      <div className="px-4 py-4 border-t border-[hsl(var(--sidebar-border))]">
         <div className="flex items-center gap-2">
-          {/* Indicador de sesión activa */}
           <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--sidebar-accent-foreground))] shrink-0" />
-          <p className="text-xs text-[hsl(var(--sidebar-foreground)/0.45)] truncate">
-            Mario A. Márquez
-          </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-[hsl(var(--sidebar-foreground)/0.7)] truncate leading-none">
+              {user?.name ?? '—'}
+            </p>
+            {user?.role && (
+              <p className="text-[10px] text-[hsl(var(--sidebar-foreground)/0.35)] mt-0.5 leading-none">
+                {ROLE_LABEL[user.role] ?? user.role}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => void logout()}
+            title="Cerrar sesión"
+            className="shrink-0 p-1 rounded text-[hsl(var(--sidebar-foreground)/0.35)] hover:text-[hsl(var(--sidebar-foreground)/0.7)] hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 

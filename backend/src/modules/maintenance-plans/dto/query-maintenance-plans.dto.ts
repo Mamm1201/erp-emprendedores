@@ -22,11 +22,7 @@ export class QueryMaintenancePlansDto {
 
   @IsOptional()
   @IsString()
-  clientId?: string;
-
-  @IsOptional()
-  @IsString()
-  branchId?: string;
+  contractId?: string;
 
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)

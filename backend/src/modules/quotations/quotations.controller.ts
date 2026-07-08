@@ -10,6 +10,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthUser } from '../auth/auth.service';
 import { QuotationsService } from './quotations.service';
 import { CreateQuotationDto } from './dto/create-quotation.dto';
 import { QueryQuotationsDto } from './dto/query-quotations.dto';
@@ -31,8 +33,8 @@ export class QuotationsController {
   }
 
   @Post()
-  create(@Body() dto: CreateQuotationDto) {
-    return this.quotationsService.create(dto);
+  create(@Body() dto: CreateQuotationDto, @CurrentUser() user: AuthUser) {
+    return this.quotationsService.create(dto, user.id);
   }
 
   @Patch(':id/status')
@@ -44,8 +46,12 @@ export class QuotationsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateQuotationDto) {
-    return this.quotationsService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateQuotationDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.quotationsService.update(id, dto, user.id);
   }
 
   @Delete(':id')

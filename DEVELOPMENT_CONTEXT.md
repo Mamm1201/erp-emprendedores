@@ -7,21 +7,55 @@
 
 ## Estado actual
 
-**Versión:** `v0.4.1`
+**Versión:** `v1.6.0` (Hito 13-A — Schema de Mantenimiento Preventivo)
 **Rama activa:** `develop`
-**Última sesión:** 2026-07-04
+**Última sesión:** 2026-07-06
 
 ### Hitos completados
 
-| Hito | Descripción | Estado |
-|------|-------------|--------|
-| v0.1.0 | Sistema de Identidad Visual STECH NODES | ✅ Cerrado y auditado |
-| v0.2.0 | Gestión de Sedes (Hito 1) | ✅ Cerrado y auditado |
-| v0.3.0 | Expediente de Orden de Trabajo (Hito 2) | ✅ Cerrado y auditado |
-| v0.4.0 | Módulo de Costos — Expenses (Hito 3) | ✅ Cerrado y auditado |
-| v0.4.1 | Auditoría Hito 3 + política de edición + constantes compartidas | ✅ Cerrado y auditado |
+| Versión | Hito | Descripción | Estado |
+|---------|------|-------------|--------|
+| v0.1.0 | — | Sistema de Identidad Visual STECH NODES | ✅ Cerrado y auditado |
+| v0.2.0 | Hito 1 | Gestión de Sedes | ✅ Cerrado y auditado |
+| v0.3.0 | Hito 2 | Expediente de Orden de Trabajo | ✅ Cerrado y auditado |
+| v0.4.0 | Hito 3 | Módulo de Costos — Expenses | ✅ Cerrado y auditado |
+| v0.4.1 | Hito 3.1 | Auditoría Hito 3 + política de edición + constantes compartidas | ✅ Cerrado y auditado |
+| v0.5.0 | Hito 4 | Auth JWT backend — guards, throttling, refresh token, auditoría de campos | ✅ Cerrado y auditado |
+| v0.6.0 | Hito 4.1 | Auth frontend — AuthContext, api.ts, LoginPage, ProtectedRoute | ✅ Cerrado y auditado |
+| v0.7.0 | Hito 5 | Módulo de Usuarios CRUD — RolesGuard, UsersController, UsersPage | ✅ Cerrado y auditado |
+| v0.7.1 | Hito 5.1 | Hardening permisos frontend — RoleProtectedRoute, ForbiddenPage | ✅ Cerrado y auditado |
+| v0.8.0 | Hito 6 | Asignación de técnico en formulario de OT — useTechnicians, assignedToId | ✅ Cerrado y auditado |
+| v0.9.0 | Hito 7 | Edición de OT desde el detalle — WorkOrderEditModal, WorkOrderFormFields compartido, doble guardia | ✅ Cerrado y auditado |
+| v0.9.1 | — | Auditoría DT-06: corrección documental | ✅ Cerrado y auditado |
+| v1.0.0 | Hito 8 | Módulo de gestión de evidencias FileAttachment — upload, list, download, delete polimórfico | ✅ Cerrado y auditado |
+| v1.1.0 | Hito 9 | Motor Documental — Design System documental, plantilla Cotización, endpoint PDF on-demand | ✅ Cerrado y auditado |
+| v1.2.0 | Hito 10-A | Evidencias en OT y Actas — EvidencesCard, FileAttachmentSection, bug descarga corregido | ✅ Cerrado y auditado |
+| v1.3.0 | Hito 10-B | Ciclo de vida Cotizaciones — transiciones de estado, PDF desde el detalle | ✅ Cerrado y auditado |
+| v1.4.0 | Hito 11 | Acta Técnica PDF — ServiceRecordDocument, endpoint service-record/pdf | ✅ Cerrado y auditado |
+| v1.5.0 | Hito 12 | Cierre del Ciclo de Cobro — InvoiceDocument PDF, endpoint invoices/:id/pdf | ✅ Cerrado y auditado |
+| v1.6.0 | Hito 13-A | Schema de Mantenimiento Preventivo — 4 nuevas entidades, 6 enums, migración aplicada, compilación limpia | ✅ Cerrado y auditado |
 
-**Estado general:** Build limpio · TypeScript sin errores · Arquitectura validada · Sin deuda técnica deliberada
+**Estado general:** Build limpio · TypeScript 0 errores · Schema de mantenimiento migrado · NestJS levanta sin errores · Motor Documental activo (Cotización, Acta, Cuenta de Cobro) · Auth fullstack completa y congelada
+
+---
+
+## Deuda técnica activa
+
+| ID | Descripción | Severidad | Origen |
+|----|-------------|-----------|--------|
+| DT-01 | Botón "Cancelar" en `WorkOrderHeader` ejecuta transición sin dialog de confirmación | Baja | Hito 2 |
+| DT-02 | `refreshTokenHash` se sobrescribe en cada login — sesión única por usuario | Baja-Media | Hito 4 |
+| DT-03 | Refresh token no rota en cada uso de `POST /auth/refresh` | Baja | Hito 4 |
+| DT-04 | `JwtPayload.role` tipado como `string` en lugar de `UserRole` | Baja | Hito 4 |
+| DT-05 | `clearRefreshCookie` es método público en `AuthService` | Baja | Hito 4 |
+
+---
+
+## Módulos congelados (no modificar salvo bug real)
+
+- **Subsistema de autenticación y autorización** (`auth/`, `AuthContext`, `api.ts`): Congelado. Guards, refresh token, mutex de 401, `RolesGuard` — estable y auditado.
+- **Sistema de identidad visual** (`index.css` tokens, `badge.tsx` variantes, `Sidebar`): Congelado desde v0.1.0.
+- **Motor Documental** (`documents/base/`, `documents/templates/`): Las 3 plantillas (Cotización, Acta Técnica, Cuenta de Cobro) están auditadas y funcionales.
 
 ---
 
@@ -29,155 +63,98 @@
 
 ### Reglas de estructura (no negociables)
 
-- **Páginas = orquestadoras puras**: ninguna página contiene lógica de negocio, constantes de dominio ni JSX más allá de layout. Solo importa componentes y les pasa props.
-- **Componentes por módulo**: `src/components/<módulo>/` — cada módulo tiene su propio directorio.
-- **Hooks encapsulan toda llamada HTTP**: ningún componente llama a `api.*` directamente. Toda comunicación con el backend pasa por hooks en `src/hooks/use-<módulo>.ts`.
-- **Colores únicamente mediante design tokens**: cero colores Tailwind hardcodeados. Todo color pasa por `hsl(var(--...))` o clases de token (`text-node-teal`, `text-amber-signal`, etc.).
-- **TanStack Query v5** para acceso a datos: `queryKey`, `staleTime`, `enabled`, `invalidateQueries`.
+- **Páginas = orquestadoras puras**: ninguna página contiene lógica de negocio, constantes de dominio ni JSX más allá de layout.
+- **Componentes por módulo**: `src/components/<módulo>/`
+- **Hooks encapsulan toda llamada HTTP**: ningún componente llama a `api.*` directamente.
+- **Colores únicamente mediante design tokens**: cero colores Tailwind hardcodeados.
+- **TanStack Query v5** para acceso a datos.
 - **React Hook Form + Zod + zodResolver** para todos los formularios.
-- **shadcn/ui** como librería de componentes base.
+- **shadcn/ui** como librería de componentes base. `Select` de shadcn **no está instalado** — usar `<select>` nativo con clase `SELECT_CLASS`.
 - **Soft delete** en entidades financieras con campo `deletedAt DateTime?`.
-- **Prisma Decimal → string en frontend**: los campos `Decimal` de Prisma se serializan automáticamente como `string` por NestJS (`JSON.stringify` invoca `Decimal.toJSON()`). Los tipos en `types.ts` los declaran como `string` y el frontend usa `parseFloat()` para cálculos.
+- **Prisma Decimal → string en frontend**: los campos `Decimal` se serializan como `string`. Frontend usa `parseFloat()` para cálculos.
+- **Fechas `@db.Date` con `.slice(0, 10)`**: evita el problema UTC-5 (Colombia) con `parseISO`.
 
 ### Reglas de proceso (no negociables)
 
-- **Auditoría obligatoria antes de cada hito**: no se escribe código sin revisar primero el estado del módulo que se va a desarrollar.
-- **Auditoría obligatoria después de cada hito**: no se cierra un hito sin revisión técnica de lo implementado.
-- **CHANGELOG obligatorio**: todo cambio funcional, arquitectónico o fix relevante debe registrarse en `CHANGELOG.md` siguiendo versionado semántico.
-- **Este archivo (DEVELOPMENT_CONTEXT) obligatorio**: debe actualizarse al cierre de cada sesión de trabajo.
+- **Auditoría antes y después de cada hito**.
+- **CHANGELOG obligatorio** en cada cambio funcional.
+- **Este archivo** debe actualizarse al cierre de cada sesión.
 - **No introducir deuda técnica deliberadamente**.
-- **No romper arquitectura existente salvo justificación técnica explícita**.
 
 ---
 
 ## Estado del backend
 
-### Módulos implementados y funcionales
+### Módulos implementados
 
-| Módulo | Endpoints principales | Observaciones |
-|--------|----------------------|---------------|
-| `clients` | CRUD + soft delete + paginación | Completo |
-| `branches` | CRUD anidado bajo client | Completo |
-| `quotations` | CRUD + estados + secuencia de numeración | Completo |
-| `work-orders` | CRUD + transiciones de estado + items | Completo |
-| `service-records` | CRUD + checklist items | Completo |
-| `invoices` | CRUD + estados + anulación | Completo |
-| `payments` | Crear + anular pagos sobre invoice | Completo |
-| `expenses` | CRUD + soft delete + política de edición por estado OT | Completo |
-| `equipment` | CRUD + soft delete | Completo |
-| `maintenance-plans` | CRUD + próximas visitas | Completo |
-| `dashboard` | KPIs + pipeline + pagos recientes + próximas visitas | Completo |
+| Módulo | Observaciones |
+|--------|---------------|
+| `auth` | Completo. Congelado. |
+| `clients` | CRUD + soft delete + paginación |
+| `branches` | CRUD anidado bajo client |
+| `quotations` | CRUD + estados + secuencia de numeración |
+| `work-orders` | CRUD + transiciones de estado + items |
+| `service-records` | `findByEquipment` filtra via `workOrder.equipmentId` |
+| `invoices` | `workOrderId` nullable; `contractId?` añadido |
+| `payments` | Crear + anular pagos |
+| `expenses` | CRUD + política de edición por estado OT |
+| `equipment` | CRUD + soft delete |
+| `maintenance-plans` | Depende de `contractId` (no clientId/branchId) |
+| `users` | CRUD + deactivate + changePassword |
+| `dashboard` | `upcomingVisits` consulta `MaintenanceVisit` |
+| `files` | Polimórfico `entityType + entityId` |
+| `documents` | PDF on-demand: Cotización, Acta Técnica, Cuenta de Cobro. Congelado. |
 
-### Módulos pendientes (no iniciados)
+### Pendiente (Hito 13)
 
-- **`auth`** — JWT, bcrypt, login, refresh tokens
-- **`users`** — CRUD de usuarios del sistema, asignación de roles
-- Servicio de generación de PDF (cotizaciones, cuentas de cobro, actas)
-- Servicio de carga de archivos (fotos de equipos, documentos firmados)
+- `maintenance-contracts` — CRUD (Hito 13-B)
+- `maintenance-visits` — Programación y gestión (Hito 13-C)
 
-### Infraestructura backend
+### Infraestructura
 
-- **NestJS** con `ValidationPipe` global (whitelist, forbidNonWhitelisted, transform)
-- **Prisma ORM** con PostgreSQL — cliente generado en `src/generated/prisma/`
-- `PrismaExceptionFilter` registrado globalmente
-- CORS configurado para `http://localhost:5173` (desarrollo) vía `CORS_ORIGIN` env var
-- Puerto configurable vía `PORT` env var (default: 3000)
-- **Sin autenticación actualmente** — todos los endpoints son públicos
-
----
-
-## Estado del frontend
-
-### Páginas implementadas y funcionales
-
-| Ruta | Componente | Estado |
-|------|-----------|--------|
-| `/` | `DashboardPage` | ✅ KPIs, pipeline, alertas, próximas visitas |
-| `/clientes` | `ClientsPage` | ✅ CRUD clientes + sedes expand-in-table |
-| `/cotizaciones` | `QuotationsPage` | ✅ Lista paginada + filtros |
-| `/cotizaciones/nueva` | `QuotationFormPage` | ✅ Formulario completo con items |
-| `/cotizaciones/:id` | `QuotationFormPage` | ✅ Edición |
-| `/ordenes` | `WorkOrdersPage` | ✅ Lista + filtros + acciones de estado |
-| `/ordenes/:id` | `WorkOrderDetailPage` | ✅ Expediente completo (8 componentes) |
-| `/cuentas-cobro` | `InvoicesPage` | ✅ Lista paginada |
-| `/cuentas-cobro/nueva` | `InvoiceCreatePage` | ✅ Creación desde OT |
-| `/cuentas-cobro/:id` | `InvoiceDetailPage` | ✅ Detalle + pagos |
-| `/pagos` | `PaymentsPage` | ✅ Lista de pagos recibidos |
-| `/estado-cuentas` | `EstadoCuentasPage` | ✅ Resumen financiero |
-| `/actas` | `ServiceRecordsPage` | ✅ Lista de actas |
-| `/planes` | `MaintenancePlansPage` | ✅ Planes de mantenimiento |
-| `/equipos` | `EquipmentPage` | ✅ Inventario de equipos |
-
-### Componentes reutilizables creados
-
-- `src/components/branches/` — `BranchList`, `BranchFormModal`, `BranchDeleteDialog`
-- `src/components/work-orders/` — `WorkOrderHeader`, `WorkOrderInfoCard`, `WorkOrderItemsCard`, `ServiceRecordCard`, `ExpensesCard`, `CostSummaryCard`, `TimelineCard`, `InvoiceSideCard`
-- `src/components/layout/` — `AppLayout`, `Sidebar` (con NodeMark y BrandHeader)
-- `src/components/ui/` — shadcn/ui + variantes semánticas de Badge
-
-### Constantes y utilidades compartidas
-
-- `src/lib/types.ts` — todos los tipos del dominio
-- `src/lib/expense-constants.ts` — `CATEGORY_LABEL` y `CATEGORY_ORDER` para gastos
-- `src/lib/money.ts` — `formatMoney()`, `calcLineTotal()`
-- `src/lib/api.ts` — cliente HTTP (`api.get/post/patch/delete`)
-
-### Notas de implementación del frontend
-
-- **Sin login ni protección de rutas** — toda la aplicación es accesible sin autenticación
-- El nombre de usuario en el sidebar está hardcodeado como "Mario A. Márquez"
-- `assignedToId` en OTs siempre muestra "Sin asignar" — no hay endpoint de usuarios para cargar la lista de técnicos
+- **NestJS v11** · **Prisma ORM v7** · PostgreSQL `localhost:5433` / `erp_emprendedores`
+- Cliente Prisma en `src/generated/prisma/`; `moduleFormat = "cjs"`
+- **9 migraciones aplicadas**; última: `20260706010918_hito13_maintenance_module`
+- **Cadena de guards (congelada):** `ThrottlerGuard` → `JwtAuthGuard` → `RolesGuard`
+- Puerto backend: 3000 | Puerto frontend: 5173
 
 ---
 
-## Pendientes técnicos
+## Arquitectura del módulo de Mantenimiento (Hito 13)
 
-### CRÍTICO — ejecutar antes de usar el backend con base de datos real
+### Nuevas entidades (13-A — CERRADO)
 
-```bash
-# Desde el directorio backend/
-npx prisma migrate dev --name add_expense_soft_delete
-```
+| Modelo | Propósito |
+|--------|-----------|
+| `MaintenanceContract` | Contrato comercial. Aggregate raíz del dominio mantenimiento. |
+| `ContractEquipment` | M:N contrato ↔ equipo. `@@unique([contractId, equipmentId])` |
+| `MaintenancePlan` | Plan técnico de frecuencia. Depende de un contrato. |
+| `MaintenancePlanEquipment` | M:N plan ↔ equipo. `@@unique([planId, equipmentId])` |
+| `MaintenanceVisit` | Visita programada. `PENDING → GENERATED → COMPLETED / CANCELLED`. |
 
-**Por qué**: el campo `deletedAt DateTime?` y su índice fueron añadidos al modelo `Expense` en el schema de Prisma y el cliente fue regenerado (`npx prisma generate`), pero la migración de base de datos no fue aplicada porque el servidor PostgreSQL no estaba disponible durante el desarrollo. Sin esta migración, los endpoints del módulo de gastos fallarán en runtime con errores de columna inexistente.
+**Cambios a entidades existentes:**
+- `Equipment`: + `criticality EquipmentCriticality @default(MEDIUM)`, `warrantyExpiresAt DateTime? @db.Date`
+- `WorkOrder`: + `type WorkOrderType @default(CORRECTIVE)`, `equipmentId String?`, back-ref `maintenanceVisit MaintenanceVisit?`
+- `Invoice`: `workOrderId` nullable `@unique`; + `contractId String?`; CHECK `invoice_requires_reference`
+- `ServiceRecord`: eliminado `equipmentId` (movido a `WorkOrder`)
+- `MaintenancePlan`: eliminados `clientId`, `branchId`, `contractStartDate`, `contractEndDate`, `nextVisitDate`; agregados `contractId`, `startDate`
 
-**Verificar antes de ejecutar**: que PostgreSQL esté corriendo y que `DATABASE_URL` en `.env` apunte a la base de datos correcta.
+**Nuevos enums:** `EquipmentCriticality`, `WorkOrderType`, `ContractStatus`, `BillingCycle`, `ServiceHoursLevel`, `MaintenanceVisitStatus`
 
-### MENOR — deuda de UX diferida
+**Reglas de negocio invariantes:**
+- `OVERDUE` no se persiste — computable: `scheduledDate < today AND status = PENDING`
+- `MaintenanceVisit.workOrderId @unique` — una visita genera máximo una OT
+- `Invoice` debe tener `workOrderId` OR `contractId` (CHECK constraint en PostgreSQL)
+- Seed de planes comentado hasta que existan contratos (Hito 13-B)
 
-- Botón "Cancelar" en `WorkOrderHeader.tsx` ejecuta la transición de estado inmediatamente sin dialog de confirmación. Fue clasificado como severidad baja y diferido. Pendiente para Hito 4 o posterior.
+### Roadmap Hito 13
 
----
-
-## Próximo hito aprobado
-
-### Hito 4 — Autenticación JWT + Roles
-
-**Estado de aprobación:** ✅ Aprobado — pendiente de implementación
-
-**Decisión tomada en sesión 2026-07-04** después de comparación objetiva entre:
-- Opción A: PDF primero → Auth después
-- Opción B: Auth primero → PDF después
-
-**Se eligió Opción B (Auth primero)** por las siguientes razones:
-
-| Razón | Detalle |
-|-------|---------|
-| Elimina retrofitting | Auth como cross-cutting concern afecta todos los controllers. Implementarlo primero evita aplicar guards sobre 12+ módulos en lugar de 10. |
-| Desbloquea módulo de usuarios | Sin auth no hay entidad "usuario autenticado" y por tanto no se puede implementar la asignación de técnicos a OTs. |
-| Desbloquea auditoría de cambios | La trazabilidad "quién hizo qué" requiere identidad de usuario. |
-| Desbloquea comentarios internos | Los comentarios en OTs requieren autoría. |
-| Prepara para despliegue productivo | El sistema actualmente no puede desplegarse en red pública. Auth es el desbloqueador. |
-| Evita deuda técnica acumulada | Cada hito construido antes de Auth sobre API abierta es código que debe retrofitearse. |
-
-**Alcance esperado del Hito 4 (a definir en sesión de planificación):**
-
-- Backend: `AuthModule` (JWT access + refresh tokens, bcrypt), `UsersModule` (CRUD), guards globales, decoradores `@CurrentUser` y `@Roles`
-- Backend: aplicar `JwtGuard` a todos los controllers existentes
-- Frontend: pantalla de login, almacenamiento seguro de token, interceptor de renovación, guards de ruta en React Router
-- Frontend: sidebar con usuario real obtenido del token
-
-**⚠️ IMPORTANTE: NO comenzar el Hito 4 sin realizar primero la auditoría del módulo de autenticación.**
+| Sub-hito | Descripción | Estado |
+|----------|-------------|--------|
+| **13-A** | Schema migration | ✅ CERRADO |
+| **13-B** | MaintenanceContract CRUD — backend + frontend | ⏳ Siguiente |
+| **13-C** | Visitas y generación de OTs | 🔜 |
+| **13-D** | Dashboard KPIs mantenimiento | 🔜 |
 
 ---
 
@@ -185,46 +162,39 @@ npx prisma migrate dev --name add_expense_soft_delete
 
 | Decisión | Justificación |
 |----------|---------------|
-| Gastos bloqueados en OT COMPLETED/CANCELLED | Integridad financiera: costos deben estar fijos antes de facturar. Si hay error, el coordinador reabre la OT. |
-| Cálculo de margen usa `workOrder.total` siempre | `invoice.total` no está embebido en WorkOrder. Cuando la factura está confirmada, los totales coinciden (mismos items). Documentado con comentario en `CostSummaryCard`. |
-| `ExpenseFormModal` como modal, no formulario inline | Consistencia con el patrón ERP establecido en otros módulos (BranchFormModal, WorkOrderFormModal). |
-| `CostSummaryCard` retorna `null` sin gastos | No ocupa espacio visual hasta que haya datos reales. |
-| Soft delete en `Expense` | Trazabilidad financiera: los gastos eliminados se preservan en historial aunque no aparecen en cálculos activos. |
-| `CATEGORY_LABEL` y `CATEGORY_ORDER` en `expense-constants.ts` | Evita acoplamiento de importación entre `ExpensesCard` y `CostSummaryCard` (componentes hermanos). Única fuente de verdad. |
-| Fechas de gasto con `.slice(0, 10)` antes de `parseISO` | El backend devuelve `DateTime @db.Date` como ISO string completo (`T00:00:00.000Z`). Sin el slice, `parseISO` interpreta UTC midnight y en zonas UTC-N (Colombia, UTC-5) muestra el día anterior. |
-| Auditoría antes y después de cada hito | Establece la calidad como requisito de proceso, no como validación ad-hoc. Previene deuda técnica acumulada. |
+| FK circular `WorkOrder ↔ MaintenanceVisit` resuelta unidireccionalmente | Solo `MaintenanceVisit.workOrderId @unique`. WorkOrder recibe back-reference Prisma sin columna extra. |
+| `OVERDUE` computado, no persistido | Evita estado desincronizado y jobs de actualización. |
+| `ServiceRecord.equipmentId` eliminado | Con `WorkOrder.equipmentId` era redundante y fuente de inconsistencia. |
+| `Invoice.workOrderId` nullable + CHECK constraint | Hito 13 requiere facturas por contrato. El CHECK garantiza siempre una referencia. No expresable en Prisma — añadida como SQL raw en migración. |
+| Upload multipart via `fetch` nativo | `api.post` usa `JSON.stringify` — incompatible con FormData. |
+| `IStorageService` / `STORAGE_SERVICE` token de inyección | Permite intercambiar `LocalStorageService` por `R2StorageService` sin tocar la lógica. |
+| Archivos servidos por NestJS (`GET /files/:id/download`) | El guard de autenticación aplica a todos los archivos. |
+| Select nativo en lugar de shadcn Select | `@radix-ui/react-select` no está instalado. Patrón con `SELECT_CLASS`. |
 
 ---
 
-## Riesgos pendientes
+## Riesgos abiertos
 
-| Riesgo | Severidad | Plan de mitigación |
-|--------|-----------|-------------------|
-| API completamente abierta (sin auth) | **Alta** | Hito 4 resuelve esto |
-| Migración `add_expense_soft_delete` no aplicada | **Alta** | Ejecutar antes de usar en producción |
-| Sin PDF de documentos | **Media** | Hito 5 (después de Auth) |
-| Sin módulo de usuarios/técnicos | **Media** | Hito post-Auth |
-| Sin carga de archivos | **Baja-Media** | Requiere decisión de infraestructura de storage |
-| Botón "Cancelar" OT sin confirmación | **Baja** | Diferido, no es bloqueador |
+| Riesgo | Severidad | Plan |
+|--------|-----------|------|
+| Storage local (`uploads/`) sin backup ni límite de disco | Baja | Migrar a Cloudflare R2 antes de staging — solo cambiar provider `STORAGE_SERVICE`. |
+| Botón "Cancelar" OT sin confirmación (DT-01) | Baja | Diferido. Sin impacto grave. |
 
 ---
 
 ## Reglas para retomar el proyecto
 
-Al iniciar cualquier nueva sesión de desarrollo, seguir este orden **sin excepciones**:
+1. **Leer `DEVELOPMENT_CONTEXT.md`** — estado actual, módulos congelados, próximo hito.
+2. **Leer `CHANGELOG.md`** — versión actual y últimos cambios.
+3. **Auditar el módulo a desarrollar** — revisar código real, no asumir desde memoria.
+4. **No modificar módulos congelados** salvo bug funcional real.
+5. **No comenzar hito sin acordar alcance** — confirmar antes de implementar.
 
-1. **Leer `DEVELOPMENT_CONTEXT.md`** — entender el estado actual, decisiones tomadas y el próximo hito aprobado.
-
-2. **Leer `CHANGELOG.md`** — verificar la versión actual y los últimos cambios registrados.
-
-3. **Auditar el módulo que se va a desarrollar** — revisar el estado real del código, no asumir nada desde la memoria o el contexto anterior.
-
-4. **No modificar arquitectura ya aprobada** — salvo justificación técnica explícita acordada con el Tech Lead. Las reglas de la sección "Arquitectura aprobada" son el contrato del proyecto.
-
-5. **No comenzar un nuevo hito sin revisar dependencias** — el mapa de dependencias está en el análisis del 2026-07-04. Verificar que los prerequisitos estén resueltos.
-
-6. **Mantener el nivel de calidad aplicado hasta v0.4.1** — auditoría antes, implementación limpia, auditoría después, registro en CHANGELOG, actualización de este archivo al cierre de sesión.
+**Credenciales de desarrollo:**
+- `admin@erp.local` / `Admin2026!` · `mario@erp.local` / `Mario2026!`
+- PostgreSQL: `localhost:5433` / `erp_emprendedores`
+- Backend: `http://localhost:3000` | Frontend: `http://localhost:5173`
 
 ---
 
-*Actualizado al cierre de sesión: 2026-07-04*
+*Actualizado: 2026-07-06 — v1.6.0 — Hito 13-A cerrado (schema mantenimiento: 4 entidades, 6 enums, migración aplicada, 0 errores TypeScript) · Próximo: Hito 13-B — MaintenanceContract CRUD*

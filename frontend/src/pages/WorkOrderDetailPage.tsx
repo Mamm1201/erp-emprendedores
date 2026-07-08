@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { useWorkOrder } from '@/hooks/use-work-orders';
@@ -10,6 +11,8 @@ import { ExpensesCard }       from '@/components/work-orders/ExpensesCard';
 import { CostSummaryCard }    from '@/components/work-orders/CostSummaryCard';
 import { TimelineCard }       from '@/components/work-orders/TimelineCard';
 import { InvoiceSideCard }    from '@/components/work-orders/InvoiceSideCard';
+import { WorkOrderEditModal } from '@/components/work-orders/WorkOrderEditModal';
+import { EvidencesCard }       from '@/components/work-orders/EvidencesCard';
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 
@@ -36,6 +39,7 @@ function DetailSkeleton() {
 export function WorkOrderDetailPage() {
   const { id }   = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [editOpen, setEditOpen] = useState(false);
 
   const { data: workOrder, isLoading, isError } = useWorkOrder(id ?? null);
   const { data: expenses = [] } = useExpenses(id ?? null);
@@ -69,6 +73,7 @@ export function WorkOrderDetailPage() {
         workOrder={workOrder}
         onCreateInvoice={handleCreateInvoice}
         onViewInvoice={handleViewInvoice}
+        onEdit={() => setEditOpen(true)}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -77,6 +82,7 @@ export function WorkOrderDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           <WorkOrderInfoCard workOrder={workOrder} />
           <WorkOrderItemsCard workOrder={workOrder} />
+          <EvidencesCard workOrderId={workOrder.id} />
           <ServiceRecordCard workOrderId={workOrder.id} />
           <ExpensesCard workOrderId={workOrder.id} workOrderStatus={workOrder.status} />
         </div>
@@ -92,6 +98,12 @@ export function WorkOrderDetailPage() {
           <CostSummaryCard workOrder={workOrder} expenses={expenses} />
         </div>
       </div>
+
+      <WorkOrderEditModal
+        workOrder={workOrder}
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+      />
     </div>
   );
 }

@@ -12,24 +12,13 @@ import { MaintenanceFrequency } from '../../../generated/prisma/client';
 export class CreateMaintenancePlanDto {
   @IsString()
   @IsNotEmpty()
-  clientId: string;
-
-  @IsOptional()
-  @IsString()
-  branchId?: string;
+  contractId: string;
 
   @IsEnum(MaintenanceFrequency)
   frequency: MaintenanceFrequency;
 
   @IsDateString()
-  contractStartDate: string;
-
-  @IsOptional()
-  @IsDateString()
-  contractEndDate?: string;
-
-  @IsDateString()
-  nextVisitDate: string;
+  startDate: string;
 
   @IsOptional()
   @IsBoolean()

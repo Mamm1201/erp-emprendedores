@@ -1,14 +1,16 @@
 import 'dotenv/config';
+import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import {
   DocumentType,
   EquipmentStatus,
   EquipmentType,
-  MaintenanceFrequency,
   PrismaClient,
   UserRole,
 } from '../src/generated/prisma/client';
+
+const BCRYPT_ROUNDS = 12;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -35,17 +37,22 @@ async function main(): Promise<void> {
 
   // ─── Usuarios ──────────────────────────────────────────────────────────────
 
+  const adminHash = await bcrypt.hash('Admin2026!', BCRYPT_ROUNDS);
+  const marioHash = await bcrypt.hash('Mario2026!', BCRYPT_ROUNDS);
+
   await prisma.user.upsert({
     where: { email: 'admin@erp.local' },
     create: {
       email: 'admin@erp.local',
       name: 'Administrador del sistema',
       role: UserRole.ADMIN,
+      passwordHash: adminHash,
     },
     update: {
       name: 'Administrador del sistema',
       role: UserRole.ADMIN,
       isActive: true,
+      passwordHash: adminHash,
     },
   });
 
@@ -55,11 +62,13 @@ async function main(): Promise<void> {
       email: 'mario@erp.local',
       name: 'Mario Alejandro Márquez Moreno',
       role: UserRole.TECHNICIAN,
+      passwordHash: marioHash,
     },
     update: {
       name: 'Mario Alejandro Márquez Moreno',
       role: UserRole.TECHNICIAN,
       isActive: true,
+      passwordHash: marioHash,
     },
   });
 
@@ -375,88 +384,8 @@ async function main(): Promise<void> {
   console.log('✓ Equipos OK');
 
   // ─── PLANES DE MANTENIMIENTO ──────────────────────────────────────────────
-
-  type PlanSeed = {
-    clientId: string;
-    branchId: string;
-    frequency: MaintenanceFrequency;
-    contractStartDate: string;
-    nextVisitDate: string;
-    notes?: string;
-  };
-
-  const plansToSeed: PlanSeed[] = [
-    // Emmanuel — TRIMESTRAL (4x/año)
-    {
-      clientId: emmanuel.id,
-      branchId: emmFacatativa.id,
-      frequency: MaintenanceFrequency.QUARTERLY,
-      contractStartDate: '2022-01-01',
-      nextVisitDate: '2026-07-10',
-      notes: 'Sede principal. Incluye revisión sistema llamado enfermería + códigos alerta + planta eléctrica.',
-    },
-    {
-      clientId: emmanuel.id,
-      branchId: emmBogotaNorte.id,
-      frequency: MaintenanceFrequency.QUARTERLY,
-      contractStartDate: '2022-01-01',
-      nextVisitDate: '2026-07-15',
-    },
-    {
-      clientId: emmanuel.id,
-      branchId: emmBogotaSur.id,
-      frequency: MaintenanceFrequency.QUARTERLY,
-      contractStartDate: '2022-01-01',
-      nextVisitDate: '2026-07-20',
-    },
-
-    // INDE — CUATRIMESTRAL (3x/año)
-    {
-      clientId: inde.id,
-      branchId: indeSede1.id,
-      frequency: MaintenanceFrequency.EVERY_4_MONTHS,
-      contractStartDate: '2022-01-01',
-      nextVisitDate: '2026-08-05',
-    },
-    {
-      clientId: inde.id,
-      branchId: indeSede2.id,
-      frequency: MaintenanceFrequency.EVERY_4_MONTHS,
-      contractStartDate: '2022-01-01',
-      nextVisitDate: '2026-08-10',
-    },
-
-    // Avellaneda — CUATRIMESTRAL (3x/año)
-    {
-      clientId: avellaneda.id,
-      branchId: avellanedaSede.id,
-      frequency: MaintenanceFrequency.EVERY_4_MONTHS,
-      contractStartDate: '2022-01-01',
-      nextVisitDate: '2026-09-05',
-    },
-  ];
-
-  for (const plan of plansToSeed) {
-    const exists = await prisma.maintenancePlan.findFirst({
-      where: { clientId: plan.clientId, branchId: plan.branchId, isActive: true },
-      select: { id: true },
-    });
-    if (!exists) {
-      await prisma.maintenancePlan.create({
-        data: {
-          clientId: plan.clientId,
-          branchId: plan.branchId,
-          frequency: plan.frequency,
-          contractStartDate: date(plan.contractStartDate),
-          nextVisitDate: date(plan.nextVisitDate),
-          isActive: true,
-          notes: plan.notes ?? null,
-        },
-      });
-    }
-  }
-
-  console.log('✓ Planes de mantenimiento OK');
+  // Requieren MaintenanceContract (Hito 13-B). El seed se actualizará cuando
+  // se implemente el CRUD de contratos.
   console.log('');
   console.log('Seed completado:');
   console.log('  Clínica Emmanuel — 3 sedes, 8 equipos, 3 planes QUARTERLY');

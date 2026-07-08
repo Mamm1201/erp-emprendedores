@@ -9,6 +9,7 @@ export interface WorkOrderFormData {
   title: string;
   description?: string;
   scheduledAt?: string;
+  assignedToId?: string;
 }
 
 export interface WorkOrderUpdateData {

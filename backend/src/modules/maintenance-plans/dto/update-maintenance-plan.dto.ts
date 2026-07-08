@@ -1,6 +1,5 @@
 import {
   IsBoolean,
-  IsDateString,
   IsEnum,
   IsOptional,
   IsString,
@@ -12,18 +11,6 @@ export class UpdateMaintenancePlanDto {
   @IsOptional()
   @IsEnum(MaintenanceFrequency)
   frequency?: MaintenanceFrequency;
-
-  @IsOptional()
-  @IsDateString()
-  contractStartDate?: string;
-
-  @IsOptional()
-  @IsDateString()
-  contractEndDate?: string;
-
-  @IsOptional()
-  @IsDateString()
-  nextVisitDate?: string;
 
   @IsOptional()
   @IsBoolean()

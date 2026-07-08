@@ -16,12 +16,12 @@ import {
 } from '@/hooks/use-work-orders';
 import { useClients } from '@/hooks/use-clients';
 import { useBranches } from '@/hooks/use-branches';
+import { useTechnicians } from '@/hooks/use-users';
 import type { WorkOrder, WorkOrderStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import {
   Dialog,
@@ -31,6 +31,7 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import { WorkOrderFormFields } from '@/components/work-orders/WorkOrderFormFields';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -75,6 +76,7 @@ const workOrderSchema = z.object({
   title: z.string().min(1, 'El título es obligatorio').max(300),
   description: z.string().max(2000).optional().or(z.literal('')),
   scheduledAt: z.string().optional().or(z.literal('')),
+  assignedToId: z.string().optional(),
 });
 
 type WorkOrderSchema = z.infer<typeof workOrderSchema>;
@@ -91,6 +93,7 @@ function WorkOrderFormModal({
   const createWO = useCreateWorkOrder();
   const { data: clientsData } = useClients('', 1);
   const clients = clientsData?.data ?? [];
+  const { data: technicians = [] } = useTechnicians();
 
   const {
     register,
@@ -100,14 +103,14 @@ function WorkOrderFormModal({
     formState: { errors },
   } = useForm<WorkOrderSchema>({
     resolver: zodResolver(workOrderSchema),
-    defaultValues: { clientId: '', branchId: '', title: '', description: '', scheduledAt: '' },
+    defaultValues: { clientId: '', branchId: '', title: '', description: '', scheduledAt: '', assignedToId: '' },
   });
 
   const selectedClientId = watch('clientId');
   const { data: branches } = useBranches(selectedClientId || null);
 
   useEffect(() => {
-    if (open) reset({ clientId: '', branchId: '', title: '', description: '', scheduledAt: '' });
+    if (open) reset({ clientId: '', branchId: '', title: '', description: '', scheduledAt: '', assignedToId: '' });
   }, [open, reset]);
 
   async function onSubmit(values: WorkOrderSchema) {
@@ -117,6 +120,7 @@ function WorkOrderFormModal({
       title: values.title,
       description: values.description || undefined,
       scheduledAt: values.scheduledAt || undefined,
+      assignedToId: values.assignedToId || undefined,
     };
     await createWO.mutateAsync(dto);
     onOpenChange(false);
@@ -130,7 +134,7 @@ function WorkOrderFormModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Cliente */}
+          {/* Cliente (solo en creación) */}
           <div className="space-y-1.5">
             <Label htmlFor="clientId">Cliente *</Label>
             <select
@@ -150,53 +154,13 @@ function WorkOrderFormModal({
             )}
           </div>
 
-          {/* Sede */}
-          <div className="space-y-1.5">
-            <Label htmlFor="branchId">Sede</Label>
-            <select
-              id="branchId"
-              {...register('branchId')}
-              disabled={!selectedClientId || !branches?.length}
-              className="flex h-9 w-full rounded-md border border-[hsl(var(--input))] bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:opacity-50"
-            >
-              <option value="">Sin sede específica</option>
-              {(branches ?? []).map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}{b.city ? ` — ${b.city}` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Título */}
-          <div className="space-y-1.5">
-            <Label htmlFor="title">Título *</Label>
-            <Input
-              id="title"
-              {...register('title')}
-              placeholder="Mantenimiento preventivo trimestral"
-            />
-            {errors.title && (
-              <p className="text-xs text-[hsl(var(--destructive))]">{errors.title.message}</p>
-            )}
-          </div>
-
-          {/* Descripción */}
-          <div className="space-y-1.5">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
-              {...register('description')}
-              placeholder="Detalles del trabajo a realizar…"
-              rows={3}
-            />
-          </div>
-
-          {/* Fecha programada */}
-          <div className="space-y-1.5">
-            <Label htmlFor="scheduledAt">Fecha programada</Label>
-            <Input id="scheduledAt" type="datetime-local" {...register('scheduledAt')} />
-          </div>
+          <WorkOrderFormFields
+            register={register}
+            errors={errors}
+            branches={branches ?? []}
+            branchesDisabled={!selectedClientId || !branches?.length}
+            technicians={technicians}
+          />
 
           {createWO.error && (
             <p className="text-sm text-[hsl(var(--destructive))]">{createWO.error.message}</p>
@@ -344,6 +308,7 @@ export function WorkOrdersPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useWorkOrders({ search, status: statusFilter, page });
   const workOrders = data?.data ?? [];
   const meta = data?.meta;

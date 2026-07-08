@@ -12,10 +12,6 @@ import { ChecklistItemDto } from './checklist-item.dto';
 export class CreateServiceRecordDto {
   @IsOptional()
   @IsString()
-  equipmentId?: string;
-
-  @IsOptional()
-  @IsString()
   @MaxLength(4000)
   findings?: string;
 
