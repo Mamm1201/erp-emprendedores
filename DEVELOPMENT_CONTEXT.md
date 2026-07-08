@@ -7,9 +7,9 @@
 
 ## Estado actual
 
-**Versión:** `v1.9.0` (Post-QA Stabilization — 6 correcciones validadas)
+**Versión:** `v2.0.0` (Integración identidad corporativa STECH NODES — Sistema Visual completamente integrado)
 **Rama activa:** `develop`
-**Última sesión:** 2026-07-07
+**Última sesión:** 2026-07-08
 
 ### Hitos completados
 
@@ -39,8 +39,9 @@
 | v1.7.0 | Hito 13-D | Dashboard KPIs mantenimiento — contratos activos, planes activos, visitas vencidas; corrección bug upcomingVisits | ✅ Cerrado y auditado |
 | v1.8.0 | Hito 14 | Facturación de Contratos — Invoice.contractId, createFromContract(), InvoiceCreatePage dual, botón "Nueva CC" en contratos activos | ✅ Cerrado y auditado |
 | v1.9.0 | QA Fix | Post-QA Stabilization — F-05 quotation en OT, F-06 CONVERTED automático, F-08 visita COMPLETED cascade, F-09 lineOrder=1, F-10 KPI excluye preventivas, F-11 visitas GENERATED en dashboard | ✅ Cerrado y auditado |
+| v2.0.0 | Identidad | Integración completa identidad corporativa STECH NODES — Login, Sidebar, todos los PDFs, centralización de datos institucionales, routing de emails por área, notas estructuradas | ✅ Cerrado y auditado |
 
-**Estado general:** Build limpio · TypeScript 0 errores · QA E2E completado · 6 correcciones validadas · Facturación de contratos operativa · Motor Documental activo · Auth fullstack congelada
+**Estado general:** Build limpio · TypeScript 0 errores · Identidad STECH NODES v1.0 integrada en toda la aplicación · QA E2E completado · Facturación de contratos operativa · Motor Documental actualizado · Auth fullstack congelada
 
 ---
 
@@ -59,8 +60,9 @@
 ## Módulos congelados (no modificar salvo bug real)
 
 - **Subsistema de autenticación y autorización** (`auth/`, `AuthContext`, `api.ts`): Congelado. Guards, refresh token, mutex de 401, `RolesGuard` — estable y auditado.
-- **Sistema de identidad visual** (`index.css` tokens, `badge.tsx` variantes, `Sidebar`): Congelado desde v0.1.0.
-- **Motor Documental** (`documents/base/`, `documents/templates/`): Las 3 plantillas (Cotización, Acta Técnica, Cuenta de Cobro) están auditadas y funcionales.
+- **Sistema de identidad visual** (`index.css` tokens, `NodeMark.tsx`, `Sidebar.tsx`, `LoginPage.tsx`): Congelado en v2.0.0. Isotipo Concepto C Evolucionado, paleta y tipografía aprobados. No modificar sin aprobación de dirección creativa.
+- **Motor Documental** (`documents/base/`, `documents/templates/`): Las 3 plantillas (Cotización, Acta Técnica, Cuenta de Cobro) están auditadas y funcionales. Congelado en v2.0.0.
+- **Datos institucionales**: Fuente única en `frontend/src/config/company.ts` (frontend) y `backend/src/modules/documents/base/styles.ts` (backend). No hardcodear valores en componentes.
 
 ---
 
@@ -119,6 +121,51 @@
 - **9 migraciones aplicadas**; última: `20260706010918_hito13_maintenance_module`
 - **Cadena de guards (congelada):** `ThrottlerGuard` → `JwtAuthGuard` → `RolesGuard`
 - Puerto backend: 3000 | Puerto frontend: 5173
+
+---
+
+## Identidad corporativa STECH NODES (v2.0.0)
+
+### Sistema Visual aprobado y congelado
+
+| Elemento | Valor |
+|----------|-------|
+| Isotipo | Concepto C Evolucionado — reticle de precisión, 2 anillos + 4 marcas cardinales |
+| Paleta | `#042C53` Azul Noche · `#185FA5` Azul Técnico · `#378ADD` Azul Símbolo · `#0F6E56` Verde Control |
+| Tipografía | Space Grotesk (display / marca) + Inter (UI) |
+| Tagline | "Operaciones técnicas, bajo control." |
+
+### Fuentes únicas de datos institucionales
+
+- **Backend:** `backend/src/modules/documents/base/styles.ts` → exporta `COMPANY as const`
+- **Frontend:** `frontend/src/config/company.ts` → exporta `COMPANY as const`
+
+Cualquier componente que muestre datos de la empresa **debe importar de estas fuentes**. No hardcodear.
+
+### Routing de emails por tipo de documento
+
+| Tipo de documento | Email |
+|-------------------|-------|
+| Cotizaciones, Contratos de Mantenimiento | `ventas@stechnodes.com` |
+| Órdenes de Trabajo, Actas Técnicas | `soporte@stechnodes.com` |
+| Cuentas de Cobro | `facturacion@stechnodes.com` |
+| Comunicaciones institucionales / generales | `contacto@stechnodes.com` |
+
+El email se pasa al `DocumentHeader` vía prop `contactEmail`. Si se omite, usa `COMPANY.emails.contacto`.
+
+### Estructura de notas en documentos (v2.0.0)
+
+Los documentos con sección de notas usan campos opcionales en el DTO para habilitar estructura sin romper compatibilidad:
+
+| Campo DTO | Etiqueta en PDF | Documento |
+|-----------|-----------------|-----------|
+| `notes` | Notas del servicio | Cotización, Cuenta de Cobro |
+| `terms` | Condiciones comerciales | Cotización |
+| `paymentTerms` | Forma de pago | Cotización, Cuenta de Cobro |
+| `warranty` | Garantía | Cotización, Cuenta de Cobro |
+| `additionalNotes` | Observaciones adicionales | Cotización |
+
+Los campos opcionales se muestran solo cuando tienen contenido (`null` los omite). El servicio los mapea como `null` hasta que la BD incorpore columnas dedicadas.
 
 ---
 
@@ -205,4 +252,4 @@
 
 ---
 
-*Actualizado: 2026-07-07 — v1.7.0 — Hito 13 cerrado y estable (A–D): módulo de Mantenimiento Preventivo completo — contratos, planes, visitas, generación de OTs, KPIs dashboard · Auditoría post-hito aplicada (4 correcciones) · Próximo: Hito 14*
+*Actualizado: 2026-07-08 — v2.0.0 — Integración completa identidad corporativa STECH NODES: Login, Sidebar, Motor Documental, datos institucionales centralizados, routing de emails por área, notas estructuradas en PDFs · Hitos 13 (A–D) y 14 cerrados previamente · Próximo: siguiente bloque del roadmap aprobado*

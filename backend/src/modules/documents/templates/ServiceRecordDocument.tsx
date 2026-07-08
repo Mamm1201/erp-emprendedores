@@ -5,7 +5,7 @@ import { DocumentHeader } from '../base/DocumentHeader';
 import { DocumentFooter } from '../base/DocumentFooter';
 import { InfoGrid } from '../base/InfoGrid';
 import { SectionTitle } from '../base/SectionTitle';
-import { palette, sp, fs } from '../base/styles';
+import { palette, sp, fs, COMPANY } from '../base/styles';
 import type { ServiceRecordPdfDto, ChecklistItemPdfDto } from '../dto/service-record-pdf.dto';
 
 const RESULT_LABEL: Record<string, string> = {
@@ -152,6 +152,7 @@ export function ServiceRecordDocument({ data }: { data: ServiceRecordPdfDto }) {
         documentType="ACTA TÉCNICA"
         documentNumber={data.workOrderNumber}
         issueDate={data.generatedAt}
+        contactEmail={COMPANY.emails.soporte}
       />
 
       <InfoGrid

@@ -7,7 +7,7 @@ import { InfoGrid } from '../base/InfoGrid';
 import { SectionTitle } from '../base/SectionTitle';
 import { ItemsTable } from '../base/ItemsTable';
 import { TotalsBlock } from '../base/TotalsBlock';
-import { palette, sp, fs } from '../base/styles';
+import { palette, sp, fs, COMPANY } from '../base/styles';
 import type { InvoicePdfDto } from '../dto/invoice-pdf.dto';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -25,18 +25,24 @@ const s = StyleSheet.create({
     marginBottom: sp.lg,
     textAlign: 'right',
   },
-  notesLabel: {
+  noteBlock: {
+    marginBottom: sp.md,
+  },
+  noteLabel: {
     fontSize: fs.xs,
     fontFamily: 'Helvetica-Bold',
     color: palette.muted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: sp.xs,
+    paddingBottom: sp.xs,
+    borderBottomWidth: 0.5,
+    borderBottomColor: palette.border,
   },
-  notesText: {
+  noteText: {
     fontSize: fs.base,
     color: palette.text,
-    lineHeight: 1.5,
+    lineHeight: 1.55,
   },
 });
 
@@ -61,6 +67,7 @@ export function InvoiceDocument({ data }: { data: InvoicePdfDto }) {
         issueDate={data.issueDate}
         expiryLabel="Vencimiento"
         expiryDate={data.dueDate}
+        contactEmail={COMPANY.emails.facturacion}
       />
 
       <Text style={s.statusBadge}>Estado: {STATUS_LABEL[data.status] ?? data.status}</Text>
@@ -80,11 +87,28 @@ export function InvoiceDocument({ data }: { data: InvoicePdfDto }) {
         total={data.total}
       />
 
-      {data.notes && (
-        <View>
-          <Text style={s.notesLabel}>Notas</Text>
-          <Text style={s.notesText}>{data.notes}</Text>
-        </View>
+      {(data.notes || data.paymentTerms || data.warranty) && (
+        <>
+          <SectionTitle>Notas y condiciones</SectionTitle>
+          {data.notes && (
+            <View style={s.noteBlock}>
+              <Text style={s.noteLabel}>Notas del servicio</Text>
+              <Text style={s.noteText}>{data.notes}</Text>
+            </View>
+          )}
+          {data.paymentTerms && (
+            <View style={s.noteBlock}>
+              <Text style={s.noteLabel}>Forma de pago</Text>
+              <Text style={s.noteText}>{data.paymentTerms}</Text>
+            </View>
+          )}
+          {data.warranty && (
+            <View style={s.noteBlock}>
+              <Text style={s.noteLabel}>Garantía</Text>
+              <Text style={s.noteText}>{data.warranty}</Text>
+            </View>
+          )}
+        </>
       )}
 
       <DocumentFooter generatedAt={data.generatedAt} />

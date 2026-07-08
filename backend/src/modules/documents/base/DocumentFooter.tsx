@@ -2,14 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { palette, sp, fs, COMPANY } from './styles';
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-// Slots reservados para crecimiento futuro:
-// - verificationCode?: string   — código de verificación / QR en hito futuro
-// - legalNotice?: string        — aviso legal personalizado por tipo de documento
-
 export interface DocumentFooterProps {
   generatedAt: string;
-  // verificationCode?: string;  // reservado — Hito futuro (QR / firma digital)
 }
 
 const s = StyleSheet.create({
@@ -31,13 +25,21 @@ const s = StyleSheet.create({
   right: {
     alignItems: 'flex-end',
   },
+  brand: {
+    fontSize: fs.xs,
+    fontFamily: 'Helvetica-Bold',
+    color: palette.brandMid,
+    letterSpacing: 0.5,
+    marginBottom: 1,
+  },
+  tagline: {
+    fontSize: fs.xs,
+    color: palette.muted,
+    marginBottom: 1,
+  },
   text: {
     fontSize: fs.xs,
     color: palette.muted,
-  },
-  brand: {
-    fontSize: fs.xs,
-    color: palette.brand,
   },
   pageNumber: {
     fontSize: fs.xs,
@@ -50,6 +52,7 @@ export function DocumentFooter({ generatedAt }: DocumentFooterProps) {
     <View style={s.footer} fixed>
       <View style={s.left}>
         <Text style={s.brand}>{COMPANY.name}</Text>
+        <Text style={s.tagline}>{COMPANY.tagline}</Text>
         <Text style={s.text}>Generado: {generatedAt}</Text>
       </View>
       <View style={s.right}>

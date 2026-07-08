@@ -7,36 +7,34 @@ import { InfoGrid } from '../base/InfoGrid';
 import { SectionTitle } from '../base/SectionTitle';
 import { ItemsTable } from '../base/ItemsTable';
 import { TotalsBlock } from '../base/TotalsBlock';
-import { palette, sp, fs } from '../base/styles';
+import { palette, sp, fs, COMPANY } from '../base/styles';
 import type { QuotationPdfDto } from '../dto/quotation-pdf.dto';
 
 const s = StyleSheet.create({
-  notesRow: {
-    flexDirection: 'row',
-    gap: sp.xl,
-    marginTop: sp.md,
+  statusBadge: {
+    fontSize: fs.xs,
+    color: palette.muted,
+    marginBottom: sp.lg,
+    textAlign: 'right',
   },
-  notesCol: {
-    flex: 1,
+  noteBlock: {
+    marginBottom: sp.md,
   },
-  notesLabel: {
+  noteLabel: {
     fontSize: fs.xs,
     fontFamily: 'Helvetica-Bold',
     color: palette.muted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: sp.xs,
+    paddingBottom: sp.xs,
+    borderBottomWidth: 0.5,
+    borderBottomColor: palette.border,
   },
-  notesText: {
+  noteText: {
     fontSize: fs.base,
     color: palette.text,
-    lineHeight: 1.5,
-  },
-  statusBadge: {
-    fontSize: fs.xs,
-    color: palette.muted,
-    marginBottom: sp.lg,
-    textAlign: 'right',
+    lineHeight: 1.55,
   },
 });
 
@@ -77,6 +75,7 @@ export function QuotationDocument({ data }: { data: QuotationPdfDto }) {
         issueDate={data.issueDate}
         expiryLabel={data.validUntil ? 'Válida hasta' : undefined}
         expiryDate={data.validUntil ?? undefined}
+        contactEmail={COMPANY.emails.ventas}
       />
 
       <InfoGrid
@@ -94,23 +93,39 @@ export function QuotationDocument({ data }: { data: QuotationPdfDto }) {
         total={data.total}
       />
 
-      {(data.notes || data.terms) && (
+      {(data.notes || data.terms || data.paymentTerms || data.warranty || data.additionalNotes) && (
         <>
           <SectionTitle>Notas y condiciones</SectionTitle>
-          <View style={s.notesRow}>
-            {data.notes && (
-              <View style={s.notesCol}>
-                <Text style={s.notesLabel}>Notas</Text>
-                <Text style={s.notesText}>{data.notes}</Text>
-              </View>
-            )}
-            {data.terms && (
-              <View style={s.notesCol}>
-                <Text style={s.notesLabel}>Términos y condiciones</Text>
-                <Text style={s.notesText}>{data.terms}</Text>
-              </View>
-            )}
-          </View>
+          {data.notes && (
+            <View style={s.noteBlock}>
+              <Text style={s.noteLabel}>Notas del servicio</Text>
+              <Text style={s.noteText}>{data.notes}</Text>
+            </View>
+          )}
+          {data.terms && (
+            <View style={s.noteBlock}>
+              <Text style={s.noteLabel}>Condiciones comerciales</Text>
+              <Text style={s.noteText}>{data.terms}</Text>
+            </View>
+          )}
+          {data.paymentTerms && (
+            <View style={s.noteBlock}>
+              <Text style={s.noteLabel}>Forma de pago</Text>
+              <Text style={s.noteText}>{data.paymentTerms}</Text>
+            </View>
+          )}
+          {data.warranty && (
+            <View style={s.noteBlock}>
+              <Text style={s.noteLabel}>Garantía</Text>
+              <Text style={s.noteText}>{data.warranty}</Text>
+            </View>
+          )}
+          {data.additionalNotes && (
+            <View style={s.noteBlock}>
+              <Text style={s.noteLabel}>Observaciones adicionales</Text>
+              <Text style={s.noteText}>{data.additionalNotes}</Text>
+            </View>
+          )}
         </>
       )}
 

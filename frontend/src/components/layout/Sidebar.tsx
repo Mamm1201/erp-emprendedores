@@ -17,6 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { NodeMark } from './NodeMark';
+import { COMPANY } from '@/config/company';
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ function BrandHeader({ productName }: { productName: string }) {
         <NodeMark className="text-[hsl(var(--sidebar-accent-foreground))] shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-extrabold tracking-widest uppercase text-[hsl(var(--sidebar-foreground))] leading-none">
-            STECH NODES
+            {COMPANY.name}
           </p>
           <p className="text-xs font-medium tracking-[0.18em] uppercase text-[hsl(var(--sidebar-accent-foreground))] mt-1 leading-none">
             {productName}

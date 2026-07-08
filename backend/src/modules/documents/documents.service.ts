@@ -74,8 +74,11 @@ export class DocumentsService {
       taxTotal: decStr(q.taxTotal),
       total: decStr(q.total),
 
-      notes: q.notes ?? null,
-      terms: q.terms ?? null,
+      notes:           q.notes ?? null,
+      terms:           q.terms ?? null,
+      paymentTerms:    null,
+      warranty:        null,
+      additionalNotes: null,
 
       generatedAt: fmtDate(new Date()),
     };
@@ -200,8 +203,10 @@ export class DocumentsService {
       taxTotal: decStr(invoice.taxTotal),
       total: decStr(invoice.total),
 
-      notes: invoice.notes ?? null,
-      generatedAt: fmtDate(new Date()),
+      notes:        invoice.notes ?? null,
+      paymentTerms: null,
+      warranty:     null,
+      generatedAt:  fmtDate(new Date()),
     };
 
     const element = React.createElement(InvoiceDocument, { data: dto }) as any;

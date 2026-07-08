@@ -38,9 +38,12 @@ export interface QuotationPdfDto {
   taxTotal: string;
   total: string;
 
-  // Contenido libre
-  notes: string | null;
-  terms: string | null;
+  // Sección de notas y condiciones
+  notes: string | null;          // Notas del servicio
+  terms: string | null;          // Condiciones comerciales
+  paymentTerms: string | null;   // Forma de pago
+  warranty: string | null;       // Garantía
+  additionalNotes: string | null; // Observaciones adicionales
 
   // Metadato de generación
   generatedAt: string;

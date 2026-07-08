@@ -30,6 +30,8 @@ export interface InvoicePdfDto {
   taxTotal: string;
   total: string;
 
-  notes: string | null;
+  notes: string | null;          // Notas del servicio
+  paymentTerms: string | null;   // Forma de pago / condiciones
+  warranty: string | null;       // Garantía
   generatedAt: string;
 }
