@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ContractStatus,
   InvoiceStatus,
   QuotationStatus,
   WorkOrderStatus,
@@ -27,6 +28,9 @@ export class DashboardService {
       upcomingVisits,
       completedWithoutInvoice,
       approvedQuotations,
+      activeContracts,
+      activePlans,
+      overdueVisits,
     ] = await Promise.all([
       this.prisma.quotation.groupBy({
         by: ['status'],
@@ -84,7 +88,7 @@ export class DashboardService {
       this.prisma.maintenanceVisit.findMany({
         where: {
           status: 'PENDING',
-          scheduledDate: { lte: next30Days },
+          scheduledDate: { gte: now, lte: next30Days },
           plan: { isActive: true },
         },
         orderBy: { scheduledDate: 'asc' },
@@ -117,6 +121,15 @@ export class DashboardService {
           deletedAt: null,
           status: QuotationStatus.APPROVED,
         },
+      }),
+      this.prisma.maintenanceContract.count({
+        where: { deletedAt: null, status: ContractStatus.ACTIVE },
+      }),
+      this.prisma.maintenancePlan.count({
+        where: { isActive: true },
+      }),
+      this.prisma.maintenanceVisit.count({
+        where: { status: 'PENDING', scheduledDate: { lt: now }, plan: { isActive: true } },
       }),
     ]);
 
@@ -171,6 +184,11 @@ export class DashboardService {
       },
       recentPayments,
       upcomingVisits,
+      maintenance: {
+        activeContracts,
+        activePlans,
+        overdueVisits,
+      },
     };
   }
 }

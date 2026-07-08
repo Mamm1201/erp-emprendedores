@@ -106,13 +106,12 @@ export interface DashboardData {
       client: { legalName: string; tradeName: string | null };
     };
   }>;
-  upcomingVisits: Array<{
-    id: string;
-    nextVisitDate: string;
-    frequency: MaintenanceFrequency;
-    client: { legalName: string; tradeName: string | null };
-    branch: { name: string; city: string | null } | null;
-  }>;
+  upcomingVisits: UpcomingVisit[];
+  maintenance: {
+    activeContracts: number;
+    activePlans: number;
+    overdueVisits: number;
+  };
 }
 
 export interface FinancialStatusGroup {
@@ -268,23 +267,78 @@ export interface Branch {
   updatedAt: string;
 }
 
-export interface MaintenancePlan {
+export type ContractStatus = 'DRAFT' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'SUSPENDED';
+export type BillingCycle = 'MONTHLY' | 'BIMONTHLY' | 'QUARTERLY' | 'EVERY_4_MONTHS' | 'BIANNUAL' | 'ANNUAL';
+export type ServiceHoursLevel = 'BUSINESS_HOURS' | 'EXTENDED' | 'FULL_24_7';
+
+export interface MaintenanceContract {
   id: string;
-  clientId: string;
-  branchId: string | null;
-  frequency: MaintenanceFrequency;
-  contractStartDate: string;
-  contractEndDate: string | null;
-  nextVisitDate: string;
-  isActive: boolean;
+  number: string;
+  status: ContractStatus;
+  billingCycle: BillingCycle;
+  value: string;
+  startDate: string;
+  endDate: string;
+  signedAt: string | null;
+  correctiveIncluded: boolean;
+  partsIncluded: boolean;
+  transportIncluded: boolean;
+  serviceHours: ServiceHoursLevel;
+  slaHoursCritical: number | null;
+  slaHoursHigh: number | null;
+  slaHoursMedium: number | null;
+  slaHoursLow: number | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
   client: { id: string; legalName: string; tradeName: string | null };
-  branch: { id: string; name: string; city: string | null } | null;
+  signedBy: { id: string; name: string } | null;
+  quotation: { id: string; number: string } | null;
 }
 
-export type UpcomingVisit = MaintenancePlan;
+export interface MaintenancePlan {
+  id: string;
+  contractId: string;
+  frequency: MaintenanceFrequency;
+  startDate: string;
+  isActive: boolean;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  contract: {
+    id: string;
+    number: string;
+    status: ContractStatus;
+    client: { id: string; legalName: string; tradeName: string | null };
+  };
+}
+
+export type MaintenanceVisitStatus = 'PENDING' | 'GENERATED' | 'COMPLETED' | 'CANCELLED';
+
+export interface MaintenanceVisit {
+  id: string;
+  planId: string;
+  scheduledDate: string;
+  windowEnd: string | null;
+  status: MaintenanceVisitStatus;
+  completedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  workOrder: { id: string; number: string; status: string } | null;
+}
+
+export interface UpcomingVisit {
+  id: string;
+  scheduledDate: string;
+  status: string;
+  plan: {
+    frequency: MaintenanceFrequency;
+    contract: {
+      client: { legalName: string; tradeName: string | null };
+    };
+  };
+}
 
 export interface UpcomingVisitsResponse {
   data: UpcomingVisit[];

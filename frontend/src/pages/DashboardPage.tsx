@@ -7,6 +7,7 @@ import {
   Banknote,
   CalendarClock,
   ClipboardList,
+  FileSignature,
   FileText,
   Receipt,
   RefreshCw,
@@ -156,7 +157,7 @@ export function DashboardPage() {
     );
   }
 
-  const { quotations, workOrders, invoices, recentPayments, upcomingVisits } = data;
+  const { quotations, workOrders, invoices, recentPayments, upcomingVisits, maintenance } = data;
   const hasOverdue = invoices.overdue.count > 0;
   const pendingAction =
     quotations.approved + workOrders.inProgress + workOrders.completedWithoutInvoice;
@@ -203,7 +204,7 @@ export function DashboardPage() {
       )}
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <KpiCard
           label="OTs activas"
           value={workOrders.scheduled + workOrders.inProgress}
@@ -243,6 +244,14 @@ export function DashboardPage() {
           icon={AlertTriangle}
           accent={invoices.overdue.count > 0 ? 'red' : undefined}
           onClick={() => navigate('/cuentas-cobro')}
+        />
+        <KpiCard
+          label="Contratos activos"
+          value={maintenance.activeContracts}
+          sub={`${maintenance.activePlans} plan${maintenance.activePlans !== 1 ? 'es' : ''} · ${maintenance.overdueVisits > 0 ? `${maintenance.overdueVisits} visita${maintenance.overdueVisits !== 1 ? 's' : ''} vencida${maintenance.overdueVisits !== 1 ? 's' : ''}` : 'Sin visitas vencidas'}`}
+          icon={FileSignature}
+          accent={maintenance.overdueVisits > 0 ? 'red' : 'blue'}
+          onClick={() => navigate('/contratos')}
         />
       </div>
 
@@ -315,18 +324,15 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-0 divide-y">
               {upcomingVisits.map((v) => {
-                const daysLeft = differenceInDays(parseISO(v.nextVisitDate), today);
+                const daysLeft = differenceInDays(parseISO(v.scheduledDate.slice(0, 10)), today);
                 return (
                   <div key={v.id} className="py-2.5 flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {v.client.tradeName ?? v.client.legalName}
+                        {v.plan.contract.client.tradeName ?? v.plan.contract.client.legalName}
                       </p>
                       <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                        {v.branch?.name ?? '—'}
-                        {v.branch?.city ? ` · ${v.branch.city}` : ''}
-                        {' · '}
-                        <span>{FREQ_LABELS[v.frequency]}</span>
+                        {FREQ_LABELS[v.plan.frequency]}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
@@ -340,7 +346,7 @@ export function DashboardPage() {
                         <Badge variant="secondary">En {daysLeft}d</Badge>
                       )}
                       <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
-                        {format(parseISO(v.nextVisitDate), 'd MMM', { locale: es })}
+                        {format(parseISO(v.scheduledDate.slice(0, 10)), 'd MMM', { locale: es })}
                       </p>
                     </div>
                   </div>

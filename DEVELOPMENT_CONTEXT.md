@@ -7,9 +7,9 @@
 
 ## Estado actual
 
-**Versión:** `v1.6.0` (Hito 13-A — Schema de Mantenimiento Preventivo)
+**Versión:** `v1.7.0` (Hito 13 — Módulo de Mantenimiento Preventivo completo)
 **Rama activa:** `develop`
-**Última sesión:** 2026-07-06
+**Última sesión:** 2026-07-07
 
 ### Hitos completados
 
@@ -34,8 +34,11 @@
 | v1.4.0 | Hito 11 | Acta Técnica PDF — ServiceRecordDocument, endpoint service-record/pdf | ✅ Cerrado y auditado |
 | v1.5.0 | Hito 12 | Cierre del Ciclo de Cobro — InvoiceDocument PDF, endpoint invoices/:id/pdf | ✅ Cerrado y auditado |
 | v1.6.0 | Hito 13-A | Schema de Mantenimiento Preventivo — 4 nuevas entidades, 6 enums, migración aplicada, compilación limpia | ✅ Cerrado y auditado |
+| v1.7.0 | Hito 13-B | MaintenanceContract CRUD — backend + frontend completo (CMTO-YYYY-NNNNN) | ✅ Cerrado y auditado |
+| v1.7.0 | Hito 13-C | MaintenanceVisit — programación, cancelación, eliminación y generación de OT en transacción atómica | ✅ Cerrado y auditado |
+| v1.7.0 | Hito 13-D | Dashboard KPIs mantenimiento — contratos activos, planes activos, visitas vencidas; corrección bug upcomingVisits | ✅ Cerrado y auditado |
 
-**Estado general:** Build limpio · TypeScript 0 errores · Schema de mantenimiento migrado · NestJS levanta sin errores · Motor Documental activo (Cotización, Acta, Cuenta de Cobro) · Auth fullstack completa y congelada
+**Estado general:** Build limpio · TypeScript 0 errores · Módulo de Mantenimiento Preventivo completo y auditado · Motor Documental activo · Auth fullstack congelada
 
 ---
 
@@ -100,15 +103,12 @@
 | `expenses` | CRUD + política de edición por estado OT |
 | `equipment` | CRUD + soft delete |
 | `maintenance-plans` | Depende de `contractId` (no clientId/branchId) |
+| `maintenance-contracts` | CRUD + soft delete + numeración `CMTO-YYYY-NNNNN` |
+| `maintenance-visits` | Programación + cancelación + generación OT (transacción atómica) |
 | `users` | CRUD + deactivate + changePassword |
-| `dashboard` | `upcomingVisits` consulta `MaintenanceVisit` |
+| `dashboard` | KPIs mantenimiento: activeContracts, activePlans, overdueVisits |
 | `files` | Polimórfico `entityType + entityId` |
 | `documents` | PDF on-demand: Cotización, Acta Técnica, Cuenta de Cobro. Congelado. |
-
-### Pendiente (Hito 13)
-
-- `maintenance-contracts` — CRUD (Hito 13-B)
-- `maintenance-visits` — Programación y gestión (Hito 13-C)
 
 ### Infraestructura
 
@@ -151,10 +151,16 @@
 
 | Sub-hito | Descripción | Estado |
 |----------|-------------|--------|
-| **13-A** | Schema migration | ✅ CERRADO |
-| **13-B** | MaintenanceContract CRUD — backend + frontend | ⏳ Siguiente |
-| **13-C** | Visitas y generación de OTs | 🔜 |
-| **13-D** | Dashboard KPIs mantenimiento | 🔜 |
+| **13-A** | Schema migration — 4 entidades, 6 enums, migración PostgreSQL | ✅ CERRADO |
+| **13-B** | MaintenanceContract CRUD — backend + frontend, numeración CMTO | ✅ CERRADO |
+| **13-C** | MaintenanceVisit — programación, OT en transacción, cancelación | ✅ CERRADO |
+| **13-D** | Dashboard KPIs mantenimiento + correcciones de auditoría | ✅ CERRADO |
+
+**Correcciones de auditoría aplicadas al cierre del Hito 13:**
+- `upcomingVisits` filtra `scheduledDate >= hoy` (antes incluía vencidas)
+- `overdueVisits` filtra `plan.isActive = true` (consistencia con visitas próximas)
+- `ensureQuotationAvailable` acepta solo estado `APPROVED` (CONVERTED = ya consumida)
+- `useGenerateWorkOrder` invalida cache `['dashboard']` en `onSuccess`
 
 ---
 
@@ -197,4 +203,4 @@
 
 ---
 
-*Actualizado: 2026-07-06 — v1.6.0 — Hito 13-A cerrado (schema mantenimiento: 4 entidades, 6 enums, migración aplicada, 0 errores TypeScript) · Próximo: Hito 13-B — MaintenanceContract CRUD*
+*Actualizado: 2026-07-07 — v1.7.0 — Hito 13 cerrado y estable (A–D): módulo de Mantenimiento Preventivo completo — contratos, planes, visitas, generación de OTs, KPIs dashboard · Auditoría post-hito aplicada (4 correcciones) · Próximo: Hito 14*

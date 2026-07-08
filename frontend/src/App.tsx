@@ -20,6 +20,8 @@ import { InvoiceDetailPage } from '@/pages/InvoiceDetailPage';
 import { PaymentsPage } from '@/pages/PaymentsPage';
 import { EstadoCuentasPage } from '@/pages/EstadoCuentasPage';
 import UsersPage from '@/pages/UsersPage';
+import MaintenanceContractsPage from '@/pages/MaintenanceContractsPage';
+import MaintenancePlanDetailPage from '@/pages/MaintenancePlanDetailPage';
 
 const router = createBrowserRouter([
   {
@@ -46,7 +48,9 @@ const router = createBrowserRouter([
           { path: 'ordenes', element: <WorkOrdersPage /> },
           { path: 'ordenes/:id', element: <WorkOrderDetailPage /> },
           { path: 'actas', element: <ServiceRecordsPage /> },
+          { path: 'contratos', element: <MaintenanceContractsPage /> },
           { path: 'planes', element: <MaintenancePlansPage /> },
+          { path: 'planes/:planId', element: <MaintenancePlanDetailPage /> },
           { path: 'equipos', element: <EquipmentPage /> },
           { path: '403', element: <ForbiddenPage /> },
           {

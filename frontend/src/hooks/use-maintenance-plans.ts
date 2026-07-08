@@ -3,25 +3,22 @@ import { api } from '@/lib/api';
 import type { MaintenancePlan, MaintenanceFrequency, PaginatedResponse } from '@/lib/types';
 
 export interface MaintenancePlanFormData {
-  clientId: string;
-  branchId?: string;
+  contractId: string;
   frequency: MaintenanceFrequency;
-  contractStartDate: string;
-  contractEndDate?: string;
-  nextVisitDate: string;
+  startDate: string;
   isActive?: boolean;
   notes?: string;
 }
 
 interface PlanFilters {
-  clientId?: string;
+  contractId?: string;
   isActive?: boolean;
   page?: number;
 }
 
 export function useMaintenancePlans(filters: PlanFilters = {}) {
   const params = new URLSearchParams({ page: String(filters.page ?? 1) });
-  if (filters.clientId) params.set('clientId', filters.clientId);
+  if (filters.contractId) params.set('contractId', filters.contractId);
   if (filters.isActive !== undefined) params.set('isActive', String(filters.isActive));
 
   return useQuery({

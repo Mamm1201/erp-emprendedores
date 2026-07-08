@@ -18,6 +18,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { FilesModule } from './modules/files/files.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { MaintenanceContractsModule } from './modules/maintenance-contracts/maintenance-contracts.module';
+import { MaintenanceVisitsModule } from './modules/maintenance-visits/maintenance-visits.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
@@ -41,6 +43,8 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     DashboardModule,
     FilesModule,
     DocumentsModule,
+    MaintenanceContractsModule,
+    MaintenanceVisitsModule,
   ],
   controllers: [AppController],
   providers: [

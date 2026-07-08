@@ -24,6 +24,7 @@ const DOCUMENT_TYPES: DocumentType[] = [
   DocumentType.QUOTATION,
   DocumentType.WORK_ORDER,
   DocumentType.INVOICE,
+  DocumentType.MAINTENANCE_CONTRACT,
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -10,6 +10,7 @@ import {
   ClipboardCheck,
   Wrench,
   CalendarClock,
+  FileSignature,
   LogOut,
   ShieldCheck,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { to: '/estado-cuentas', label: 'Estado de cuentas', icon: BarChart3 },
   { to: '/ordenes', label: 'Órdenes de trabajo', icon: ClipboardList },
   { to: '/actas', label: 'Actas técnicas', icon: ClipboardCheck },
+  { to: '/contratos', label: 'Contratos mant.', icon: FileSignature },
   { to: '/planes', label: 'Planes de mantenimiento', icon: CalendarClock },
   { to: '/equipos', label: 'Equipos', icon: Wrench },
 ];
