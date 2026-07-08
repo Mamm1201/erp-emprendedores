@@ -7,7 +7,7 @@
 
 ## Estado actual
 
-**Versión:** `v1.7.0` (Hito 13 — Módulo de Mantenimiento Preventivo completo)
+**Versión:** `v1.8.0` (Hito 14 — Facturación de Contratos de Mantenimiento)
 **Rama activa:** `develop`
 **Última sesión:** 2026-07-07
 
@@ -37,8 +37,9 @@
 | v1.7.0 | Hito 13-B | MaintenanceContract CRUD — backend + frontend completo (CMTO-YYYY-NNNNN) | ✅ Cerrado y auditado |
 | v1.7.0 | Hito 13-C | MaintenanceVisit — programación, cancelación, eliminación y generación de OT en transacción atómica | ✅ Cerrado y auditado |
 | v1.7.0 | Hito 13-D | Dashboard KPIs mantenimiento — contratos activos, planes activos, visitas vencidas; corrección bug upcomingVisits | ✅ Cerrado y auditado |
+| v1.8.0 | Hito 14 | Facturación de Contratos — Invoice.contractId, createFromContract(), InvoiceCreatePage dual, botón "Nueva CC" en contratos activos | ✅ Cerrado y auditado |
 
-**Estado general:** Build limpio · TypeScript 0 errores · Módulo de Mantenimiento Preventivo completo y auditado · Motor Documental activo · Auth fullstack congelada
+**Estado general:** Build limpio · TypeScript 0 errores · Hito 14 cerrado · Facturación de contratos operativa · Motor Documental activo · Auth fullstack congelada
 
 ---
 
@@ -98,7 +99,7 @@
 | `quotations` | CRUD + estados + secuencia de numeración |
 | `work-orders` | CRUD + transiciones de estado + items |
 | `service-records` | `findByEquipment` filtra via `workOrder.equipmentId` |
-| `invoices` | `workOrderId` nullable; `contractId?` añadido |
+| `invoices` | `workOrderId` nullable; `contractId?` (Hito 14); `createFromContract()` crea ítem automático |
 | `payments` | Crear + anular pagos |
 | `expenses` | CRUD + política de edición por estado OT |
 | `equipment` | CRUD + soft delete |

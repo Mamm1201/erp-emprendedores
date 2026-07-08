@@ -19,6 +19,8 @@ export const INVOICE_SELECT = {
   updatedAt: true,
   client: { select: { id: true, legalName: true, tradeName: true } },
   workOrder: { select: { id: true, number: true, status: true } },
+  contractId: true,
+  contract: { select: { id: true, number: true } },
 } satisfies Prisma.InvoiceSelect;
 
 export const INVOICE_ITEM_SELECT = {

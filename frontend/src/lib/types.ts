@@ -132,7 +132,8 @@ export interface FinancialSummary {
 export interface Invoice {
   id: string;
   number: string;
-  workOrderId: string;
+  workOrderId: string | null;
+  contractId: string | null;
   clientId: string;
   status: InvoiceStatus;
   issueDate: string;
@@ -147,7 +148,8 @@ export interface Invoice {
   createdAt: string;
   updatedAt: string;
   client: { id: string; legalName: string; tradeName: string | null };
-  workOrder: { id: string; number: string; status: string };
+  workOrder: { id: string; number: string; status: string } | null;
+  contract: { id: string; number: string } | null;
   items?: InvoiceItem[];
   payments?: Payment[];
 }
@@ -294,6 +296,13 @@ export interface MaintenanceContract {
   client: { id: string; legalName: string; tradeName: string | null };
   signedBy: { id: string; name: string } | null;
   quotation: { id: string; number: string } | null;
+  invoices: Array<{
+    id: string;
+    number: string;
+    status: InvoiceStatus;
+    total: string;
+    dueDate: string;
+  }>;
 }
 
 export interface MaintenancePlan {

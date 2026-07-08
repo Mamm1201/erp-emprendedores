@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArrowLeft, PlusCircle, XCircle, FileDown } from 'lucide-react';
+import { ArrowLeft, PlusCircle, XCircle, FileDown, FileSignature } from 'lucide-react';
 
 import {
   useInvoice,
@@ -360,8 +360,12 @@ export function InvoiceDetailPage() {
           </div>
           <p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
             {invoice.client.tradeName ?? invoice.client.legalName}
-            {' · '}
-            <span className="font-mono">{invoice.workOrder.number}</span>
+            {invoice.workOrder && (
+              <> · <span className="font-mono">{invoice.workOrder.number}</span></>
+            )}
+            {invoice.contract && (
+              <> · <FileSignature className="inline h-3.5 w-3.5 mx-0.5 -mt-0.5" /><span className="font-mono">{invoice.contract.number}</span></>
+            )}
           </p>
         </div>
 
@@ -423,15 +427,28 @@ export function InvoiceDetailPage() {
             {overdue && ' ⚠'}
           </p>
         </div>
-        <div>
-          <p className="text-[hsl(var(--muted-foreground))] text-xs mb-0.5">OT vinculada</p>
-          <button
-            className="font-mono text-[hsl(var(--primary))] hover:underline"
-            onClick={() => navigate(`/ordenes/${invoice.workOrder.id}`)}
-          >
-            {invoice.workOrder.number}
-          </button>
-        </div>
+        {invoice.workOrder && (
+          <div>
+            <p className="text-[hsl(var(--muted-foreground))] text-xs mb-0.5">OT vinculada</p>
+            <button
+              className="font-mono text-[hsl(var(--primary))] hover:underline"
+              onClick={() => navigate(`/ordenes/${invoice.workOrder!.id}`)}
+            >
+              {invoice.workOrder.number}
+            </button>
+          </div>
+        )}
+        {invoice.contract && (
+          <div>
+            <p className="text-[hsl(var(--muted-foreground))] text-xs mb-0.5">Contrato vinculado</p>
+            <button
+              className="font-mono text-[hsl(var(--primary))] hover:underline"
+              onClick={() => navigate(`/contratos/${invoice.contract!.id}`)}
+            >
+              {invoice.contract.number}
+            </button>
+          </div>
+        )}
         {invoice.voidedAt && (
           <div>
             <p className="text-[hsl(var(--muted-foreground))] text-xs mb-0.5">Anulada el</p>

@@ -11,9 +11,15 @@ import {
 import { InvoiceItemDto } from './invoice-item.dto';
 
 export class CreateInvoiceDto {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  workOrderId: string;
+  workOrderId?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  contractId?: string;
 
   @IsDateString()
   dueDate: string;

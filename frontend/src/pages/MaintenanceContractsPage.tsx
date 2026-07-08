@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Plus, Pencil, Trash2, FileSignature } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileSignature, Receipt } from 'lucide-react';
 
 import {
   useMaintenanceContracts,
@@ -434,6 +435,7 @@ function StatusModal({ contract, onClose }: StatusModalProps) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MaintenanceContractsPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ContractStatus | ''>('');
   const [page, setPage] = useState(1);
@@ -509,20 +511,21 @@ export default function MaintenanceContractsPage() {
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Vigencia</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Valor</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Facturación</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">CC</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y">
             {isLoading && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   Cargando…
                 </td>
               </tr>
             )}
             {!isLoading && contracts.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   No hay contratos registrados.
                 </td>
               </tr>
@@ -541,8 +544,25 @@ export default function MaintenanceContractsPage() {
                 </td>
                 <td className="px-4 py-3 font-medium">{fmtMoney(c.value)}</td>
                 <td className="px-4 py-3 text-muted-foreground">{BILLING_LABELS[c.billingCycle]}</td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {c.invoices.length > 0 ? (
+                    <span className="text-xs font-medium">{c.invoices.length} CC</span>
+                  ) : (
+                    <span className="text-xs opacity-40">—</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
+                    {c.status === 'ACTIVE' && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Nueva cuenta de cobro"
+                        onClick={() => navigate(`/cuentas-cobro/nueva?contractId=${c.id}`)}
+                      >
+                        <Receipt className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="ghost"

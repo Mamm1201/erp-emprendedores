@@ -48,4 +48,8 @@ export class QueryInvoicesDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  contractId?: string;
 }

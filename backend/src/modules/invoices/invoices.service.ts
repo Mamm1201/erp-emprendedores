@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  ContractStatus,
   InvoiceStatus,
   PaymentMethod,
   Prisma,
@@ -103,8 +104,29 @@ export class InvoicesService {
   }
 
   async create(dto: CreateInvoiceDto, userId: string) {
+    const hasWorkOrder = !!dto.workOrderId;
+    const hasContract = !!dto.contractId;
+
+    if (!hasWorkOrder && !hasContract) {
+      throw new BadRequestException(
+        'Se requiere workOrderId o contractId para crear una cuenta de cobro',
+      );
+    }
+    if (hasWorkOrder && hasContract) {
+      throw new BadRequestException(
+        'No se pueden especificar workOrderId y contractId simultáneamente',
+      );
+    }
+
+    if (hasContract) {
+      return this.createFromContract(dto, userId);
+    }
+    return this.createFromWorkOrder(dto, userId);
+  }
+
+  private async createFromWorkOrder(dto: CreateInvoiceDto, userId: string) {
     const workOrder = await this.prisma.workOrder.findFirst({
-      where: { id: dto.workOrderId, deletedAt: null },
+      where: { id: dto.workOrderId!, deletedAt: null },
       select: {
         id: true,
         status: true,
@@ -158,6 +180,78 @@ export class InvoicesService {
           items: itemsPayload.items.length > 0
             ? { create: itemsPayload.items }
             : undefined,
+        },
+        select: {
+          ...INVOICE_SELECT,
+          items: { select: INVOICE_ITEM_SELECT, orderBy: { lineOrder: 'asc' } },
+          payments: { select: PAYMENT_SELECT },
+        },
+      });
+    });
+  }
+
+  private async createFromContract(dto: CreateInvoiceDto, userId: string) {
+    const contract = await this.prisma.maintenanceContract.findFirst({
+      where: { id: dto.contractId!, deletedAt: null },
+      select: { id: true, number: true, status: true, clientId: true, value: true },
+    });
+
+    if (!contract) {
+      throw new NotFoundException(
+        `Contrato con id "${dto.contractId}" no encontrado`,
+      );
+    }
+
+    if (contract.status !== ContractStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Solo se pueden facturar contratos en estado ACTIVE (estado actual: ${contract.status})`,
+      );
+    }
+
+    const defaultItem = {
+      lineOrder: 0,
+      description: `Cuota de mantenimiento — ${contract.number}`,
+      quantity: toMoney(1),
+      unitPrice: toMoney(contract.value),
+      discountAmount: toMoney(0),
+      taxRate: toMoney(0),
+    };
+
+    const itemsPayload =
+      dto.items && dto.items.length > 0
+        ? this.buildItemsPayload(dto.items)
+        : this.buildItemsPayload([
+            {
+              lineOrder: 0,
+              description: defaultItem.description,
+              quantity: 1,
+              unitPrice: Number(contract.value),
+              discountAmount: 0,
+              taxRate: 0,
+            },
+          ]);
+
+    return this.prisma.$transaction(async (tx) => {
+      const number = await nextDocumentNumber(
+        tx,
+        INVOICE_DOCUMENT_TYPE,
+        INVOICE_NUMBER_PREFIX,
+      );
+
+      return tx.invoice.create({
+        data: {
+          number,
+          contractId: dto.contractId,
+          clientId: contract.clientId,
+          status: InvoiceStatus.DRAFT,
+          dueDate: new Date(dto.dueDate),
+          notes: dto.notes ?? null,
+          createdById: userId,
+          subtotal: itemsPayload.totals.subtotal,
+          discountTotal: itemsPayload.totals.discountTotal,
+          taxTotal: itemsPayload.totals.taxTotal,
+          total: itemsPayload.totals.total,
+          items: { create: itemsPayload.items },
         },
         select: {
           ...INVOICE_SELECT,
@@ -345,6 +439,7 @@ export class InvoicesService {
 
     if (query.clientId) where.clientId = query.clientId;
     if (query.status) where.status = query.status;
+    if (query.contractId) where.contractId = query.contractId;
 
     if (query.fromDate || query.toDate) {
       where.issueDate = {

@@ -34,4 +34,9 @@ export const CONTRACT_SELECT = {
   quotation: {
     select: { id: true, number: true },
   },
+  invoices: {
+    select: { id: true, number: true, status: true, total: true, dueDate: true },
+    where: { status: { not: 'VOID' } },
+    orderBy: [{ createdAt: 'desc' }],
+  },
 } satisfies Prisma.MaintenanceContractSelect;

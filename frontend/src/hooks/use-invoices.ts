@@ -20,7 +20,8 @@ export interface InvoiceItemFormData {
 }
 
 export interface CreateInvoiceData {
-  workOrderId: string;
+  workOrderId?: string;
+  contractId?: string;
   dueDate: string;
   notes?: string;
   items?: InvoiceItemFormData[];
@@ -44,6 +45,7 @@ interface InvoiceFilters {
   search?: string;
   status?: InvoiceStatus | '';
   clientId?: string;
+  contractId?: string;
   page?: number;
 }
 
@@ -52,6 +54,7 @@ export function useInvoices(filters: InvoiceFilters = {}) {
   if (filters.search?.trim()) params.set('search', filters.search.trim());
   if (filters.status) params.set('status', filters.status);
   if (filters.clientId) params.set('clientId', filters.clientId);
+  if (filters.contractId) params.set('contractId', filters.contractId);
 
   return useQuery({
     queryKey: ['invoices', filters],
@@ -77,6 +80,8 @@ export function useCreateInvoice() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['invoices'] });
       qc.invalidateQueries({ queryKey: ['work-orders'] });
+      qc.invalidateQueries({ queryKey: ['maintenance-contracts'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 }
