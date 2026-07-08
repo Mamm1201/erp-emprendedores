@@ -7,7 +7,7 @@
 
 ## Estado actual
 
-**Versión:** `v1.8.0` (Hito 14 — Facturación de Contratos de Mantenimiento)
+**Versión:** `v1.9.0` (Post-QA Stabilization — 6 correcciones validadas)
 **Rama activa:** `develop`
 **Última sesión:** 2026-07-07
 
@@ -38,8 +38,9 @@
 | v1.7.0 | Hito 13-C | MaintenanceVisit — programación, cancelación, eliminación y generación de OT en transacción atómica | ✅ Cerrado y auditado |
 | v1.7.0 | Hito 13-D | Dashboard KPIs mantenimiento — contratos activos, planes activos, visitas vencidas; corrección bug upcomingVisits | ✅ Cerrado y auditado |
 | v1.8.0 | Hito 14 | Facturación de Contratos — Invoice.contractId, createFromContract(), InvoiceCreatePage dual, botón "Nueva CC" en contratos activos | ✅ Cerrado y auditado |
+| v1.9.0 | QA Fix | Post-QA Stabilization — F-05 quotation en OT, F-06 CONVERTED automático, F-08 visita COMPLETED cascade, F-09 lineOrder=1, F-10 KPI excluye preventivas, F-11 visitas GENERATED en dashboard | ✅ Cerrado y auditado |
 
-**Estado general:** Build limpio · TypeScript 0 errores · Hito 14 cerrado · Facturación de contratos operativa · Motor Documental activo · Auth fullstack congelada
+**Estado general:** Build limpio · TypeScript 0 errores · QA E2E completado · 6 correcciones validadas · Facturación de contratos operativa · Motor Documental activo · Auth fullstack congelada
 
 ---
 

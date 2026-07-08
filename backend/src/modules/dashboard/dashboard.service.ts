@@ -87,7 +87,7 @@ export class DashboardService {
       }),
       this.prisma.maintenanceVisit.findMany({
         where: {
-          status: 'PENDING',
+          status: { in: ['PENDING', 'GENERATED'] },
           scheduledDate: { gte: now, lte: next30Days },
           plan: { isActive: true },
         },
@@ -114,6 +114,7 @@ export class DashboardService {
           deletedAt: null,
           status: WorkOrderStatus.COMPLETED,
           invoice: null,
+          maintenanceVisit: null,
         },
       }),
       this.prisma.quotation.count({

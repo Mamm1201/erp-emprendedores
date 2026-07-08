@@ -209,7 +209,7 @@ export class InvoicesService {
     }
 
     const defaultItem = {
-      lineOrder: 0,
+      lineOrder: 1,
       description: `Cuota de mantenimiento — ${contract.number}`,
       quantity: toMoney(1),
       unitPrice: toMoney(contract.value),
@@ -222,7 +222,7 @@ export class InvoicesService {
         ? this.buildItemsPayload(dto.items)
         : this.buildItemsPayload([
             {
-              lineOrder: 0,
+              lineOrder: 1,
               description: defaultItem.description,
               quantity: 1,
               unitPrice: Number(contract.value),

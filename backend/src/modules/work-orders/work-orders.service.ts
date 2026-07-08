@@ -221,6 +221,13 @@ export class WorkOrdersService {
         },
       });
 
+      if (dto.status === WorkOrderStatus.COMPLETED) {
+        await tx.maintenanceVisit.updateMany({
+          where: { workOrderId: id, status: 'GENERATED' },
+          data: { status: 'COMPLETED', completedAt: new Date() },
+        });
+      }
+
       return updated;
     });
   }

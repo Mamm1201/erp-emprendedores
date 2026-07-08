@@ -24,6 +24,7 @@ export const WORK_ORDER_SELECT = {
   branch: { select: { id: true, name: true, city: true } },
   serviceRecord: { select: { id: true } },
   invoice: { select: { id: true, number: true, status: true } },
+  quotation: { select: { id: true, number: true } },
 } satisfies Prisma.WorkOrderSelect;
 
 export const WORK_ORDER_ITEM_SELECT = {

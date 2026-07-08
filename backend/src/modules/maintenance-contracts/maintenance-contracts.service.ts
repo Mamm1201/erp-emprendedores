@@ -80,6 +80,13 @@ export class MaintenanceContractsService {
         CONTRACT_NUMBER_PREFIX,
       );
 
+      if (dto.quotationId) {
+        await tx.quotation.update({
+          where: { id: dto.quotationId },
+          data: { status: 'CONVERTED' },
+        });
+      }
+
       return tx.maintenanceContract.create({
         data: {
           number,

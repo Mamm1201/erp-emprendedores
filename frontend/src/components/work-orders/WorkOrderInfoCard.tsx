@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Building2, CalendarClock, CalendarCheck, Clock3, MapPin, User, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { WorkOrder } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,13 +51,14 @@ interface WorkOrderInfoCardProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function WorkOrderInfoCard({ workOrder }: WorkOrderInfoCardProps) {
+  const navigate = useNavigate();
   const {
     description,
     scheduledAt,
     startedAt,
     completedAt,
     branch,
-    quotationId,
+    quotation,
     createdAt,
   } = workOrder;
 
@@ -121,12 +123,20 @@ export function WorkOrderInfoCard({ workOrder }: WorkOrderInfoCardProps) {
             value={workOrder.assignedTo?.name ?? 'Sin asignar'}
           />
 
-          {quotationId && (
-            <InfoRow
-              icon={FileText}
-              label="Cotización origen"
-              value="Vinculada (ver módulo de cotizaciones)"
-            />
+          {quotation && (
+            <div className="space-y-0.5">
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">Cotización origen</p>
+              <div className="flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-[hsl(var(--muted-foreground))] shrink-0" />
+                <button
+                  className="font-mono text-sm text-[hsl(var(--primary))] hover:underline"
+                  onClick={() => navigate(`/cotizaciones`)}
+                  title={`Ir a cotizaciones y buscar ${quotation.number}`}
+                >
+                  {quotation.number}
+                </button>
+              </div>
+            </div>
           )}
 
           <InfoRow
