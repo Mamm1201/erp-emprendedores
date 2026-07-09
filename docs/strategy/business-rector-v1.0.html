@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documento Rector Empresarial v1.0 — STECH NODES</title>
+<style>
+/* ══════════════════════════════════════════════════════
+   TOKENS — idénticos a toda la familia de documentos STECH NODES
+   ══════════════════════════════════════════════════════ */
+:root {
+  --bg:         #F8F7F6;
+  --surface:    #FFFFFF;
+  --surface-2:  #F1EFed;
+  --text:       #1C1917;
+  --text-2:     #57534E;
+  --text-3:     #A8A29E;
+  --border:     #E7E5E4;
+  --border-2:   #D6D3D1;
+  --navy:       #042C53;
+  --navy-mid:   #0A3D6B;
+  --blue:       #185FA5;
+  --blue-lt:    #378ADD;
+  --blue-bg:    #EFF6FF;
+  --blue-bdr:   #BFDBFE;
+  --blue-txt:   #1E3A5F;
+  --teal:       #065F46;
+  --teal-bg:    #ECFDF5;
+  --teal-bdr:   #6EE7B7;
+  --amber:      #78350F;
+  --amber-bg:   #FFFBEB;
+  --amber-bdr:  #FDE68A;
+  --red:        #7F1D1D;
+  --red-bg:     #FEF2F2;
+  --red-bdr:    #FECACA;
+  --gold:       #92400E;
+  --gold-bg:    #FEF3C7;
+  --gold-bdr:   #F59E0B;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0C1520; --surface: #152030; --surface-2: #1A2840;
+    --text: #F5F5F4; --text-2: #A8A29E; --text-3: #57534E;
+    --border: #1E3045; --border-2: #2A4060;
+    --navy: #378ADD; --navy-mid: #5096CA;
+    --blue: #93C5FD; --blue-lt: #BFDBFE;
+    --blue-bg: #001833; --blue-bdr: #1E3A5F; --blue-txt: #93C5FD;
+    --teal: #6EE7B7; --teal-bg: #002A1A; --teal-bdr: #054F3A;
+    --amber: #FCD34D; --amber-bg: #1C1200; --amber-bdr: #78350F;
+    --red: #FCA5A5; --red-bg: #200000; --red-bdr: #7F1D1D;
+    --gold: #FCD34D; --gold-bg: #1C0F00; --gold-bdr: #92400E;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C1520; --surface: #152030; --surface-2: #1A2840;
+  --text: #F5F5F4; --text-2: #A8A29E; --text-3: #57534E;
+  --border: #1E3045; --border-2: #2A4060;
+  --navy: #378ADD; --navy-mid: #5096CA;
+  --blue: #93C5FD; --blue-lt: #BFDBFE;
+  --blue-bg: #001833; --blue-bdr: #1E3A5F; --blue-txt: #93C5FD;
+  --teal: #6EE7B7; --teal-bg: #002A1A; --teal-bdr: #054F3A;
+  --amber: #FCD34D; --amber-bg: #1C1200; --amber-bdr: #78350F;
+  --red: #FCA5A5; --red-bg: #200000; --red-bdr: #7F1D1D;
+  --gold: #FCD34D; --gold-bg: #1C0F00; --gold-bdr: #92400E;
+}
+:root[data-theme="light"] {
+  --bg: #F8F7F6; --surface: #FFFFFF; --surface-2: #F1EFed;
+  --text: #1C1917; --text-2: #57534E; --text-3: #A8A29E;
+  --border: #E7E5E4; --border-2: #D6D3D1;
+  --navy: #042C53; --navy-mid: #0A3D6B;
+  --blue: #185FA5; --blue-lt: #378ADD;
+  --blue-bg: #EFF6FF; --blue-bdr: #BFDBFE; --blue-txt: #1E3A5F;
+  --teal: #065F46; --teal-bg: #ECFDF5; --teal-bdr: #6EE7B7;
+  --amber: #78350F; --amber-bg: #FFFBEB; --amber-bdr: #FDE68A;
+  --red: #7F1D1D; --red-bg: #FEF2F2; --red-bdr: #FECACA;
+  --gold: #92400E; --gold-bg: #FEF3C7; --gold-bdr: #F59E0B;
+}
+
+/* ══════════════════════════════════════════════════════
+   BASE
+   ══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════════════════════════════
+   LAYOUT
+   ══════════════════════════════════════════════════════ */
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 0 100px;
+}
+
+/* ══════════════════════════════════════════════════════
+   COVER PAGE
+   ══════════════════════════════════════════════════════ */
+.cover {
+  background: var(--navy);
+  padding: 64px 64px 56px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 40px,
+    rgba(255,255,255,0.015) 40px,
+    rgba(255,255,255,0.015) 41px
+  );
+  pointer-events: none;
+}
+.cover-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 56px;
+}
+.cover-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cover-brand {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.9);
+  line-height: 1.2;
+}
+.cover-brand-tag { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; font-weight: 400; }
+.cover-validity {
+  text-align: right;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.8;
+}
+.cover-validity strong { color: rgba(255,255,255,0.7); font-weight: 600; }
+
+.cover-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 14px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.cover-version {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  background: rgba(55,138,221,0.25);
+  color: var(--blue-lt);
+  border: 1px solid rgba(55,138,221,0.4);
+  border-radius: 999px;
+  margin-bottom: 28px;
+}
+.cover-description {
+  font-size: 16px;
+  color: rgba(255,255,255,0.55);
+  max-width: 540px;
+  line-height: 1.65;
+  margin-bottom: 48px;
+}
+.cover-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cover-meta-item {
+  background: rgba(0,0,0,0.25);
+  padding: 16px 20px;
+}
+.cover-meta-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 5px;
+}
+.cover-meta-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+}
+
+/* ══════════════════════════════════════════════════════
+   GOV BANNER
+   ══════════════════════════════════════════════════════ */
+.gov-banner {
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bdr);
+  border-top: none;
+  padding: 12px 64px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gov-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.gov-text { font-size: 12px; color: var(--gold); font-weight: 600; line-height: 1.5; }
+
+/* ══════════════════════════════════════════════════════
+   TOC
+   ══════════════════════════════════════════════════════ */
+.toc-block {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 36px 64px;
+}
+.toc-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 20px;
+}
+.toc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 32px;
+}
+.toc-item {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 0;
+  border-bottom: 0.5px dashed var(--border);
+}
+.toc-item a { text-decoration: none; color: var(--text-2); font-size: 13.5px; }
+.toc-item a:hover { color: var(--blue-lt); }
+.toc-num { font-size: 10px; font-weight: 700; color: var(--blue-lt); width: 24px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.toc-dots { flex: 1; border-bottom: 1px dotted var(--border-2); margin: 0 4px 3px; }
+.toc-page { font-size: 10px; color: var(--text-3); }
+
+/* ══════════════════════════════════════════════════════
+   CONTENT
+   ══════════════════════════════════════════════════════ */
+.content { padding: 0 64px; }
+
+.section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--border);
+}
+.section:last-child { border-bottom: none; }
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.section-num {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--blue-lt);
+}
+.section-eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 28px;
+}
+
+h3 {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 28px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+h3:first-of-type { margin-top: 0; }
+
+p { color: var(--text-2); margin-bottom: 12px; line-height: 1.75; }
+p:last-child { margin-bottom: 0; }
+p strong { color: var(--text); font-weight: 600; }
+
+/* ══════════════════════════════════════════════════════
+   SOURCE BADGE
+   ══════════════════════════════════════════════════════ */
+.src {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  vertical-align: middle;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════
+   DECLARATION BOX
+   ══════════════════════════════════════════════════════ */
+.declaration {
+  background: var(--navy);
+  border-radius: 10px;
+  padding: 28px 32px;
+  margin: 20px 0;
+  position: relative;
+  overflow: hidden;
+}
+.declaration::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  font-size: 120px;
+  color: rgba(255,255,255,0.05);
+  font-family: Georgia, serif;
+  line-height: 1;
+  pointer-events: none;
+}
+.declaration-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 12px;
+}
+.declaration-text {
+  font-size: 16px;
+  color: rgba(255,255,255,0.88);
+  line-height: 1.7;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+.declaration-src {
+  display: inline-block;
+  font-size: 9px;
+  padding: 1px 7px;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 3px;
+  margin-top: 12px;
+}
+
+/* ══════════════════════════════════════════════════════
+   TABLE
+   ══════════════════════════════════════════════════════ */
+.table-wrap { overflow-x: auto; margin: 16px 0; border-radius: 8px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th {
+  background: var(--surface-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 9px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-2);
+  white-space: nowrap;
+}
+td { padding: 10px 16px; border-bottom: 0.5px solid var(--border); color: var(--text-2); vertical-align: top; line-height: 1.6; }
+td strong { color: var(--text); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface-2); }
+
+/* ══════════════════════════════════════════════════════
+   ALERT / CALLOUT
+   ══════════════════════════════════════════════════════ */
+.alert {
+  border-radius: 6px;
+  padding: 14px 18px;
+  border-left: 3px solid;
+  margin: 16px 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+.alert-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.alert.warn { background: var(--amber-bg); border-color: var(--amber-bdr); color: var(--amber); }
+.alert.info { background: var(--blue-bg);  border-color: var(--blue-bdr);  color: var(--blue-txt); }
+.alert.crit { background: var(--red-bg);   border-color: var(--red-bdr);   color: var(--red); }
+.alert.good { background: var(--teal-bg);  border-color: var(--teal-bdr);  color: var(--teal); }
+.alert.navy { background: var(--surface-2);border-color: var(--navy);      color: var(--text-2); }
+
+/* ══════════════════════════════════════════════════════
+   CARDS
+   ══════════════════════════════════════════════════════ */
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+.card-icon { font-size: 18px; margin-bottom: 8px; }
+.card-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue-lt);
+  margin-bottom: 6px;
+}
+.card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.card-body { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+
+/* ══════════════════════════════════════════════════════
+   MOAT LAYERS
+   ══════════════════════════════════════════════════════ */
+.moat-stack { display: flex; flex-direction: column; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); margin: 16px 0; }
+.moat-layer { display: flex; align-items: stretch; border-bottom: 0.5px solid var(--border); }
+.moat-layer:last-child { border-bottom: none; }
+.moat-depth {
+  width: 88px; flex-shrink: 0; padding: 14px 12px;
+  text-align: center; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border-right: 1px solid var(--border); display: flex;
+  align-items: center; justify-content: center;
+}
+.moat-depth.surface { background: var(--red-bg);    color: var(--red); }
+.moat-depth.mid     { background: var(--amber-bg);  color: var(--amber); }
+.moat-depth.deep    { background: var(--blue-bg);   color: var(--blue-txt); }
+.moat-depth.bedrock { background: var(--teal-bg);   color: var(--teal); }
+.moat-body { flex: 1; padding: 14px 18px; }
+.moat-title { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.moat-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.55; }
+.moat-time { font-size: 11px; color: var(--text-3); margin-top: 4px; font-style: italic; }
+.moat-side { width: 110px; flex-shrink: 0; padding: 14px 12px; border-left: 1px solid var(--border); font-size: 11px; color: var(--text-3); line-height: 1.45; display: flex; align-items: center; }
+
+/* ══════════════════════════════════════════════════════
+   HORIZON TIMELINE
+   ══════════════════════════════════════════════════════ */
+.horizons { display: flex; gap: 0; margin: 16px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.horizon { flex: 1; padding: 18px 18px; border-right: 1px solid var(--border); }
+.horizon:last-child { border-right: none; }
+.horizon-period { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue-lt); margin-bottom: 6px; }
+.horizon-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+.horizon-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.55; }
+.horizon-metric { font-size: 11px; color: var(--teal); margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+.horizon.h1 { background: var(--surface); }
+.horizon.h2 { background: var(--surface-2); }
+.horizon.h3 { background: var(--surface); }
+
+/* ══════════════════════════════════════════════════════
+   PRINCIPLE ITEMS
+   ══════════════════════════════════════════════════════ */
+.principle { margin-bottom: 16px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.principle-num { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 5px; }
+.principle-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.principle-body { font-size: 13.5px; color: var(--text-2); line-height: 1.6; }
+
+/* ══════════════════════════════════════════════════════
+   GOV TABLE (Governance of this document)
+   ══════════════════════════════════════════════════════ */
+.gov-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 24px 0;
+}
+.gov-block-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.gov-rows { display: flex; flex-direction: column; gap: 10px; }
+.gov-row { display: flex; gap: 12px; font-size: 13.5px; }
+.gov-key { width: 180px; flex-shrink: 0; font-weight: 600; color: var(--text); }
+.gov-val { color: var(--text-2); flex: 1; line-height: 1.6; }
+
+/* ══════════════════════════════════════════════════════
+   STATUS SECTION
+   ══════════════════════════════════════════════════════ */
+.status-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.status-row:last-child { border-bottom: none; }
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  margin-top: 7px;
+}
+.status-dot.done    { background: #10B981; }
+.status-dot.active  { background: var(--blue-lt); }
+.status-dot.pending { background: var(--text-3); }
+.status-body { flex: 1; }
+.status-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.status-desc  { font-size: 13px; color: var(--text-2); margin-top: 2px; line-height: 1.5; }
+
+/* ══════════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════════ */
+.doc-footer {
+  background: var(--navy);
+  padding: 28px 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-brand { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.footer-version { font-size: 11px; color: rgba(255,255,255,0.3); }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .cover, .gov-banner, .toc-block, .content { padding-left: 24px; padding-right: 24px; }
+  .cover-meta-grid { grid-template-columns: 1fr 1fr; }
+  .cover-title { font-size: 26px; }
+  .toc-grid { grid-template-columns: 1fr; }
+  .card-grid { grid-template-columns: 1fr; }
+  .horizons { flex-direction: column; }
+  .moat-side { display: none; }
+  .gov-key { width: 140px; }
+  .doc-footer { flex-direction: column; gap: 8px; text-align: center; }
+}
+
+/* ══════════════════════════════════════════════════════
+   PRINT
+   ══════════════════════════════════════════════════════ */
+@media print {
+  body { font-size: 12px; background: #fff; color: #000; }
+  .cover { background: #042C53 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .cover-meta-grid { background: rgba(0,0,0,0.3) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .card, .principle, .declaration { background: #fff !important; border: 1px solid #ccc !important; break-inside: avoid; }
+  .moat-layer { break-inside: avoid; }
+  .horizon { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+  .gov-banner { background: #fffbeb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .alert { break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .section { break-inside: avoid; page-break-before: auto; }
+  .section-title { page-break-after: avoid; }
+  h3 { page-break-after: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- ══════════════════════════════════════════════════
+     COVER
+     ══════════════════════════════════════════════════ -->
+<header class="cover">
+  <div class="cover-top">
+    <div class="cover-logo">
+      <svg width="36" height="36" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+        <circle r="7.5" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.1"/>
+        <circle r="4.2" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="0.8"/>
+        <circle r="1.6" fill="rgba(255,255,255,0.6)"/>
+        <line x1="0" y1="-7.5" x2="0" y2="-10.2" stroke="rgba(255,255,255,0.6)" stroke-width="1.1" stroke-linecap="round"/>
+        <line x1="0" y1="7.5"  x2="0" y2="10.2"  stroke="rgba(255,255,255,0.6)" stroke-width="1.1" stroke-linecap="round"/>
+        <line x1="-7.5" y1="0" x2="-10.2" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="1.1" stroke-linecap="round"/>
+        <line x1="7.5"  y1="0" x2="10.2"  y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="cover-brand">STECH NODES</div>
+        <div class="cover-brand-tag">Mantenimiento biomédico · Colombia</div>
+      </div>
+    </div>
+    <div class="cover-validity">
+      <strong>Versión 1.0</strong><br>
+      Vigente desde: 2026-07-08<br>
+      Tipo: Documento rector permanente<br>
+      Actualización por: fundadores únicamente
+    </div>
+  </div>
+
+  <div class="cover-label">Estrategia corporativa</div>
+  <div class="cover-title">Documento Rector<br>Empresarial</div>
+  <div class="cover-version">v1.0 · 2026-07-08</div>
+  <div class="cover-description">
+    Consolida la identidad, el modelo de negocio, la propuesta de valor, los diferenciadores y la visión estratégica de STECH NODES en un único documento de referencia permanente. Sirve como base para Fondo Emprender, presentaciones comerciales, documentación corporativa y decisiones de producto.
+  </div>
+
+  <div class="cover-meta-grid">
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Tipo de empresa</div>
+      <div class="cover-meta-value">Servicio técnico especializado</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Sector</div>
+      <div class="cover-meta-value">Biomédico · Colombia</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Convocatoria objetivo</div>
+      <div class="cover-meta-value">PITCH VERDE 2026</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Fuentes documentales</div>
+      <div class="cover-meta-value">5 documentos estratégicos</div>
+    </div>
+  </div>
+</header>
+
+<div class="gov-banner">
+  <div class="gov-dot"></div>
+  <div class="gov-text">Documento rector. Ninguna comunicación externa, estrategia comercial, desarrollo de producto o presentación institucional puede contradecir los principios aquí definidos. Jerarquía máxima dentro del ecosistema documental de STECH NODES.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TOC
+     ══════════════════════════════════════════════════ -->
+<nav class="toc-block">
+  <div class="toc-title">Contenido</div>
+  <div class="toc-grid">
+    <div class="toc-item"><span class="toc-num">01</span><a href="#identidad">Declaración corporativa e identidad</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">07</span><a href="#modelo">Modelo de negocio</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">02</span><a href="#problema">El problema que resuelve</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">08</span><a href="#arquitectura">Arquitectura tecnológica</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">03</span><a href="#solucion">La solución y arquitectura de la oferta</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">09</span><a href="#vision">Visión y horizontes estratégicos</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">04</span><a href="#promesa">Propuesta de valor y promesa comercial</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">10</span><a href="#principios">Principios de gobierno y restricciones</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">05</span><a href="#mercado">Mercado objetivo y segmentos</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">11</span><a href="#estado">Estado actual de implementación</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">06</span><a href="#diferenciadores">Diferenciadores y ventaja competitiva</a><span class="toc-dots"></span></div>
+    <div class="toc-item"><span class="toc-num">12</span><a href="#gobierno">Gobierno de este documento</a><span class="toc-dots"></span></div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     CONTENT
+     ══════════════════════════════════════════════════ -->
+<div class="content">
+
+<!-- §01 IDENTIDAD -->
+<section class="section" id="identidad">
+  <div class="section-eyebrow">§01 · Declaración corporativa</div>
+  <div class="section-title">Identidad y declaración corporativa</div>
+  <div class="section-subtitle">Qué es STECH NODES, qué hace y cuál es su razón de existir.</div>
+
+  <div class="declaration">
+    <div class="declaration-label">Declaración oficial</div>
+    <div class="declaration-text">STECH NODES es una empresa de servicio técnico especializado que ancla el conocimiento técnico de los activos biomédicos al equipo físico, no a las personas que lo gestionan.</div>
+    <div class="declaration-src">Fuente: positioning-brief-v1.3 — Declaración corporativa</div>
+  </div>
+
+  <h3>Qué hace STECH NODES</h3>
+  <p>STECH NODES presta servicios de mantenimiento preventivo y correctivo de equipos biomédicos a clínicas y hospitales privados en Colombia. Su diferencia esencial no es el tipo de mantenimiento que hace sino <strong>cómo documenta lo que hace</strong>: convierte cada intervención técnica en historial verificable, sistemático y accesible para el cliente sin intermediación del proveedor.</p>
+
+  <h3>Qué no es STECH NODES</h3>
+  <div class="alert navy">
+    <div class="alert-label">Aclaración crítica</div>
+    STECH NODES no es una empresa de software. El ERP y el ecosistema QR son herramientas construidas para sostener la operación propia con el nivel de rigor que el sector exige. El ERP es la infraestructura que hace posible la promesa. El QR es la interfaz que hace visible la promesa. Ninguno es un producto para vender. <span class="src">pb-v1.3</span>
+  </div>
+
+  <h3>Razón de existir</h3>
+  <p>En el ecosistema de mantenimiento biomédico colombiano, el historial técnico de los activos viaja con las personas, no con los equipos. Cuando el coordinador cambia, cuando el proveedor se reemplaza, o cuando simplemente alguien pregunta "¿cuándo fue el último mantenimiento?" la respuesta exige buscar en correos, en carpetas o llamar al proveedor anterior. STECH NODES existe para que esa pregunta tenga respuesta inmediata, verificable y permanente. <span class="src">pb-v1.3</span></p>
+</section>
+
+<!-- §02 PROBLEMA -->
+<section class="section" id="problema">
+  <div class="section-eyebrow">§02 · Contexto de mercado</div>
+  <div class="section-title">El problema que resuelve</div>
+  <div class="section-subtitle">Por qué existe la oportunidad y qué pasa en la actualidad sin STECH NODES.</div>
+
+  <h3>Problema raíz</h3>
+  <p>El historial técnico de los activos biomédicos — intervenciones, calibraciones, fallas, garantías, documentos de mantenimiento — está atado a personas, carpetas, correos o proveedores específicos. <strong>No al equipo físico que describe.</strong> <span class="src">pb-v1.3</span></p>
+
+  <h3>Causas del problema</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Causa</th><th>Consecuencia operativa</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>El historial viaja con quien lo administra</strong></td>
+          <td>Cuando el coordinador o jefe de mantenimiento sale de la institución, el conocimiento acumulado sobre los activos sale con él. El nuevo responsable comienza desde cero.</td>
+        </tr>
+        <tr>
+          <td><strong>Los informes del proveedor no quedan vinculados al activo</strong></td>
+          <td>Los proveedores generan actas e informes, pero esa documentación queda en sus archivos o en correos del coordinador — no conectada al equipo físico.</td>
+        </tr>
+        <tr>
+          <td><strong>El cambio de proveedor fragmenta el historial</strong></td>
+          <td>Cuando la institución cambia de empresa de mantenimiento, la documentación histórica no se transfiere de manera estructurada. El nuevo proveedor y la institución empiezan sin contexto.</td>
+        </tr>
+        <tr>
+          <td><strong>El acceso al historial requiere intermediación</strong></td>
+          <td>Cualquier verificación de estado pasa por llamar al proveedor o buscar en sistemas propios del proveedor — no por consultar directamente la información del activo.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Consecuencias para las instituciones</h3>
+  <p><strong>En auditorías regulatorias (INVIMA, ICONTEC, JCI):</strong> reconstruir el historial completo de un equipo se convierte en una tarea de rastreo que puede tomar horas. El marco de habilitación de servicios de salud colombiano exige programas de mantenimiento documentados para equipos biomédicos. <span class="src">pb-v1.3 · qr-audit</span></p>
+  <p><strong>En renovaciones de contrato:</strong> demostrar el valor entregado por el proveedor de mantenimiento depende de documentos que el cliente debe buscar, no de datos inmediatamente verificables. El proveedor que no puede demostrar lo que hizo queda en posición de debilidad. <span class="src">qr-fd-v1.3</span></p>
+  <p><strong>En el día a día del personal:</strong> el jefe de biomédica o el ingeniero hospitalario no puede verificar cuándo fue el último mantenimiento de un equipo sin llamar o buscar. Cada pregunta de ese tipo consume tiempo que debería dedicarse a la operación clínica. <span class="src">qr-fd-v1.3</span></p>
+
+  <h3>Limitaciones del mercado actual</h3>
+  <p>Las multinacionales del sector (fabricantes con contratos de servicio) tienen portales para sus propios equipos, pero no para el mantenimiento tercerizado de portafolios mixtos. Los competidores locales compiten en precio y no tienen la capacidad técnica para construir trazabilidad verificable a corto plazo. <strong>Ningún actor local ofrece historial técnico verificable anclado al activo con acceso inmediato.</strong> <span class="src">qr-audit</span></p>
+</section>
+
+<!-- §03 SOLUCIÓN -->
+<section class="section" id="solucion">
+  <div class="section-eyebrow">§03 · Oferta</div>
+  <div class="section-title">La solución y arquitectura de la oferta</div>
+  <div class="section-subtitle">Qué ofrece STECH NODES y cómo se articulan sus componentes.</div>
+
+  <h3>Arquitectura de la oferta</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Componente 1 — Core</div>
+      <div class="card-title">Servicio técnico de mantenimiento</div>
+      <div class="card-body">Mantenimiento preventivo programado y correctivo por evento. Intervenciones realizadas con protocolos técnicos, evidencias fotográficas y actas firmadas. Es la razón de ser de la empresa y la fuente de todos los datos que el sistema registra.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Componente 2 — Infraestructura</div>
+      <div class="card-title">ERP interno propio</div>
+      <div class="card-body">Sistema operativo de la empresa que garantiza que cada cotización, orden de trabajo, acta técnica, contrato de mantenimiento y evidencia fotográfica exista, sea trazable y esté conectada a los activos del cliente. Sin este componente la promesa de trazabilidad es imposible. <span class="src">pb-v1.3</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Componente 3 — Canal</div>
+      <div class="card-title">Ecosistema QR + portal público</div>
+      <div class="card-body">Un código QR adherido al equipo que, al escanearse con cualquier cámara, abre un portal público con el historial técnico verificable: tipo, marca, modelo, estado, última visita de mantenimiento y datos de la sede. Acceso en segundos, sin app, sin autenticación. <span class="src">qr-fd-v1.3</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Componente 4 — Activo acumulado</div>
+      <div class="card-title">Base de datos de historial verificado</div>
+      <div class="card-body">Cada visita registrada correctamente construye un corpus de historial técnico real de activos biomédicos en condiciones colombianas. Con escala se convierte en el activo más difícil de replicar por cualquier competidor. Se acumula como consecuencia de operar bien. <span class="src">strat-10y</span></div>
+    </div>
+  </div>
+
+  <h3>Relación entre los componentes</h3>
+  <div class="alert info">
+    <div class="alert-label">Principio fundamental</div>
+    El QR sin datos de calidad es marketing vacío. Los datos sin QR son un activo invisible. La combinación convierte la excelencia operativa interna en diferenciación externamente verificable por el cliente. <span class="src">pb-v1.3</span>
+  </div>
+
+  <h3>Ciclo documental completo</h3>
+  <p>El servicio de STECH NODES genera un ciclo documental íntegro que cubre: <strong>cotización → orden de trabajo → visita técnica → acta de mantenimiento con evidencias fotográficas → contrato de mantenimiento preventivo → cuenta de cobro.</strong> Cada elemento está vinculado al activo específico y es trazable desde el portal QR. La información acumulada pertenece al cliente. <span class="src">dev-ctx · pb-v1.3</span></p>
+</section>
+
+<!-- §04 PROMESA COMERCIAL -->
+<section class="section" id="promesa">
+  <div class="section-eyebrow">§04 · Propuesta de valor</div>
+  <div class="section-title">Propuesta de valor y promesa comercial</div>
+  <div class="section-subtitle">Lo que STECH NODES le dice al mercado y lo que puede respaldar.</div>
+
+  <div class="declaration">
+    <div class="declaration-label">Promesa comercial oficial — palabras exactas del documento rector</div>
+    <div class="declaration-text">Cada equipo que mantenemos tiene un historial técnico real, sistemático y accesible — y ese historial viaja con el equipo, no con la persona que lo administra. Cuando cambie su coordinador o su jefe de mantenimiento, el historial no se va con ellos. La información técnica que generamos le pertenece a usted. Si en algún punto no puede acceder a ella, tenemos un problema — y es nuestro problema resolverlo.</div>
+    <div class="declaration-src">Fuente: positioning-brief-v1.3 — Promesa comercial validada</div>
+  </div>
+
+  <h3>Dimensiones de la propuesta de valor</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Dimensión</th><th>Beneficio concreto</th><th>Para quién</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Funcional</strong></td>
+          <td>El historial técnico de cualquier equipo es accesible en 15 segundos por cualquier responsable de la institución, sin llamadas ni búsquedas.</td>
+          <td>Jefe de biomédica, coordinador de infraestructura</td>
+        </tr>
+        <tr>
+          <td><strong>Operativo</strong></td>
+          <td>Reducción del costo oculto de búsqueda documental durante auditorías, cambios de personal y renovaciones de contrato. El nuevo coordinador no reconstruye desde cero.</td>
+          <td>Director administrativo, jefe de mantenimiento</td>
+        </tr>
+        <tr>
+          <td><strong>Regulatorio</strong></td>
+          <td>En inspecciones INVIMA/ICONTEC/JCI, la institución puede demostrar trazabilidad de mantenimiento en tiempo real, sin preparación previa especial.</td>
+          <td>Director médico, gerente general</td>
+        </tr>
+        <tr>
+          <td><strong>Diferenciador</strong></td>
+          <td>El conocimiento técnico queda anclado al activo, no a la persona. Cuando cambia el personal o el proveedor, el historial permanece. Eso no lo ofrecen los competidores locales.</td>
+          <td>Gerente general — decisión estratégica</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Argumento de venta de mayor impacto</h3>
+  <p>El argumento no es tecnológico — es de riesgo operativo y regulatorio. La formulación de mayor impacto documentada es: <strong>"En su próxima auditoría de INVIMA, ¿cuánto tiempo le tomaría demostrar el historial de mantenimiento de sus ventiladores? Con nosotros, tarda 15 segundos."</strong> <span class="src">qr-audit</span></p>
+
+  <h3>Principio de propiedad del historial</h3>
+  <p>La información técnica generada durante la prestación del servicio pertenece al cliente. STECH NODES considera la continuidad del historial técnico como principio de la relación, no como beneficio opcional ni como forma de crear dependencia. <span class="src">pb-v1.3</span></p>
+</section>
+
+<!-- §05 MERCADO -->
+<section class="section" id="mercado">
+  <div class="section-eyebrow">§05 · Clientes</div>
+  <div class="section-title">Mercado objetivo y segmentos de clientes</div>
+  <div class="section-subtitle">A quién le sirve STECH NODES, quién decide, quién usa y quién se beneficia indirectamente.</div>
+
+  <h3>Segmento principal</h3>
+  <p>Clínicas privadas y hospitales de mediana y alta complejidad en Colombia con <strong>carga regulatoria real</strong>: proceso activo de habilitación INVIMA, acreditación ICONTEC o JCI, o auditorías periódicas de aseguradoras. Este segmento compra por cumplimiento regulatorio y reducción de riesgo operativo — no por precio. <span class="src">pb-v1.3</span></p>
+
+  <h3>Perfiles de actor dentro del cliente</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Perfil</th><th>Quién es</th><th>Rol en la compra</th><th>Qué valora</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Usuario principal</strong></td>
+          <td>Jefe de biomédica, ingeniero hospitalario</td>
+          <td>Influenciador principal, usuario del portal QR</td>
+          <td>Simplificación de trazabilidad, menos llamadas al proveedor</td>
+        </tr>
+        <tr>
+          <td><strong>Interlocutor primario</strong></td>
+          <td>Coordinador de infraestructura, director administrativo</td>
+          <td>Evalúa y recomienda, no siempre firma</td>
+          <td>Cumplimiento regulatorio, reducción de tiempo de auditoría</td>
+        </tr>
+        <tr>
+          <td><strong>Decisor estratégico</strong></td>
+          <td>Gerente general de la clínica</td>
+          <td>Firma contratos; evalúa riesgo operativo</td>
+          <td>Reducción de riesgo regulatorio; señal de seriedad del proveedor</td>
+        </tr>
+        <tr>
+          <td><strong>Comprador operativo</strong></td>
+          <td>Responsable de compras institucional</td>
+          <td>Negocia condiciones; raramente valora el diferenciador QR</td>
+          <td>Precio, cumplimiento de SLAs, referencias</td>
+        </tr>
+        <tr>
+          <td><strong>Beneficiario indirecto</strong></td>
+          <td>Inspectores INVIMA, auditores ICONTEC/JCI</td>
+          <td>No compran; validan. Su satisfacción es el argumento de venta.</td>
+          <td>Trazabilidad demostrable en tiempo real</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Segmento que no se persigue</h3>
+  <div class="alert warn">
+    <div class="alert-label">Segmentos fuera del objetivo actual</div>
+    Instituciones que compran exclusivamente por precio. Hospitales públicos de segundo nivel sin presión regulatoria activa. En licitaciones formalizadas del sector público, los criterios de adjudicación raramente incluyen portales digitales o trazabilidad QR. El diferenciador de STECH NODES no resuena en el segmento de precio puro. <span class="src">pb-v1.3 · qr-audit</span>
+  </div>
+
+  <h3>Contexto de venta</h3>
+  <p>El portal QR tiene más impacto comercial en contratos privados que en licitaciones públicas. El tomador de decisión ideal es el gerente general que evalúa proveedores de servicios especializados con criterio de riesgo regulatorio. <span class="src">qr-audit</span></p>
+</section>
+
+<!-- §06 DIFERENCIADORES -->
+<section class="section" id="diferenciadores">
+  <div class="section-eyebrow">§06 · Ventaja competitiva</div>
+  <div class="section-title">Diferenciadores y ventaja competitiva</div>
+  <div class="section-subtitle">En qué se diferencia STECH NODES y por qué esa diferencia es difícil de replicar.</div>
+
+  <h3>El diferenciador real no es el QR</h3>
+  <div class="alert good">
+    <div class="alert-label">Conclusión del análisis estratégico</div>
+    El portal QR es fácil de copiar — 4 a 8 semanas para un competidor con recursos. El diferenciador real de STECH NODES es la excelencia operativa convertida en dato verificable: la base de datos de historial técnico de activos biomédicos, acumulada intervención por intervención en condiciones reales colombianas. Ese activo tarda años en construirse y no se puede fabricar. <span class="src">qr-audit</span>
+  </div>
+
+  <h3>Las cuatro capas de moat competitivo</h3>
+  <div class="moat-stack">
+    <div class="moat-layer">
+      <div class="moat-depth surface">Superficie</div>
+      <div class="moat-body">
+        <div class="moat-title">Portal QR e interfaz del ERP</div>
+        <div class="moat-desc">La tecnología visible. Valioso como canal de la promesa y señal de seriedad. No es la ventaja competitiva duradera — es su manifestación externa.</div>
+        <div class="moat-time">Tiempo de copia por competidor con recursos: 4–12 semanas.</div>
+      </div>
+      <div class="moat-side">Alta visibilidad. Baja durabilidad.</div>
+    </div>
+    <div class="moat-layer">
+      <div class="moat-depth mid">Medio</div>
+      <div class="moat-body">
+        <div class="moat-title">Sistema operativo completo (ERP + metodología interna)</div>
+        <div class="moat-desc">La arquitectura que integra cotizaciones, órdenes de trabajo, actas técnicas, contratos y evidencias fotográficas en un único sistema. La adopción interna, las decisiones de diseño y la disciplina operativa son difíciles de replicar aunque la tecnología sea accesible.</div>
+        <div class="moat-time">Tiempo de copia: 8–18 meses con inversión significativa.</div>
+      </div>
+      <div class="moat-side">Media visibilidad. Media durabilidad.</div>
+    </div>
+    <div class="moat-layer">
+      <div class="moat-depth deep">Profundo</div>
+      <div class="moat-body">
+        <div class="moat-title">Corpus de historial verificado — activos biomédicos Colombia</div>
+        <div class="moat-desc">Registros reales de qué falló, cuándo, en qué equipo, bajo qué condiciones ambientales y con qué protocolo. Acumulados visita por visita. No se puede fabricar, comprar ni acelerar. Solo crece si la operación crece de forma disciplinada.</div>
+        <div class="moat-time">Tiempo de copia: 3–6 años de operación real. Prácticamente no replicable a corto plazo.</div>
+      </div>
+      <div class="moat-side">Baja visibilidad. Alta durabilidad.</div>
+    </div>
+    <div class="moat-layer">
+      <div class="moat-depth bedrock">Roca base</div>
+      <div class="moat-body">
+        <div class="moat-title">Confianza institucional + conocimiento tácito sectorial</div>
+        <div class="moat-desc">Relaciones de largo plazo con clientes del sector salud, reputación sectorial y conocimiento tácito sobre comportamiento de equipos específicos en hospitales reales colombianos. No se construye con tecnología — se construye ejecutando bien durante años.</div>
+        <div class="moat-time">Imposible de copiar directamente. Solo erosionable desde adentro (rotación, incidentes, falla operativa).</div>
+      </div>
+      <div class="moat-side">Nula visibilidad. Máxima durabilidad.</div>
+    </div>
+  </div>
+
+  <h3>Diferenciadores específicos con respaldo documental</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Diferenciador</th><th>Por qué importa</th><th>Nivel de confianza</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Primer mover en trazabilidad verificable biomédica</strong></td>
+          <td>Ningún competidor local colombiano ofrece historial verificable anclado al activo con acceso inmediato. Ventana estimada de ventaja: 12–24 meses. <span class="src">qr-audit</span></td>
+          <td>Confirmado documentalmente</td>
+        </tr>
+        <tr>
+          <td><strong>Obligación regulatoria convertida en diferenciador</strong></td>
+          <td>Las resoluciones del Ministerio de Salud exigen trazabilidad de mantenimientos biomédicos. STECH NODES convierte la obligación del cliente en argumento de venta propio. <span class="src">qr-audit</span></td>
+          <td>Confirmado documentalmente</td>
+        </tr>
+        <tr>
+          <td><strong>Historial accesible sin intermediación</strong></td>
+          <td>El cliente consulta el historial de sus activos sin necesidad de contactar al proveedor. Cualitativamente diferente a los informes mensuales de la competencia. <span class="src">pb-v1.3</span></td>
+          <td>Confirmado documentalmente</td>
+        </tr>
+        <tr>
+          <td><strong>Propiedad del historial garantizada al cliente</strong></td>
+          <td>La información técnica pertenece al cliente. Cambiar de proveedor no borra el historial del activo. Diferencia ética que los competidores no hacen explícita. <span class="src">pb-v1.3</span></td>
+          <td>Confirmado documentalmente</td>
+        </tr>
+        <tr>
+          <td><strong>QR en documentos físicos (loop documental)</strong></td>
+          <td>Las actas técnicas impresas pueden incluir el QR del equipo intervenido. El cliente escanea el QR en el papel y accede al registro digital — el ciclo se refuerza en cada entrega. <span class="src">qr-fd-v1.3</span></td>
+          <td>Confirmado documentalmente</td>
+        </tr>
+        <tr>
+          <td><strong>Switching costs genuinos (ético)</strong></td>
+          <td>Cambiar de proveedor interrumpe la continuidad del historial en el portal. Este costo es real para el cliente y opera como retención natural sin lock-in coercitivo. <span class="src">qr-audit · strat-10y</span></td>
+          <td>Inferido con base documental</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- §07 MODELO DE NEGOCIO -->
+<section class="section" id="modelo">
+  <div class="section-eyebrow">§07 · Finanzas</div>
+  <div class="section-title">Modelo de negocio</div>
+  <div class="section-subtitle">Cómo genera valor económico STECH NODES.</div>
+
+  <h3>Fuentes de ingreso</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Fuente</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Contratos de mantenimiento preventivo</strong></td>
+          <td>Recurrente</td>
+          <td>Contratos periódicos con instituciones de salud. Visitas programadas según plan de mantenimiento. Ingreso base y predecible. Incluye generación del historial completo en el ERP. <span class="src">dev-ctx</span></td>
+        </tr>
+        <tr>
+          <td><strong>Órdenes de trabajo correctivas</strong></td>
+          <td>Por evento</td>
+          <td>Intervenciones ante fallas o solicitudes puntuales. Ingreso complementario sin contrato base. <span class="src">dev-ctx</span></td>
+        </tr>
+        <tr>
+          <td><strong>Cotizaciones y proyectos especiales</strong></td>
+          <td>Por proyecto</td>
+          <td>Instalaciones, reemplazos, calibraciones específicas o proyectos de diagnóstico de portafolio. Tamaño variable. <span class="src">dev-ctx</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Mecánica del modelo</h3>
+  <p>El modelo busca maximizar los contratos de mantenimiento preventivo porque son el ingreso recurrente predecible y la fuente de los datos que construyen el moat competitivo. Cada visita preventiva registrada: (a) genera ingreso, (b) entrega valor al cliente, y (c) construye el corpus de historial que hace más difícil de replicar la posición de STECH NODES. <span class="src">strat-10y</span></p>
+
+  <h3>Factores que fortalecen el modelo en el tiempo</h3>
+  <p><strong>Retención por switching costs genuinos:</strong> Un cliente con historial acumulado en el portal tiene mayor fricción para cambiar de proveedor — su historia técnica quedó vinculada al servicio. La retención no es coercitiva sino consecuencia natural de haber entregado valor real y documentado. <span class="src">qr-audit</span></p>
+  <p><strong>Argumento de renovación verificable:</strong> Al momento de renovar contrato, STECH NODES puede mostrar, con datos del propio sistema, qué se hizo, cuándo y con qué evidencias. El argumento de renovación está en el portal, no en presentaciones del vendedor. <span class="src">qr-fd-v1.3</span></p>
+  <p><strong>Upsell natural a preventivo:</strong> Un cliente que usa el portal y visualiza que lleva meses sin visita preventiva es más receptivo a contratar ese servicio. El portal genera contexto que facilita la conversación comercial de ampliación. <span class="src">qr-fd-v1.3</span></p>
+
+  <h3>El ERP y el QR no son productos</h3>
+  <div class="alert navy">
+    <div class="alert-label">Aclaración estratégica permanente</div>
+    El ERP y el ecosistema QR son parte constitutiva del servicio. No se facturan por separado, no se licencian a terceros y no son productos del catálogo de STECH NODES en esta etapa. Son la infraestructura que hace que el servicio de mantenimiento sea diferente — no un negocio paralelo. <span class="src">pb-v1.3</span>
+  </div>
+</section>
+
+<!-- §08 ARQUITECTURA TECNOLÓGICA -->
+<section class="section" id="arquitectura">
+  <div class="section-eyebrow">§08 · Producto</div>
+  <div class="section-title">Arquitectura tecnológica (nivel ejecutivo)</div>
+  <div class="section-subtitle">Descripción no técnica de los sistemas que soportan la operación.</div>
+
+  <div class="alert info">
+    <div class="alert-label">Audiencia de esta sección</div>
+    Esta sección describe la arquitectura para directivos, inversores y formularios de financiación. Para decisiones técnicas de implementación, consultar qr-functional-design-v1.3.html y DEVELOPMENT_CONTEXT.md.
+  </div>
+
+  <h3>ERP interno</h3>
+  <p>Sistema operativo propio que gestiona el ciclo completo del servicio: clientes, sedes, equipos, cotizaciones, órdenes de trabajo, visitas técnicas, actas de mantenimiento con evidencias fotográficas, contratos de mantenimiento preventivo, facturas y trazabilidad documental. <strong>Es el corazón operativo de STECH NODES.</strong> <span class="src">dev-ctx</span></p>
+  <p>Construido en tecnología moderna (NestJS + PostgreSQL en backend, React en frontend). Accesible desde cualquier dispositivo con navegador. Diseñado para que cada pieza del ciclo documental sea trazable a los activos del cliente. <span class="src">dev-ctx</span></p>
+
+  <h3>Ecosistema QR</h3>
+  <p>Cada equipo registrado en el ERP recibe un código QR único de 72 bits de entropía — suficiente para garantizar que ningún código pueda ser adivinado o replicado de manera fortuita. El QR se adhiere físicamente al equipo y apunta a un portal web público. <span class="src">qr-fd-v1.3</span></p>
+  <p>El portal muestra, sin necesidad de login: tipo, marca, modelo, número de serie, fecha de instalación, sede de ubicación, estado operativo y último mantenimiento completado. La información no incluye datos sensibles del cliente ni información que sirva a un tercero de manera perjudicial. <span class="src">qr-fd-v1.3</span></p>
+
+  <h3>Estado de seguridad</h3>
+  <p>Los equipos dado de baja (eliminados lógicamente del sistema) responden como "no encontrado" — no exponen su historial. Los equipos fuera de servicio (estado operativo) siguen siendo visibles, porque ese estado operativo es información legítima para quien consulta. El diseño de seguridad distingue estado operativo de eliminación lógica. <span class="src">qr-fd-v1.3</span></p>
+</section>
+
+<!-- §09 VISIÓN -->
+<section class="section" id="vision">
+  <div class="section-eyebrow">§09 · Largo plazo</div>
+  <div class="section-title">Visión y horizontes estratégicos</div>
+  <div class="section-subtitle">Hacia dónde va STECH NODES en tres horizontes de tiempo.</div>
+
+  <h3>Tesis estratégica de largo plazo</h3>
+  <div class="declaration">
+    <div class="declaration-label">Tesis central</div>
+    <div class="declaration-text">STECH NODES está construyendo infraestructura de confianza técnica para la gestión del ciclo de vida de activos biomédicos en Colombia.</div>
+    <div class="declaration-src">Fuente: strategic-positioning-10y-v1.0</div>
+  </div>
+
+  <p>Los tres diferenciadores (excelencia técnica, datos acumulados, confianza institucional) no operan de forma independiente — se refuerzan mutuamente en un volante estratégico: <strong>mejor ejecución → más datos → mejor servicio → más confianza → más contratos → más ejecución.</strong> La condición crítica para que este volante funcione es el crecimiento real del negocio; sin crecimiento, la tesis de largo plazo no tiene sustrato. <span class="src">strat-10y</span></p>
+
+  <h3>Los tres horizontes</h3>
+  <div class="horizons">
+    <div class="horizon h1">
+      <div class="horizon-period">Años 1–3 · Horizonte actual</div>
+      <div class="horizon-name">Operador de excelencia documentada</div>
+      <div class="horizon-desc">Construir el sistema operativo completo (ERP + QR), demostrar que la promesa de trazabilidad es real, acumular los primeros registros de historial verificable, y ganar los contratos iniciales en el segmento objetivo.</div>
+      <div class="horizon-metric">Métricas de éxito: tasa de retención de clientes, completitud de registros en el sistema, crecimiento en contratos preventivos.</div>
+    </div>
+    <div class="horizon h2">
+      <div class="horizon-period">Años 3–6 · Próximo horizonte</div>
+      <div class="horizon-name">Gestor inteligente del ciclo de vida de activos</div>
+      <div class="horizon-desc">Con suficientes datos acumulados, pasar de registrar historial a analizarlo: recomendaciones de intervalo de mantenimiento basadas en datos reales colombianos (no solo en manuales del fabricante), alertas de vida útil, análisis de costo total de propiedad por equipo.</div>
+      <div class="horizon-metric">Condición: corpus de datos suficiente (estimado en 300+ equipos, 1.000+ eventos documentados).</div>
+    </div>
+    <div class="horizon h3">
+      <div class="horizon-period">Años 6–10 · Visión</div>
+      <div class="horizon-name">Infraestructura de confianza sectorial</div>
+      <div class="horizon-desc">Plataforma de referencia para la gestión de activos biomédicos en Colombia, con datos suficientes para informar decisiones de adquisición, estándares de mantenimiento y política sectorial. Posición de autoridad técnica en el sector.</div>
+      <div class="horizon-metric">Condición: escala real, relaciones institucionales profundas y reputación sectorial consolidada.</div>
+    </div>
+  </div>
+
+  <div class="alert warn">
+    <div class="alert-label">Condición crítica de la tesis</div>
+    Los horizontes 2 y 3 dependen de crecimiento real del negocio en el horizonte 1. Sin suficientes equipos registrados y sin relaciones de largo plazo con clientes reales, los datos no acumulan, la confianza no se construye y la tesis se queda en declaración de intención. La prioridad actual es operar con excelencia y documentarlo sistemáticamente. <span class="src">strat-10y</span>
+  </div>
+</section>
+
+<!-- §10 PRINCIPIOS -->
+<section class="section" id="principios">
+  <div class="section-eyebrow">§10 · Gobierno corporativo</div>
+  <div class="section-title">Principios de gobierno y restricciones de comunicación</div>
+  <div class="section-subtitle">Reglas no negociables que rigen toda comunicación, desarrollo y estrategia de STECH NODES.</div>
+
+  <div class="principle">
+    <div class="principle-num">Principio 1 · Identidad</div>
+    <div class="principle-title">STECH NODES es una empresa de servicio técnico especializado, no de software</div>
+    <div class="principle-body">Toda comunicación externa, presentación institucional y material de ventas debe posicionar STECH NODES como proveedor de excelencia en mantenimiento biomédico. La tecnología (ERP, QR) es el medio, no el mensaje. <span class="src">pb-v1.3</span></div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-num">Principio 2 · Promesa honesta</div>
+    <div class="principle-title">Solo comunicar lo que puede demostrarse hoy</div>
+    <div class="principle-body">Las capacidades futuras (predicción de fallas, comparativas entre clientes, análisis de costo total) son objetivos legítimos pero no pueden comunicarse al mercado hasta que exista evidencia real. Comunicarlas antes daña la credibilidad de la promesa actual. <span class="src">pb-v1.3</span></div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-num">Principio 3 · Propiedad del cliente</div>
+    <div class="principle-title">La información técnica de los activos pertenece al cliente</div>
+    <div class="principle-body">El historial generado durante la prestación del servicio pertenece a la institución, no a STECH NODES. Si el cliente decide cambiar de proveedor, la continuidad de su historial es un derecho, no una concesión. Diseñar los sistemas con este principio activo. <span class="src">pb-v1.3</span></div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-num">Principio 4 · Datos sin escala no son diferenciador</div>
+    <div class="principle-title">El corpus de datos requiere crecimiento real para volverse ventaja</div>
+    <div class="principle-body">Un corpus de datos solo es diferenciador cuando tiene suficiente escala y profundidad. Sin crecimiento real del negocio, los datos no alcanzan masa crítica y la tesis del moat no se materializa. La prioridad operativa precede a la estratégica. <span class="src">strat-10y</span></div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-num">Principio 5 · Jerarquía documental</div>
+    <div class="principle-title">Actualizar documentos antes de actualizar el producto</div>
+    <div class="principle-body">Ningún cambio de arquitectura, producto o comunicación puede ejecutarse sin primero actualizar el documento rector correspondiente. Orden invariable: documento rector → DEVELOPMENT_CONTEXT.md → código. Las decisiones documentadas preceden a las implementadas. <span class="src">dev-ctx</span></div>
+  </div>
+
+  <h3>Capacidades que no se deben comunicar aún</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Capacidad</th><th>Por qué no comunicar</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Predicción de fallas</strong></td><td>Requiere corpus de datos suficiente. No existe aún. Afirmarlo hoy es falso.</td></tr>
+        <tr><td><strong>Recomendaciones de intervalo basadas en datos propios</strong></td><td>Los datos actuales no tienen la escala necesaria. Comunicarlo antes es adelantar una promesa que no puede respaldarse.</td></tr>
+        <tr><td><strong>Análisis de costo total de propiedad</strong></td><td>Implica modelo financiero por activo. No desarrollado aún.</td></tr>
+        <tr><td><strong>Comparativas de activos entre clientes</strong></td><td>Requiere datos de múltiples clientes y consideraciones de privacidad no resueltas.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- §11 ESTADO ACTUAL -->
+<section class="section" id="estado">
+  <div class="section-eyebrow">§11 · Implementación</div>
+  <div class="section-title">Estado actual de implementación</div>
+  <div class="section-subtitle">Qué está construido, qué está en curso y qué viene. Referencia: DEVELOPMENT_CONTEXT.md.</div>
+
+  <div class="status-row">
+    <div class="status-dot done"></div>
+    <div class="status-body">
+      <div class="status-title">ERP interno — funcionalidades core completadas</div>
+      <div class="status-desc">Gestión de sedes, clientes, equipos, usuarios con roles, cotizaciones, órdenes de trabajo, actas de mantenimiento con evidencias fotográficas, contratos de mantenimiento preventivo, cuentas de cobro. Base técnica estable. <span class="src">dev-ctx</span></div>
+    </div>
+  </div>
+  <div class="status-row">
+    <div class="status-dot done"></div>
+    <div class="status-body">
+      <div class="status-title">Ecosistema QR Fase 1 — implementado y auditado</div>
+      <div class="status-desc">Generación de QR por equipo, endpoint público con throttling, portal de consulta con 6 estados, DTO de información pública definido y congelado. Auditoría de seguridad completada (2026-07-08). Vulnerabilidad SEC-C1 corregida. <span class="src">dev-ctx · qr-fd-v1.3</span></div>
+    </div>
+  </div>
+  <div class="status-row">
+    <div class="status-dot active"></div>
+    <div class="status-body">
+      <div class="status-title">Bloque 6 — campo lastMaintenance en portal QR</div>
+      <div class="status-desc">Extensión del DTO público para incluir la última visita de mantenimiento completada (fecha y tipo). Decisión arquitectónica D-4 congelada en qr-functional-design-v1.3. Implementación pendiente de inicio. <span class="src">qr-fd-v1.3</span></div>
+    </div>
+  </div>
+  <div class="status-row">
+    <div class="status-dot pending"></div>
+    <div class="status-body">
+      <div class="status-title">Pre-producción — contacto real de la empresa</div>
+      <div class="status-desc">El número de teléfono placeholder +57 (601) 000-0000 debe reemplazarse con el contacto real de STECH NODES antes de cualquier impresión de etiquetas QR o demo con cliente real. <span class="src">dev-ctx</span></div>
+    </div>
+  </div>
+  <div class="status-row">
+    <div class="status-dot pending"></div>
+    <div class="status-body">
+      <div class="status-title">Fondo Emprender — vacíos por llenar</div>
+      <div class="status-desc">La estrategia está documentada. Faltan: tamaño de mercado cuantificado, tracción actual con datos, proyecciones financieras a 3 años, perfil del equipo fundador, y monto/uso de la inversión solicitada. Ver strategic-review-fondo-emprender-v1.0.html §09. <span class="src">strategic-review-v1.0</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- §12 GOBIERNO DEL DOCUMENTO -->
+<section class="section" id="gobierno">
+  <div class="section-eyebrow">§12 · Metadocumento</div>
+  <div class="section-title">Gobierno de este documento</div>
+  <div class="section-subtitle">Quién lo mantiene, cuándo se actualiza y qué desencadena una nueva versión.</div>
+
+  <div class="gov-block">
+    <div class="gov-block-title">Ficha del documento</div>
+    <div class="gov-rows">
+      <div class="gov-row"><div class="gov-key">Nombre</div><div class="gov-val">Documento Rector Empresarial — STECH NODES</div></div>
+      <div class="gov-row"><div class="gov-key">Versión actual</div><div class="gov-val">1.0 — aprobado 2026-07-08</div></div>
+      <div class="gov-row"><div class="gov-key">Tipo</div><div class="gov-val">Rector permanente — jerarquía máxima en el ecosistema documental STECH NODES</div></div>
+      <div class="gov-row"><div class="gov-key">Ubicación canónica</div><div class="gov-val">docs/strategy/business-rector-v1.0.html (editable) · PDF generado en la misma carpeta</div></div>
+      <div class="gov-row"><div class="gov-key">Autor y custodio</div><div class="gov-val">Fundadores de STECH NODES</div></div>
+      <div class="gov-row"><div class="gov-key">Documentos fuente</div><div class="gov-val">positioning-brief-v1.3.html · qr-functional-design-v1.3 (en v1.2.html) · qr-strategy-audit-v1.0.html · strategic-positioning-10y-v1.0.html · strategic-review-fondo-emprender-v1.0.html · DEVELOPMENT_CONTEXT.md</div></div>
+    </div>
+  </div>
+
+  <h3>Cuándo se actualiza este documento</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Evento</th><th>Acción requerida</th><th>Urgencia</th></tr></thead>
+      <tbody>
+        <tr><td>Cambio en la declaración corporativa o la promesa comercial</td><td>Actualizar §01, §04 y derivar cambio a todos los materiales dependientes</td><td>Inmediata</td></tr>
+        <tr><td>Nuevo segmento objetivo o abandono de un segmento</td><td>Actualizar §05 y verificar coherencia con §04</td><td>Antes de cualquier comunicación</td></tr>
+        <tr><td>Cambio en el modelo de negocio</td><td>Actualizar §07; revisar impacto en §09</td><td>Inmediata</td></tr>
+        <tr><td>Hito de escala que habilita comunicar capacidades futuras</td><td>Actualizar tabla de restricciones en §10; actualizar §09</td><td>Con evidencia disponible</td></tr>
+        <tr><td>Cambio de horizonte estratégico (nuevo período)</td><td>Actualizar §09 y derivar a strat-10y</td><td>En revisión anual</td></tr>
+        <tr><td>Nueva versión del positioning-brief</td><td>Actualizar secciones afectadas de este documento</td><td>Antes de publicar materiales</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Qué no cambia este documento</h3>
+  <p>Las decisiones de implementación técnica (arquitectura del QR, estructura del ERP, modelos de datos) están en qr-functional-design-v1.3 y DEVELOPMENT_CONTEXT.md. Este documento es estratégico y corporativo — no operativo ni técnico. Los detalles técnicos no se reflejan aquí a menos que tengan implicaciones estratégicas directas.</p>
+
+</section>
+
+</div><!-- /content -->
+
+<!-- ══════════════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════════════ -->
+<footer class="doc-footer">
+  <div class="footer-brand">STECH NODES · Documento Rector Empresarial</div>
+  <div class="footer-version">v1.0 · 2026-07-08 · Rector permanente</div>
+</footer>
+
+</div><!-- /wrapper -->
+</body>
+</html>

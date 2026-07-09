@@ -406,6 +406,8 @@ export interface WorkOrder {
   discountTotal: string;
   taxTotal: string;
   total: string;
+  equipmentId: string | null;
+  equipment: { id: string; type: EquipmentType; brand: string | null; model: string | null; serialNumber: string | null } | null;
   assignedToId: string | null;
   assignedTo: { id: string; name: string } | null;
   createdAt: string;
@@ -454,6 +456,7 @@ export interface Equipment {
   location: string | null;
   notes: string | null;
   status: EquipmentStatus;
+  qrCode: string | null;
   createdAt: string;
   updatedAt: string;
 }

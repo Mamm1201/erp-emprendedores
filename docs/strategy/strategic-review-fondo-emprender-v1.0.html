@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisión Estratégica — STECH NODES · Base Fondo Emprender</title>
+<style>
+:root {
+  --bg:         #F8F7F6;
+  --surface:    #FFFFFF;
+  --surface-2:  #F1EFed;
+  --text:       #1C1917;
+  --text-2:     #57534E;
+  --text-3:     #A8A29E;
+  --border:     #E7E5E4;
+  --border-2:   #D6D3D1;
+  --navy:       #042C53;
+  --blue:       #185FA5;
+  --blue-lt:    #378ADD;
+  --blue-bg:    #EFF6FF;
+  --blue-bdr:   #BFDBFE;
+  --blue-txt:   #1E3A5F;
+  --teal:       #065F46;
+  --teal-bg:    #ECFDF5;
+  --teal-bdr:   #6EE7B7;
+  --amber:      #78350F;
+  --amber-bg:   #FFFBEB;
+  --amber-bdr:  #FDE68A;
+  --red:        #7F1D1D;
+  --red-bg:     #FEF2F2;
+  --red-bdr:    #FECACA;
+  --gray-bg:    #F5F5F4;
+  --gray:       #78716C;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:         #0C1520;
+    --surface:    #152030;
+    --surface-2:  #1A2840;
+    --text:       #F5F5F4;
+    --text-2:     #A8A29E;
+    --text-3:     #57534E;
+    --border:     #1E3045;
+    --border-2:   #2A4060;
+    --navy:       #378ADD;
+    --blue:       #93C5FD;
+    --blue-lt:    #BFDBFE;
+    --blue-bg:    #001833;
+    --blue-bdr:   #1E3A5F;
+    --blue-txt:   #93C5FD;
+    --teal:       #6EE7B7;
+    --teal-bg:    #002A1A;
+    --teal-bdr:   #054F3A;
+    --amber:      #FCD34D;
+    --amber-bg:   #1C1200;
+    --amber-bdr:  #78350F;
+    --red:        #FCA5A5;
+    --red-bg:     #200000;
+    --red-bdr:    #7F1D1D;
+    --gray-bg:    #1C1C1A;
+    --gray:       #A8A29E;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:         #0C1520;
+  --surface:    #152030;
+  --surface-2:  #1A2840;
+  --text:       #F5F5F4;
+  --text-2:     #A8A29E;
+  --text-3:     #57534E;
+  --border:     #1E3045;
+  --border-2:   #2A4060;
+  --navy:       #378ADD;
+  --blue:       #93C5FD;
+  --blue-lt:    #BFDBFE;
+  --blue-bg:    #001833;
+  --blue-bdr:   #1E3A5F;
+  --blue-txt:   #93C5FD;
+  --teal:       #6EE7B7;
+  --teal-bg:    #002A1A;
+  --teal-bdr:   #054F3A;
+  --amber:      #FCD34D;
+  --amber-bg:   #1C1200;
+  --amber-bdr:  #78350F;
+  --red:        #FCA5A5;
+  --red-bg:     #200000;
+  --red-bdr:    #7F1D1D;
+  --gray-bg:    #1C1C1A;
+  --gray:       #A8A29E;
+}
+:root[data-theme="light"] {
+  --bg: #F8F7F6; --surface: #FFFFFF; --surface-2: #F1EFed;
+  --text: #1C1917; --text-2: #57534E; --text-3: #A8A29E;
+  --border: #E7E5E4; --border-2: #D6D3D1;
+  --navy: #042C53; --blue: #185FA5; --blue-lt: #378ADD;
+  --blue-bg: #EFF6FF; --blue-bdr: #BFDBFE; --blue-txt: #1E3A5F;
+  --teal: #065F46; --teal-bg: #ECFDF5; --teal-bdr: #6EE7B7;
+  --amber: #78350F; --amber-bg: #FFFBEB; --amber-bdr: #FDE68A;
+  --red: #7F1D1D; --red-bg: #FEF2F2; --red-bdr: #FECACA;
+  --gray-bg: #F5F5F4; --gray: #78716C;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.toc {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  padding: 32px 20px;
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.toc-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.toc-brand-name {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--navy);
+  line-height: 1.2;
+}
+.toc-brand-tag { font-size: 9px; color: var(--text-3); margin-top: 1px; }
+.toc-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+.toc-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.toc-item a {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 12.5px;
+  color: var(--text-2);
+  transition: background 0.1s, color 0.1s;
+  line-height: 1.4;
+}
+.toc-item a:hover { background: var(--bg); color: var(--text); }
+.toc-num {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--blue-lt);
+  flex-shrink: 0;
+  width: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.toc-divider { height: 1px; background: var(--border); margin: 10px 0; }
+.toc-gap-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--red);
+  padding: 5px 8px 3px;
+}
+
+.main { padding: 0 0 80px; overflow: hidden; }
+
+/* ── Doc header ── */
+.doc-header {
+  background: var(--navy);
+  padding: 40px 48px;
+  margin-bottom: 0;
+}
+.doc-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 12px;
+}
+.doc-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+.doc-sub { font-size: 14px; color: rgba(255,255,255,0.55); margin-bottom: 20px; }
+.doc-meta-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.meta-pill {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* ── Confidence legend ── */
+.legend-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 48px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.legend-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.conf-badges { display: flex; gap: 10px; align-items: center; }
+.cbadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cbadge.confirmed { background: var(--teal-bg); color: var(--teal); border: 1px solid var(--teal-bdr); }
+.cbadge.inferred  { background: var(--blue-bg);  color: var(--blue-txt); border: 1px solid var(--blue-bdr); }
+.cbadge.validate  { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-bdr); }
+
+/* ── Sections ── */
+.content { padding: 0 48px; }
+.section {
+  padding: 40px 0;
+  border-bottom: 1px solid var(--border);
+}
+.section:last-child { border-bottom: none; }
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.section-num {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--blue-lt);
+  flex-shrink: 0;
+}
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+h3 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 24px 0 12px;
+}
+p { color: var(--text-2); margin-bottom: 12px; }
+p:last-child { margin-bottom: 0; }
+p strong { color: var(--text); }
+
+/* ── Source badge ── */
+.src {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  vertical-align: middle;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+/* ── Finding cards ── */
+.finding-group { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.finding {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: start;
+}
+.finding-text { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+.finding-text strong { color: var(--text); }
+.finding-meta { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+
+/* ── Table ── */
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th {
+  background: var(--surface);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 8px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-2);
+  white-space: nowrap;
+}
+td { padding: 9px 14px; border-bottom: 0.5px solid var(--border); color: var(--text-2); vertical-align: top; line-height: 1.55; }
+td strong { color: var(--text); }
+tr:last-child td { border-bottom: none; }
+
+/* ── Dependency map ── */
+.dep-map {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+.dep-map-header {
+  background: var(--navy);
+  padding: 12px 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+}
+.dep-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.dep-row:last-child { border-bottom: none; }
+.dep-tier {
+  width: 90px;
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-right: 1px solid var(--border);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+}
+.dep-tier.t1 { color: var(--blue-lt); background: var(--blue-bg); }
+.dep-tier.t2 { color: var(--teal); background: var(--teal-bg); }
+.dep-tier.t3 { color: var(--amber); background: var(--amber-bg); }
+.dep-tier.t4 { color: var(--gray); background: var(--gray-bg); }
+.dep-doc {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.dep-doc code {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--blue-lt);
+}
+.dep-domain {
+  width: 140px;
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-left: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+
+/* ── Promise box ── */
+.promise {
+  background: var(--teal-bg);
+  border: 1px solid var(--teal-bdr);
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin: 16px 0;
+}
+.promise-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.promise-text {
+  font-size: 15px;
+  color: var(--teal);
+  line-height: 1.65;
+  font-weight: 500;
+}
+
+/* ── Alert ── */
+.alert {
+  border-radius: 6px;
+  padding: 12px 16px;
+  border-left: 3px solid;
+  margin: 16px 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.alert-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.alert.warn { background: var(--amber-bg); border-color: var(--amber-bdr); color: var(--amber); }
+.alert.info { background: var(--blue-bg);  border-color: var(--blue-bdr);  color: var(--blue-txt); }
+.alert.crit { background: var(--red-bg);   border-color: var(--red-bdr);   color: var(--red); }
+.alert.good { background: var(--teal-bg);  border-color: var(--teal-bdr);  color: var(--teal); }
+
+/* ── Value prop cards ── */
+.vp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.vp-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.vp-icon { font-size: 20px; margin-bottom: 8px; }
+.vp-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-lt);
+  margin-bottom: 6px;
+}
+.vp-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.vp-body { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+
+/* ── Gap section ── */
+.gap-item {
+  background: var(--surface);
+  border: 1px solid var(--red-bdr);
+  border-left: 3px solid var(--red);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+.gap-title { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.gap-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+.gap-action { font-size: 12px; color: var(--red); margin-top: 5px; font-style: italic; }
+
+/* ── Moat visual ── */
+.moat-stack { display: flex; flex-direction: column; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); margin: 16px 0; }
+.moat-layer {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.moat-layer:last-child { border-bottom: none; }
+.moat-depth {
+  width: 80px;
+  flex-shrink: 0;
+  padding: 12px 14px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-right: 1px solid var(--border);
+}
+.moat-depth.surface { background: var(--red-bg);    color: var(--red); }
+.moat-depth.mid     { background: var(--amber-bg);  color: var(--amber); }
+.moat-depth.deep    { background: var(--blue-bg);   color: var(--blue-txt); }
+.moat-depth.bedrock { background: var(--teal-bg);   color: var(--teal); }
+.moat-body { flex: 1; padding: 12px 16px; }
+.moat-title { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.moat-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
+.moat-time { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .toc { display: none; }
+  .doc-header, .legend-bar, .content { padding-left: 24px; padding-right: 24px; }
+  .vp-grid { grid-template-columns: 1fr; }
+  .dep-domain { display: none; }
+  .dep-tier { width: 70px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ── ToC ── -->
+<nav class="toc">
+  <div class="toc-brand">
+    <svg width="28" height="28" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+      <circle r="7.5" fill="none" stroke="var(--navy)" stroke-width="1.1"/>
+      <circle r="4.2" fill="none" stroke="var(--navy)" stroke-width="0.8"/>
+      <circle r="1.6" fill="var(--navy)"/>
+      <line x1="0" y1="-7.5" x2="0" y2="-10.2" stroke="var(--navy)" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="0" y1="7.5"  x2="0" y2="10.2"  stroke="var(--navy)" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="-7.5" y1="0" x2="-10.2" y2="0" stroke="var(--navy)" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="7.5"  y1="0" x2="10.2"  y2="0" stroke="var(--navy)" stroke-width="1.1" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="toc-brand-name">STECH NODES</div>
+      <div class="toc-brand-tag">Revisión estratégica</div>
+    </div>
+  </div>
+  <div class="toc-label">Contenido</div>
+  <ul class="toc-list">
+    <li class="toc-item"><a href="#jerarquia"><span class="toc-num">01</span>Jerarquía documental</a></li>
+    <li class="toc-item"><a href="#problema"><span class="toc-num">02</span>Problema</a></li>
+    <li class="toc-item"><a href="#solucion"><span class="toc-num">03</span>Solución</a></li>
+    <li class="toc-item"><a href="#propuesta"><span class="toc-num">04</span>Propuesta de valor</a></li>
+    <li class="toc-item"><a href="#clientes"><span class="toc-num">05</span>Clientes</a></li>
+    <li class="toc-item"><a href="#diferenciadores"><span class="toc-num">06</span>Diferenciadores</a></li>
+    <li class="toc-item"><a href="#modelo"><span class="toc-num">07</span>Modelo de negocio</a></li>
+    <li class="toc-item"><a href="#impacto"><span class="toc-num">08</span>Impacto esperado</a></li>
+    <div class="toc-divider"></div>
+    <div class="toc-gap-label">Vacíos críticos</div>
+    <li class="toc-item"><a href="#vacios"><span class="toc-num">09</span>Fondo Emprender: vacíos</a></li>
+  </ul>
+</nav>
+
+<!-- ── Main ── -->
+<main class="main">
+
+<div class="doc-header">
+  <div class="doc-eyebrow">STECH NODES · Revisión estratégica · 2026-07-08</div>
+  <div class="doc-title">Base documental para Fondo Emprender</div>
+  <div class="doc-sub">Información extraída de los documentos estratégicos existentes. No contiene suposiciones ni información fabricada.</div>
+  <div class="doc-meta-row">
+    <span class="meta-pill">5 documentos fuente</span>
+    <span class="meta-pill">Preparado para PITCH VERDE 2026</span>
+    <span class="meta-pill">Solo información documentada</span>
+  </div>
+</div>
+
+<div class="legend-bar">
+  <span class="legend-label">Nivel de confianza:</span>
+  <div class="conf-badges">
+    <span class="cbadge confirmed">✓ Confirmado documentalmente</span>
+    <span class="cbadge inferred">~ Inferido</span>
+    <span class="cbadge validate">? Requiere validación</span>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ════════════════════════════════════════
+     §01 JERARQUÍA DOCUMENTAL
+     ════════════════════════════════════════ -->
+<section class="section" id="jerarquia">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">Jerarquía documental y mapa de dependencias</span>
+  </div>
+
+  <h3>Documento rector principal</h3>
+  <p>El <strong>documento rector de todo el proyecto es <code>positioning-brief-v1.3.html</code></strong>. Su propia sección de gobierno lo establece explícitamente: "ningún contenido del sitio web, portafolio comercial, presentación institucional, documento para convocatorias de financiación, estrategia comercial ni desarrollo del ERP o del ecosistema QR puede contradecir los principios aquí definidos." Su jerarquía precede a todos los demás documentos.</p>
+
+  <div class="dep-map">
+    <div class="dep-map-header">Mapa de dependencia — de más a menos autoritativo</div>
+
+    <div class="dep-row">
+      <div class="dep-tier t1">Rector</div>
+      <div class="dep-doc">
+        <strong>positioning-brief-v1.3.html</strong> — Declaración oficial de qué es la empresa, qué problema resuelve y cómo comunica su valor. Congelado. Fuente de verdad de identidad y promesa comercial. <span class="src">pb-v1.3</span>
+      </div>
+      <div class="dep-domain">Identidad · Promesa · Comunicación externa</div>
+    </div>
+
+    <div class="dep-row">
+      <div class="dep-tier t2">Técnico</div>
+      <div class="dep-doc">
+        <strong>qr-functional-design-v1.3.html</strong> (actualizado de v1.2) — Arquitectura del ecosistema QR, modelo de datos Fase 1, reglas de negocio, contrato DTO (incluyendo <code>lastMaintenance</code> por addendum D-4). Rector de todas las decisiones técnicas del QR. <span class="src">qr-fd-v1.3</span>
+      </div>
+      <div class="dep-domain">Arquitectura · Producto · Decisiones técnicas</div>
+    </div>
+
+    <div class="dep-row">
+      <div class="dep-tier t2">Técnico</div>
+      <div class="dep-doc">
+        <strong>qr-uxui-v1.0.html</strong> — Diseño UX/UI del portal QR: 6 principios de diseño, arquitectura de información, wireframes de los 6 estados, paleta de tokens. Rector de la experiencia de usuario. <span class="src">qr-ux-v1.0</span>
+      </div>
+      <div class="dep-domain">UX/UI · Experiencia · Portal</div>
+    </div>
+
+    <div class="dep-row">
+      <div class="dep-tier t3">Analítico</div>
+      <div class="dep-doc">
+        <strong>qr-strategy-audit-v1.0.html</strong> — Auditoría crítica independiente de la hipótesis "el QR es el diferenciador". Contiene análisis de imitabilidad, percepción por actor, objeciones de venta, reformulación del activo real. Referencia analítica; no prescribe implementaciones. <span class="src">qr-audit</span>
+      </div>
+      <div class="dep-domain">Diferenciación · Competencia · Ventas</div>
+    </div>
+
+    <div class="dep-row">
+      <div class="dep-tier t3">Analítico</div>
+      <div class="dep-doc">
+        <strong>strategic-positioning-10y-v1.0.html</strong> — Posicionamiento en tres horizontes (1–3, 3–6, 6–10 años). Tesis del "volante estratégico", capas del moat competitivo, riesgos de la tesis. Referencia analítica de largo plazo. <span class="src">strat-10y</span>
+      </div>
+      <div class="dep-domain">Visión largo plazo · Moat · Escalabilidad</div>
+    </div>
+
+    <div class="dep-row">
+      <div class="dep-tier t4">Operativo</div>
+      <div class="dep-doc">
+        <strong>DEVELOPMENT_CONTEXT.md</strong> — Estado de implementación, hitos completados, decisiones arquitectónicas, deuda técnica activa. No tiene autoridad prescriptiva sobre estrategia. <span class="src">dev-ctx</span>
+      </div>
+      <div class="dep-domain">Estado técnico · Implementación</div>
+    </div>
+  </div>
+
+  <h3>Naturaleza de cada documento</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Documento</th><th>Tipo</th><th>Comercial</th><th>Técnico</th><th>Producto</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>positioning-brief-v1.3</strong></td><td>Rector</td><td>✓ Principal</td><td>—</td><td>Indirecto</td><td>Congelado</td></tr>
+        <tr><td><strong>qr-functional-design-v1.3</strong></td><td>Técnico</td><td>Indirecto</td><td>✓ Principal</td><td>✓ Sí</td><td>Congelado</td></tr>
+        <tr><td><strong>qr-uxui-v1.0</strong></td><td>Técnico</td><td>—</td><td>✓ UI</td><td>✓ Sí</td><td>Borrador aprobado</td></tr>
+        <tr><td><strong>qr-strategy-audit-v1.0</strong></td><td>Analítico</td><td>✓ Ventas</td><td>—</td><td>✓ Posicionamiento</td><td>Referencia</td></tr>
+        <tr><td><strong>strategic-positioning-10y</strong></td><td>Analítico</td><td>✓ Visión</td><td>—</td><td>✓ Moat</td><td>Referencia</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     §02 PROBLEMA
+     ════════════════════════════════════════ -->
+<section class="section" id="problema">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Problema</span>
+  </div>
+
+  <h3>Problema principal</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text"><strong>El historial técnico de los activos biomédicos está atado a personas, carpetas, correos o proveedores específicos — no al equipo físico que describe.</strong> Cuando cambia el personal o el proveedor de mantenimiento, la información se fragmenta o se pierde. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+
+  <h3>Causas documentadas</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text">Los proveedores de mantenimiento generan informes, actas y registros, pero esa documentación <strong>no queda vinculada al activo físico</strong> — queda en archivos del proveedor, en correos del coordinador o en carpetas que nadie sabe dónde están. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">El historial de un equipo <strong>viaja con la persona que lo administra, no con el equipo</strong>. Cuando el coordinador de biomédica o el jefe de mantenimiento sale de la institución, el conocimiento acumulado sobre los activos sale con él. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">Cuando cambia el proveedor de mantenimiento, <strong>la documentación histórica de las intervenciones no se transfiere</strong> de manera estructurada al nuevo proveedor ni a la institución. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+
+  <h3>Consecuencias para el cliente</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text">En auditorías regulatorias (INVIMA, ICONTEC, JCI), <strong>reconstruir el historial completo de un equipo se convierte en una tarea de rastreo que debería ser innecesaria</strong>. El marco de habilitación de servicios de salud en Colombia exige programas de mantenimiento documentados para equipos biomédicos. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">Los clientes <strong>no tienen visibilidad inmediata</strong> del estado operativo de sus equipos sin contactar al proveedor. El personal de turno no puede verificar cuándo fue el último mantenimiento sin buscar en correos o llamar. <span class="src">qr-fd-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">Cada llamada de soporte del tipo "¿cuándo fue el último mantenimiento?" <strong>consume tiempo del equipo técnico</strong> de STECH NODES sin agregar valor al servicio. <span class="src">qr-fd-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">En renovaciones de contrato, <strong>demostrar el valor entregado depende de documentos que el cliente debe buscar</strong>, no de datos inmediatamente verificables. <span class="src">qr-fd-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+
+  <h3>Cómo trabajan actualmente los clientes</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text">El historial de mantenimientos vive disperso entre <strong>correos, carpetas físicas o archivos del proveedor</strong>. No existe un lugar único consultable sin intermediación. <span class="src">qr-fd-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">Los proveedores actuales "también envían informes mensuales" — el problema <strong>no es la ausencia total de documentación sino que esa información no está vinculada al activo físico ni es accesible sin intermediación</strong>. <span class="src">qr-audit</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+
+  <h3>Limitaciones de las soluciones existentes</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text">Empresas multinacionales del sector (Philips, Siemens Healthineers, GE Healthcare) tienen portales para sus contratos, pero <strong>solo para sus propios equipos</strong> y son inaccesibles para el mercado de mantenimiento tercerizado de equipos mixtos. <span class="src">qr-audit</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">Los competidores locales no tienen la capacidad técnica de replicar un sistema de trazabilidad verificable a corto plazo. Los grandes tienen la capacidad pero pueden no considerarlo prioritario para mercados pequeños. <span class="src">qr-audit</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">En el sector biomédico colombiano, el mercado de mantenimiento tercerizado está <strong>fragmentado</strong>: multinacionales con recursos, integradores medianos, y proveedores locales que compiten exclusivamente en precio. Ninguno ofrece trazabilidad verificable anclada al activo. <span class="src">qr-audit</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     §03 SOLUCIÓN
+     ════════════════════════════════════════ -->
+<section class="section" id="solucion">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Solución</span>
+  </div>
+
+  <h3>Qué es STECH NODES</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text"><strong>Una empresa de servicio técnico especializado en mantenimiento de equipos biomédicos.</strong> Convierte cada intervención técnica en documentación verificable del estado técnico de los activos de sus clientes. Opera en Colombia. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>No es una empresa de software.</strong> El ERP y el ecosistema QR son herramientas construidas para sostener la operación propia con el nivel de rigor que el sector exige — no productos para vender. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+
+  <h3>Componentes de la solución</h3>
+  <div class="vp-grid">
+    <div class="vp-card">
+      <div class="vp-label">Componente 1</div>
+      <div class="vp-title">ERP interno propio</div>
+      <div class="vp-body">Sistema operativo de la empresa. Garantiza que cada cotización, orden de trabajo, acta técnica, contrato de mantenimiento y evidencia fotográfica exista, sea trazable y esté conectada a los activos del cliente. <strong>Es la infraestructura que hace posible la promesa.</strong></div>
+    </div>
+    <div class="vp-card">
+      <div class="vp-label">Componente 2</div>
+      <div class="vp-title">Ecosistema QR + portal público</div>
+      <div class="vp-body">Canal que hace visible al cliente la evidencia acumulada por el ERP. Un código adherido al equipo que, al escanearse, muestra el historial técnico verificable sin necesidad de solicitarlo. <strong>Es la interfaz de la promesa — no la promesa misma.</strong></div>
+    </div>
+    <div class="vp-card">
+      <div class="vp-label">Componente 3</div>
+      <div class="vp-title">Ciclo documental completo</div>
+      <div class="vp-body">Cotizaciones → Órdenes de trabajo → Actas técnicas → Contratos de mantenimiento preventivo → Evidencias fotográficas → Cuentas de cobro. Cada elemento vinculado al activo específico y trazable desde el portal.</div>
+    </div>
+    <div class="vp-card">
+      <div class="vp-label">Componente 4</div>
+      <div class="vp-title">Datos acumulados (activo en construcción)</div>
+      <div class="vp-body">Cada visita registrada correctamente construye un corpus de historial verificable de comportamiento de equipos en condiciones reales de Colombia. A escala, se convierte en el activo más difícil de replicar. <strong>Se acumula con el tiempo.</strong></div>
+    </div>
+  </div>
+
+  <h3>Papel de cada herramienta</h3>
+  <div class="alert info">
+    <div class="alert-label">Relación fundamental</div>
+    "El QR sin datos de calidad es marketing vacío. Los datos sin QR son un activo invisible. La combinación convierte la trazabilidad interna en diferenciación externamente verificable." <span class="src">pb-v1.3</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Herramienta</th><th>Función</th><th>Sin la otra</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>ERP</strong></td>
+          <td>Produce y almacena los datos. Garantiza que cada intervención queda registrada de forma sistemática, vinculada al activo y al cliente.</td>
+          <td>Si el ERP no existe, la trazabilidad es una intención sin sustrato. Si los registros están incompletos, la promesa es falsa.</td>
+        </tr>
+        <tr>
+          <td><strong>QR + portal</strong></td>
+          <td>Canal de acceso al historial. Hace visible externamente lo que el ERP acumula. Convierte la operación interna en diferenciación verificable por el cliente.</td>
+          <td>El QR solo, sin datos de calidad, daña la credibilidad: expone las omisiones tan eficientemente como expone los registros.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     §04 PROPUESTA DE VALOR
+     ════════════════════════════════════════ -->
+<section class="section" id="propuesta">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">Propuesta de valor</span>
+  </div>
+
+  <h3>Promesa oficial (del documento rector)</h3>
+  <div class="promise">
+    <div class="promise-label">Promesa válida — sin exagerar · positioning-brief-v1.3</div>
+    <div class="promise-text">"Cada equipo que mantenemos tiene un historial técnico real, sistemático y accesible — y ese historial viaja con el equipo, no con la persona que lo administra. Cuando cambie su coordinador o su jefe de mantenimiento, el historial no se va con ellos. La información técnica que generamos le pertenece a usted. Si en algún punto no puede acceder a ella, tenemos un problema — y es nuestro problema resolverlo."</div>
+  </div>
+
+  <h3>Dimensiones de la propuesta de valor</h3>
+
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text">
+        <strong>Beneficio funcional:</strong> El historial técnico del equipo es accesible para cualquier responsable de la institución en cualquier momento, sin necesidad de saber a quién preguntarle ni de buscar en carpetas o correos heredados. Acceso en 15 segundos. <span class="src">pb-v1.3</span>
+      </div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">
+        <strong>Beneficio operativo:</strong> Reducción del costo oculto de la búsqueda de información durante auditorías regulatorias, cambios de personal y renovaciones de contrato. El coordinador que llega nuevo a la institución no pierde semanas reconstruyendo el estado técnico del portafolio. <span class="src">pb-v1.3 · qr-fd-v1.3</span>
+      </div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">
+        <strong>Beneficio de cumplimiento regulatorio:</strong> El marco de habilitación de servicios de salud en Colombia exige programas de mantenimiento documentados. Las instituciones en proceso de acreditación (ICONTEC, JCI) deben demostrar continuidad y trazabilidad. STECH NODES convierte esa obligación del cliente en un beneficio del contrato. <span class="src">pb-v1.3 · qr-audit</span>
+      </div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">
+        <strong>Beneficio diferenciador:</strong> La evidencia técnica es parte constitutiva del servicio, no un extra. No solo STECH NODES hace el mantenimiento — ancla el conocimiento técnico al activo, no a las personas. Cuando cambia el coordinador de infraestructura o el jefe de mantenimiento, el historial no se va con él. <span class="src">pb-v1.3</span>
+      </div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text">
+        <strong>Principio de propiedad del historial:</strong> La información técnica generada durante la prestación del servicio pertenece al cliente. STECH NODES considera la continuidad del historial técnico como principio de la relación, no como beneficio opcional. <span class="src">pb-v1.3</span>
+      </div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+
+  <h3>Argumento comercial recomendado (del documento de auditoría)</h3>
+  <div class="alert good">
+    <div class="alert-label">Formulación de mayor impacto</div>
+    "En su próxima auditoría de INVIMA, ¿cuánto tiempo le tomaría demostrar el historial de mantenimiento de sus ventiladores? Con nosotros, tarda 15 segundos." — No es un demo tecnológico, es un argumento de negocio en términos de riesgo regulatorio. <span class="src">qr-audit</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     §05 CLIENTES
+     ════════════════════════════════════════ -->
+<section class="section" id="clientes">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Clientes</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Rol</th><th>Descripción</th><th>Relación con la decisión de compra</th><th>Fuente</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Interlocutor primario / Influenciador</strong></td>
+          <td>Directores médicos, directores administrativos y coordinadores de infraestructura de clínicas privadas y hospitales con carga regulatoria real (habilitación INVIMA, acreditación ICONTEC o JCI, auditorías de aseguradoras).</td>
+          <td>Valoran el QR en nivel alto. Influyen en la decisión pero raramente deciden solos.</td>
+          <td><span class="src">pb-v1.3</span></td>
+        </tr>
+        <tr>
+          <td><strong>Comprador / Decisor estratégico</strong></td>
+          <td>Gerentes generales de clínicas que evalúan riesgo operativo. Valoran el QR en términos de reducción de riesgo regulatorio y señal de seriedad del proveedor — no en términos tecnológicos.</td>
+          <td>Sí, en decisiones estratégicas. El argumento debe formularse en términos de riesgo, no de tecnología.</td>
+          <td><span class="src">pb-v1.3 · qr-audit</span></td>
+        </tr>
+        <tr>
+          <td><strong>Comprador operativo</strong></td>
+          <td>Responsables de compras institucionales que negocian contratos de mantenimiento preventivo.</td>
+          <td>Criterios de adjudicación raramente incluyen portales digitales. El QR no mueve el marcador en licitaciones formalizadas.</td>
+          <td><span class="src">pb-v1.3 · qr-audit</span></td>
+        </tr>
+        <tr>
+          <td><strong>Usuario del portal</strong></td>
+          <td>Jefe de biomédica, ingeniero hospitalario. Valoran el QR en nivel muy alto. Simplifican trazabilidad y auditorías.</td>
+          <td>Influyen pero raramente son quienes firman el contrato.</td>
+          <td><span class="src">qr-audit</span></td>
+        </tr>
+        <tr>
+          <td><strong>Beneficiario indirecto</strong></td>
+          <td>Inspectores y auditores regulatorios (INVIMA, Secretaría de Salud). Pueden verificar trazabilidad en segundos. No compran; el cliente compra para satisfacer al inspector.</td>
+          <td>No deciden. Valor como argumento de venta al cliente.</td>
+          <td><span class="src">qr-audit · qr-fd-v1.3</span></td>
+        </tr>
+        <tr>
+          <td><strong>Segmento que NO se persigue</strong></td>
+          <td>Instituciones que compran exclusivamente por precio. Hospitales públicos de segundo nivel sin presión regulatoria activa.</td>
+          <td>El diferenciador de trazabilidad no resuena en el segmento de precio puro.</td>
+          <td><span class="src">pb-v1.3 · qr-audit</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert warn">
+    <div class="alert-label">Gap crítico identificado en la documentación</div>
+    La documentación no contiene datos cuantitativos: número de instituciones objetivo en Colombia, tamaño del mercado direccionable, número de camas o equipos por institución, o estimación del valor de contrato promedio. Esta información es requerida por Fondo Emprender y no existe en los documentos actuales.
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     §06 DIFERENCIADORES
+     ════════════════════════════════════════ -->
+<section class="section" id="diferenciadores">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">Diferenciadores</span>
+  </div>
+
+  <div class="alert warn">
+    <div class="alert-label">Principio de esta sección</div>
+    Solo se incluyen diferenciadores que la documentación respalda explícitamente. La auditoría estratégica (qr-strategy-audit-v1.0) concluye que el QR no es el diferenciador principal — es el canal que hace visible el diferenciador real. Esta distinción es crítica para Fondo Emprender.
+  </div>
+
+  <h3>Diferenciador real (conclusión del análisis estratégico)</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text">
+        <strong>La trazabilidad verificable acumulada — no el QR.</strong> El activo real es la base de datos de mantenimiento de activos técnicos con historial verificable. Cada visita registrada correctamente, cada OT cerrada, cada acta firmada. El ERP produce ese activo; el QR lo hace visible. <span class="src">qr-audit</span>
+      </div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+
+  <h3>Capas de profundidad del moat competitivo</h3>
+  <div class="moat-stack">
+    <div class="moat-layer">
+      <div class="moat-depth surface">Superficie</div>
+      <div class="moat-body">
+        <div class="moat-title">Portal QR e interfaz ERP</div>
+        <div class="moat-desc">La tecnología visible. Valioso como canal y señal. No como ventaja competitiva duradera.</div>
+        <div class="moat-time">Tiempo de copia por competidor con recursos: 4–12 semanas.</div>
+      </div>
+    </div>
+    <div class="moat-layer">
+      <div class="moat-depth mid">Medio</div>
+      <div class="moat-body">
+        <div class="moat-title">Sistema operativo completo (ERP + metodología)</div>
+        <div class="moat-desc">La arquitectura que integra cotizaciones, OT, actas, contratos y evidencias. Más difícil de replicar por las decisiones de diseño y la adopción interna.</div>
+        <div class="moat-time">Tiempo de copia: 8–18 meses. Posible con inversión.</div>
+      </div>
+    </div>
+    <div class="moat-layer">
+      <div class="moat-depth deep">Profundo</div>
+      <div class="moat-body">
+        <div class="moat-title">Corpus de datos verificados — historial de activos</div>
+        <div class="moat-desc">Registros reales de mantenimiento acumulados durante años: qué falló, cuándo, en qué condición, bajo qué protocolo. No se puede fabricar ni comprar.</div>
+        <div class="moat-time">Tiempo de copia: 3–6 años de operación real. Prácticamente no replicable a corto plazo.</div>
+      </div>
+    </div>
+    <div class="moat-layer">
+      <div class="moat-depth bedrock">Roca base</div>
+      <div class="moat-body">
+        <div class="moat-title">Confianza institucional + conocimiento tácito</div>
+        <div class="moat-desc">Relaciones de largo plazo con clientes del sector salud, reputación en el sector, conocimiento tácito sobre equipos específicos y condiciones locales reales en Colombia. No se construye con tecnología.</div>
+        <div class="moat-time">Imposible de copiar directamente. Solo erosionable desde adentro (rotación, incidentes).</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Diferenciadores específicos soportados por la documentación</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text"><strong>Primer mover en el segmento:</strong> En el mercado colombiano de mantenimiento biomédico, la documentación afirma que ningún competidor local ofrece trazabilidad verificable anclada al activo con acceso inmediato. La ventana estimada de ventaja temporal: 12–24 meses antes de que el segmento lo adopte. <span class="src">qr-audit</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>Argumento regulatorio convertido en beneficio:</strong> Las resoluciones del Ministerio de Salud colombiano exigen trazabilidad de mantenimientos. STECH NODES convierte una obligación del cliente en un beneficio diferenciador del contrato. <span class="src">qr-fd-v1.3 · qr-audit</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>Loop QR en documentos:</strong> Las actas técnicas impresas pueden incluir el QR del equipo — el cliente escanea el QR en el acta y accede al historial digital, reforzando el valor del servicio en cada interacción. <span class="src">qr-fd-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>Accesibilidad sin intermediación:</strong> El historial es consultable por cualquier responsable de la institución en cualquier momento, sin llamar al proveedor. Esto es cualitativamente distinto a los informes mensuales que la competencia ofrece. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>Switching costs genuinos:</strong> Cambiar de proveedor interrumpe la continuidad del historial en el portal. Tiene un costo real para el cliente — especialmente en instituciones que llevan años construyendo ese registro. <span class="src">qr-audit · strat-10y</span></div>
+      <div class="finding-meta"><span class="cbadge inferred">~ Inferido</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>Datos que mejoran con el tiempo:</strong> Con escala (300+ equipos, 1.000+ eventos documentados), STECH NODES puede recomendar intervalos de mantenimiento basados en datos reales del mercado colombiano, no en manuales del fabricante. <span class="src">strat-10y</span></div>
+      <div class="finding-meta"><span class="cbadge validate">? Requiere validación</span><span style="font-size:11px; color:var(--text-3); display:block; text-align:right; margin-top:3px;">Solo válido a escala futura</span></div>
+    </div>
+  </div>
+
+  <h3>Lo que no puede afirmarse como diferenciador hoy</h3>
+  <div class="alert crit">
+    <div class="alert-label">Capacidades futuras — no comunicar aún (positioning-brief-v1.3)</div>
+    Las siguientes capacidades son objetivos legítimos pero <strong>no pueden comunicarse al mercado hasta que exista evidencia suficiente</strong>: inteligencia predictiva de fallas, recomendaciones de intervalo basadas en datos propios, análisis de costo total de propiedad, comparación de activos entre clientes. Comunicarlas antes daña la credibilidad de la promesa actual.
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     §07 MODELO DE NEGOCIO
+     ════════════════════════════════════════ -->
+<section class="section" id="modelo">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">Modelo de negocio</span>
+  </div>
+
+  <div class="alert warn">
+    <div class="alert-label">Nivel de confianza de esta sección</div>
+    La documentación estratégica describe el modelo de negocio de manera cualitativa pero no especifica estructuras de precio, márgenes, o condiciones contractuales concretas. Lo que sigue es lo que está explícitamente soportado.
+  </div>
+
+  <h3>Cómo genera ingresos</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text"><strong>Contratos de mantenimiento preventivo:</strong> Identificado como la unidad principal de ingreso recurrente. El ERP tiene un módulo completo de gestión de contratos (CMTO-YYYY-NNNNN), planes de mantenimiento, programación de visitas y generación de cuentas de cobro. <span class="src">dev-ctx</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>Órdenes de trabajo correctivas:</strong> El ERP gestiona cotizaciones, órdenes de trabajo y facturación para intervenciones correctivas. Ingreso por evento. <span class="src">dev-ctx</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>El QR y el portal son parte del servicio, no un producto adicional:</strong> La documentación es explícita en que no son algo que se vende aparte. Son el medio por el que se hace entregable la promesa de trazabilidad. <span class="src">pb-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+
+  <h3>Componentes de la oferta de servicio</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Componente</th><th>Descripción</th><th>Rol en el modelo</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Mantenimiento preventivo</strong></td><td>Visitas programadas, inspección, calibración, limpieza según especificaciones del fabricante.</td><td>Ingreso recurrente principal. Base del contrato.</td></tr>
+        <tr><td><strong>Mantenimiento correctivo</strong></td><td>Atención de fallas y reparaciones por evento.</td><td>Ingreso complementario.</td></tr>
+        <tr><td><strong>Documentación técnica</strong></td><td>Actas técnicas, órdenes de trabajo, evidencias fotográficas generadas en cada visita.</td><td>Parte constitutiva del servicio — no extra. Diferenciador.</td></tr>
+        <tr><td><strong>Portal QR</strong></td><td>Acceso del cliente al historial verificable del equipo vía código QR adherido al activo.</td><td>Canal de entrega de la promesa. No se factura por separado.</td></tr>
+        <tr><td><strong>Informes y trazabilidad para auditoría</strong></td><td>El historial acumulado en el ERP sirve como evidencia para inspecciones INVIMA/ICONTEC/JCI.</td><td>Argumento de retención y renovación de contrato.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Fortalecedores del modelo identificados</h3>
+  <div class="finding-group">
+    <div class="finding">
+      <div class="finding-text"><strong>Retención aumentada por switching costs:</strong> Un cliente con historial acumulado en el portal tiene mayor fricción para cambiarse — su historia técnica está vinculada a la plataforma. La documentación lo identifica como "lock-in ético" (el cliente siente que el historial es suyo, aunque la plataforma sea de STECH NODES). <span class="src">qr-fd-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge inferred">~ Inferido</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>Upsell natural a mantenimiento preventivo:</strong> Un cliente que usa el portal y ve que lleva meses sin mantenimiento preventivo es más receptivo a contratar ese servicio. El portal genera contexto que facilita la conversación de venta. <span class="src">qr-fd-v1.3</span></div>
+      <div class="finding-meta"><span class="cbadge inferred">~ Inferido</span></div>
+    </div>
+    <div class="finding">
+      <div class="finding-text"><strong>Argumento de licitación en clínicas privadas:</strong> El sector privado evalúa proveedores con más criterios cualitativos que el público. El diferenciador de trazabilidad resuena más en instituciones privadas con presión de acreditación. <span class="src">qr-audit</span></div>
+      <div class="finding-meta"><span class="cbadge confirmed">✓ Confirmado</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     §08 IMPACTO
+     ════════════════════════════════════════ -->
+<section class="section" id="impacto">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">Impacto esperado</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Dimensión</th><th>Impacto documentado</th><th>Confianza</th><th>Fuente</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Trazabilidad</strong></td>
+          <td>El historial técnico de cada activo es accesible en tiempo real sin intermediación del proveedor. Lo que hoy toma horas de búsqueda toma 15 segundos de escaneo.</td>
+          <td><span class="cbadge confirmed">✓ Confirmado</span></td>
+          <td><span class="src">pb-v1.3</span></td>
+        </tr>
+        <tr>
+          <td><strong>Continuidad documental</strong></td>
+          <td>El historial no se interrumpe con cambios de personal ni de proveedor. El conocimiento técnico del activo queda anclado al equipo físico, no a quien lo administra.</td>
+          <td><span class="cbadge confirmed">✓ Confirmado</span></td>
+          <td><span class="src">pb-v1.3</span></td>
+        </tr>
+        <tr>
+          <td><strong>Operación del cliente</strong></td>
+          <td>Reducción del tiempo de búsqueda documental durante auditorías, cambios de coordinador y renovaciones de contrato. Eliminación de las llamadas de verificación de estado de equipos.</td>
+          <td><span class="cbadge confirmed">✓ Confirmado</span></td>
+          <td><span class="src">qr-fd-v1.3</span></td>
+        </tr>
+        <tr>
+          <td><strong>Disponibilidad del historial</strong></td>
+          <td>Acceso 24/7 desde cualquier dispositivo con cámara, sin necesidad de app instalada, sin autenticación en Fase 1.</td>
+          <td><span class="cbadge confirmed">✓ Confirmado</span></td>
+          <td><span class="src">qr-fd-v1.3</span></td>
+        </tr>
+        <tr>
+          <td><strong>Cumplimiento regulatorio</strong></td>
+          <td>Las instituciones en proceso de acreditación ICONTEC/JCI pueden demostrar trazabilidad de mantenimiento en tiempo real durante inspecciones, sin preparación previa.</td>
+          <td><span class="cbadge confirmed">✓ Confirmado</span></td>
+          <td><span class="src">pb-v1.3 · qr-audit</span></td>
+        </tr>
+        <tr>
+          <td><strong>Toma de decisiones</strong></td>
+          <td>A escala futura (300+ equipos), los datos acumulados permiten recomendar intervalos de mantenimiento ajustados a condiciones reales colombianas, no a manuales del fabricante.</td>
+          <td><span class="cbadge validate">? Requiere validación</span></td>
+          <td><span class="src">strat-10y</span></td>
+        </tr>
+        <tr>
+          <td><strong>Eficiencia operativa STECH NODES</strong></td>
+          <td>Eliminación de llamadas de soporte de verificación de estado. Ciclo completo de cotización → OT → acta → contrato → cobro gestionado en un único sistema.</td>
+          <td><span class="cbadge confirmed">✓ Confirmado</span></td>
+          <td><span class="src">dev-ctx · qr-fd-v1.3</span></td>
+        </tr>
+        <tr>
+          <td><strong>Impacto de largo plazo</strong></td>
+          <td>Horizonte 1–3 años: operador de excelencia documentada. 3–6 años: gestor inteligente del ciclo de vida de activos. 6–10 años: potencial plataforma de referencia sectorial para biomédica en Colombia.</td>
+          <td><span class="cbadge validate">? Requiere validación</span></td>
+          <td><span class="src">strat-10y</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     §09 VACÍOS PARA FONDO EMPRENDER
+     ════════════════════════════════════════ -->
+<section class="section" id="vacios">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <span class="section-title">Vacíos documentales — lo que Fondo Emprender requiere y no existe aún</span>
+  </div>
+
+  <div class="alert crit">
+    <div class="alert-label">Advertencia</div>
+    Esta sección lista información que Fondo Emprender solicita típicamente en sus formularios y que no está presente en ninguno de los cinco documentos estratégicos actuales. Debe construirse con investigación primaria y secundaria antes de diligenciar los formularios.
+  </div>
+
+  <h3>Vacíos de mercado</h3>
+
+  <div class="gap-item">
+    <div class="gap-title">Tamaño del mercado en Colombia</div>
+    <div class="gap-desc">No existe en la documentación: número de clínicas privadas y hospitales en el país, número de equipos biomédicos bajo mantenimiento tercerizado, valor total del mercado de mantenimiento biomédico en pesos o USD.</div>
+    <div class="gap-action">→ Requiere: búsqueda en estadísticas SISPRO, REPS (Registro Especial de Prestadores), Supersalud, gremios como ACEMI o Anif salud.</div>
+  </div>
+
+  <div class="gap-item">
+    <div class="gap-title">Análisis de competencia con datos</div>
+    <div class="gap-desc">La documentación menciona la existencia de multinacionales y proveedores locales pero no los nombra, no compara precios, no estima cuotas de mercado, ni identifica proveedores específicos en el segmento objetivo.</div>
+    <div class="gap-action">→ Requiere: mapeo de competidores en Bogotá y ciudades principales, precios de referencia de contratos de mantenimiento, evaluación de si alguno tiene sistema de trazabilidad similar.</div>
+  </div>
+
+  <div class="gap-item">
+    <div class="gap-title">Mercado objetivo cuantificado (TAM/SAM/SOM)</div>
+    <div class="gap-desc">No existe estimación del mercado total direccionable, mercado disponible y mercado obtenible en los primeros 3 años. Fondo Emprender solicita proyecciones de participación de mercado.</div>
+    <div class="gap-action">→ Requiere: definir el número de instituciones objetivo en las ciudades de operación, valor promedio de contrato anual, y estimación realista de penetración.</div>
+  </div>
+
+  <h3>Vacíos de validación comercial</h3>
+
+  <div class="gap-item">
+    <div class="gap-title">Tracción y clientes actuales</div>
+    <div class="gap-desc">La documentación no menciona el número actual de clientes, contratos activos, valor de contratos existentes, ni testimonios o cartas de intención de clientes potenciales. Fondo Emprender valora la validación de mercado existente.</div>
+    <div class="gap-action">→ Requiere: listar los clientes actuales (con su autorización), número de equipos bajo mantenimiento, antigüedad de las relaciones, y cartas de intención de prospectos.</div>
+  </div>
+
+  <div class="gap-item">
+    <div class="gap-title">Validación de la disposición a pagar por trazabilidad</div>
+    <div class="gap-desc">La auditoría identifica que el comprador de compras raramente valora el portal directamente. No hay investigación que muestre si los clientes pagarían más por el servicio de trazabilidad o si lo perciben como un extra sin valor económico adicional.</div>
+    <div class="gap-action">→ Requiere: entrevistas con directivos de al menos 5 instituciones del segmento objetivo sobre disposición a pagar un premium por trazabilidad verificable.</div>
+  </div>
+
+  <h3>Vacíos financieros</h3>
+
+  <div class="gap-item">
+    <div class="gap-title">Proyecciones financieras a 3 y 5 años</div>
+    <div class="gap-desc">No existen en la documentación: ingresos proyectados, costos operativos, punto de equilibrio, flujo de caja, inversión requerida y retorno esperado. Fondo Emprender solicita proyecciones detalladas.</div>
+    <div class="gap-action">→ Requiere: construir modelo financiero con supuestos explícitos (precio promedio de contrato, número de contratos por año, costo por técnico, infraestructura tecnológica).</div>
+  </div>
+
+  <div class="gap-item">
+    <div class="gap-title">Estructura de costos detallada</div>
+    <div class="gap-desc">La documentación no incluye costos de prestación del servicio, márgenes por tipo de servicio, costo de adquisición de clientes, ni costo de operación del ERP y portal.</div>
+    <div class="gap-action">→ Requiere: desglose de costos fijos (infraestructura, equipo técnico), costos variables (desplazamiento, repuestos, materiales) y estructura de precio objetivo.</div>
+  </div>
+
+  <div class="gap-item">
+    <div class="gap-title">Necesidad de financiación y uso de recursos</div>
+    <div class="gap-desc">No existe en la documentación el monto de inversión solicitado a Fondo Emprender, ni el plan de uso de esos recursos (qué se compra, qué se contrata, qué se construye). Fondo Emprender requiere justificación detallada.</div>
+    <div class="gap-action">→ Requiere: definir el plan de inversión con ítem a ítem, cronograma de ejecución, e indicadores de resultado por desembolso.</div>
+  </div>
+
+  <h3>Vacíos de equipo</h3>
+
+  <div class="gap-item">
+    <div class="gap-title">Perfil del equipo fundador</div>
+    <div class="gap-desc">Los documentos no incluyen información sobre los fundadores: formación, experiencia en el sector biomédico, certificaciones técnicas, o complementariedad de habilidades. Fondo Emprender evalúa el equipo fuertemente.</div>
+    <div class="gap-action">→ Requiere: hojas de vida resumidas, trayectoria en mantenimiento biomédico, certificaciones (SENA, fabricantes, IEC 62353), roles dentro de la empresa.</div>
+  </div>
+
+  <h3>Vacíos de impacto social</h3>
+
+  <div class="gap-item">
+    <div class="gap-title">Empleos directos e indirectos generados</div>
+    <div class="gap-desc">Fondo Emprender evalúa el impacto en generación de empleo. No existe proyección de empleos directos (técnicos, administrativos) ni empleos indirectos. El programa PITCH VERDE puede requerir adicionalmente impacto ambiental.</div>
+    <div class="gap-action">→ Requiere: proyección de equipo actual y a 3 y 5 años, y cualquier elemento de impacto ambiental (ej: mantenimiento preventivo reduce desecho de equipos).</div>
+  </div>
+
+  <h3>Resumen de prioridades para llenar vacíos</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Vacío</th><th>Urgencia para FE</th><th>Fuente sugerida</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Tracción actual: clientes, contratos, equipos activos</td><td>Alta — es validación de mercado</td><td>Datos internos STECH NODES</td></tr>
+        <tr><td>2</td><td>Tamaño del mercado (TAM/SAM/SOM)</td><td>Alta — requerido en formulario</td><td>REPS, SISPRO, Supersalud</td></tr>
+        <tr><td>3</td><td>Proyecciones financieras a 3 años</td><td>Alta — requerido en formulario</td><td>Construir con supuestos explícitos</td></tr>
+        <tr><td>4</td><td>Perfil del equipo fundador</td><td>Alta — evaluado en pitch</td><td>CVs y certificaciones existentes</td></tr>
+        <tr><td>5</td><td>Análisis de competencia nombrado</td><td>Media — diferenciación</td><td>Investigación de mercado directa</td></tr>
+        <tr><td>6</td><td>Validación disposición a pagar</td><td>Media — respalda precio</td><td>Entrevistas con directivos IPS</td></tr>
+        <tr><td>7</td><td>Uso detallado de recursos FE</td><td>Alta — pre-requisito del formulario</td><td>Definir plan de inversión</td></tr>
+        <tr><td>8</td><td>Empleos e impacto social</td><td>Media — criterio de selección</td><td>Proyección interna</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert good">
+    <div class="alert-label">Lo que sí está muy bien construido para Fondo Emprender</div>
+    La documentación estratégica de STECH NODES es excepcionalmente sólida en tres áreas que muchos aplicantes no tienen: (1) identificación precisa del problema y su origen, (2) distinción clara entre lo que puede prometerse hoy y lo que no, y (3) análisis autocrítico de los límites del diferenciador. Esto permite presentar una propuesta creíble y honesta — algo que los evaluadores de PITCH VERDE saben distinguir.
+  </div>
+
+</section>
+
+</div><!-- /content -->
+</main>
+</div><!-- /layout -->
+
+</body>
+</html>

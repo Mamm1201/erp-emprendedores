@@ -1,0 +1,539 @@
+<title>Posicionamiento estratégico · STECH NODES</title>
+<style>
+:root {
+  --bg:        #FAFAF8;
+  --surface:   #FFFFFF;
+  --navy:      #042C53;
+  --blue:      #185FA5;
+  --blue-lt:   #378ADD;
+  --green:     #0F6E56;
+  --green-bg:  #EAF5F1;
+  --green-bdr: #7ECBB4;
+  --text:      #18170F;
+  --text-2:    #4D5A6A;
+  --text-3:    #8FA0B0;
+  --border:    #DDE3EA;
+  --border-2:  #C4CDD8;
+  --amber:     #7A4F00;
+  --amber-bg:  #FDF6E8;
+  --amber-bdr: #D4A045;
+  --stamp-bg:  rgba(4,44,83,0.05);
+  --lbl:       #8FA0B0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #080F1A;
+    --surface:   #0E1928;
+    --navy:      #378ADD;
+    --blue:      #93C5FD;
+    --blue-lt:   #BFDBFE;
+    --green:     #6EE7B7;
+    --green-bg:  #012A1C;
+    --green-bdr: #054F3A;
+    --text:      #EAF0F8;
+    --text-2:    #8FA0B0;
+    --text-3:    #4D5A6A;
+    --border:    #1A2A3E;
+    --border-2:  #243850;
+    --amber:     #FCD34D;
+    --amber-bg:  #1A1000;
+    --amber-bdr: #6B4200;
+    --stamp-bg:  rgba(55,138,221,0.06);
+    --lbl:       #4D5A6A;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:        #080F1A;
+  --surface:   #0E1928;
+  --navy:      #378ADD;
+  --blue:      #93C5FD;
+  --blue-lt:   #BFDBFE;
+  --green:     #6EE7B7;
+  --green-bg:  #012A1C;
+  --green-bdr: #054F3A;
+  --text:      #EAF0F8;
+  --text-2:    #8FA0B0;
+  --text-3:    #4D5A6A;
+  --border:    #1A2A3E;
+  --border-2:  #243850;
+  --amber:     #FCD34D;
+  --amber-bg:  #1A1000;
+  --amber-bdr: #6B4200;
+  --stamp-bg:  rgba(55,138,221,0.06);
+  --lbl:       #4D5A6A;
+}
+:root[data-theme="light"] {
+  --bg:        #FAFAF8;
+  --surface:   #FFFFFF;
+  --navy:      #042C53;
+  --blue:      #185FA5;
+  --blue-lt:   #378ADD;
+  --green:     #0F6E56;
+  --green-bg:  #EAF5F1;
+  --green-bdr: #7ECBB4;
+  --text:      #18170F;
+  --text-2:    #4D5A6A;
+  --text-3:    #8FA0B0;
+  --border:    #DDE3EA;
+  --border-2:  #C4CDD8;
+  --amber:     #7A4F00;
+  --amber-bg:  #FDF6E8;
+  --amber-bdr: #D4A045;
+  --stamp-bg:  rgba(4,44,83,0.05);
+  --lbl:       #8FA0B0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15.5px;
+  line-height: 1.75;
+  padding: 56px 24px 100px;
+}
+.doc { max-width: 700px; margin: 0 auto; }
+
+/* ── Header ── */
+.doc-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  border-bottom: 1.5px solid var(--border-2);
+  padding-bottom: 24px;
+  margin-bottom: 32px;
+}
+.brand-row { display: flex; align-items: center; gap: 12px; }
+.node-mark { flex-shrink: 0; }
+.brand-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: var(--text); }
+.brand-tag { font-size: 11px; color: var(--text-3); margin-top: 1px; letter-spacing: 0.02em; }
+.doc-stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.stamp-pill {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--stamp-bg);
+  border: 1px solid var(--border-2);
+  color: var(--navy);
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+.stamp-date { font-size: 11px; color: var(--text-3); }
+
+/* ── Positioning statement (hero) ── */
+.ps-block {
+  background: var(--navy);
+  border-radius: 10px;
+  padding: 30px 32px 28px;
+  margin-bottom: 44px;
+}
+.ps-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 14px;
+}
+.ps-text {
+  font-size: 17.5px;
+  font-weight: 500;
+  color: #FFFFFF;
+  line-height: 1.65;
+}
+.ps-text strong {
+  color: #63B3ED;
+  font-weight: 700;
+}
+
+/* ── Brief sections (definition list format) ── */
+.brief { display: flex; flex-direction: column; gap: 0; }
+
+.brief-item {
+  display: grid;
+  grid-template-columns: 168px 1fr;
+  gap: 0 32px;
+  padding: 26px 0;
+  border-bottom: 1px solid var(--border);
+}
+.brief-item:last-child { border-bottom: none; }
+
+.brief-q {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lbl);
+  padding-top: 3px;
+  line-height: 1.4;
+}
+.brief-a { }
+.brief-a p {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.75;
+  margin-bottom: 10px;
+}
+.brief-a p:last-child { margin-bottom: 0; }
+.brief-a strong { color: var(--text); font-weight: 600; }
+.brief-a em { font-style: normal; color: var(--navy); font-weight: 500; }
+
+/* Tool role cards */
+.tool-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.tool-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-lt);
+  margin-bottom: 6px;
+}
+.tool-def {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.tool-role {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Promise block */
+.promise-block {
+  background: var(--green-bg);
+  border: 1px solid var(--green-bdr);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-top: 2px;
+}
+.promise-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+.promise-text {
+  font-size: 14.5px;
+  color: var(--green);
+  line-height: 1.65;
+  font-weight: 500;
+}
+
+/* Future capabilities — amber list */
+.future-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.future-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.future-item:last-child { border-bottom: none; }
+.future-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber-bdr);
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+.future-text { font-size: 13.5px; color: var(--text-2); line-height: 1.55; }
+.future-note { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+/* ── Governance ── */
+.gov-block {
+  margin-top: 52px;
+  border: 1.5px solid var(--border-2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.gov-head {
+  background: var(--stamp-bg);
+  border-bottom: 1px solid var(--border-2);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gov-head-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--navy);
+}
+.gov-head-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+.gov-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+.gov-principle { font-size: 14.5px; color: var(--text-2); line-height: 1.7; }
+.gov-principle strong { color: var(--text); font-weight: 600; }
+.gov-rule {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.65;
+}
+
+/* ── Footer ── */
+.footer {
+  margin-top: 52px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-note { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+.footer-uses { font-size: 11px; color: var(--text-3); }
+.footer-uses span {
+  display: inline-block;
+  background: var(--stamp-bg);
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin: 2px 4px 2px 0;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+@media (max-width: 560px) {
+  .brief-item { grid-template-columns: 1fr; gap: 6px 0; }
+  .brief-q { padding-top: 0; }
+  .tool-pair { grid-template-columns: 1fr; }
+  .doc-header { flex-direction: column; gap: 14px; }
+  .doc-stamp { align-items: flex-start; }
+  .ps-block { padding: 22px 20px; }
+  .ps-text { font-size: 16px; }
+}
+</style>
+
+<div class="doc">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="brand-row">
+      <div class="node-mark">
+        <svg width="36" height="36" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+          <circle r="7.5" fill="none" stroke="#042C53" stroke-width="1.1"/>
+          <circle r="4.2" fill="none" stroke="#042C53" stroke-width="0.8"/>
+          <circle r="1.6" fill="#042C53"/>
+          <line x1="0" y1="-7.5" x2="0" y2="-10.2" stroke="#042C53" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="0" y1="7.5"  x2="0" y2="10.2"  stroke="#042C53" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="-7.5" y1="0" x2="-10.2" y2="0" stroke="#042C53" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="7.5"  y1="0" x2="10.2"  y2="0" stroke="#042C53" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">STECH NODES</div>
+        <div class="brand-tag">Operaciones técnicas, bajo control.</div>
+      </div>
+    </div>
+    <div class="doc-stamp">
+      <div class="stamp-pill">Posicionamiento estratégico — v1.3</div>
+      <div class="stamp-date">Versión oficial · Julio 2026</div>
+    </div>
+  </div>
+
+  <!-- Positioning statement -->
+  <div class="ps-block">
+    <div class="ps-eyebrow">Declaración de posicionamiento</div>
+    <div class="ps-text">
+      STECH NODES es una empresa de servicio técnico especializado que <strong>ancla el conocimiento técnico de los activos biomédicos al equipo físico, no a las personas que lo gestionan.</strong> El ERP y el ecosistema QR son herramientas propias que nacen de la operación — no productos que vendemos.
+    </div>
+  </div>
+
+  <!-- Brief -->
+  <div class="brief">
+
+    <div class="brief-item">
+      <div class="brief-q">Qué somos</div>
+      <div class="brief-a">
+        <p>Una empresa de servicio técnico especializado en mantenimiento de equipos biomédicos. Operamos en Colombia y convertimos cada intervención técnica en documentación verificable del estado técnico documentado de los activos de nuestros clientes.</p>
+        <p>No somos una empresa de software. El ERP y el ecosistema QR son herramientas construidas para sostener nuestra propia operación con el nivel de rigor que el sector exige.</p>
+      </div>
+    </div>
+
+    <div class="brief-item">
+      <div class="brief-q">Qué problema resolvemos</div>
+      <div class="brief-a">
+        <p>Muchos proveedores generan informes, actas y registros. El problema no es la ausencia total de documentación — es que esa información queda <strong>atada a personas, carpetas, correos o proveedores específicos</strong>, no al activo técnico que describe.</p>
+        <p>Cuando cambia el personal administrativo o el responsable técnico, el historial se fragmenta. Cuando cambia el proveedor de mantenimiento, se pierde. Cuando llega una inspección regulatoria o una auditoría de acreditación, reconstruir la historia completa de un equipo se convierte en una tarea de rastreo que debería ser innecesaria.</p>
+        <p><strong>Resolvemos la dependencia de personas y archivos aislados. El conocimiento técnico del activo debe viajar con el equipo — no con quien lo administra.</strong></p>
+      </div>
+    </div>
+
+    <div class="brief-item">
+      <div class="brief-q">Para quién lo resolvemos</div>
+      <div class="brief-a">
+        <p><strong>Interlocutores primarios:</strong> directores médicos, directores administrativos y coordinadores de infraestructura de clínicas privadas y hospitales con carga regulatoria real — habilitación INVIMA, proceso de acreditación ICONTEC o JCI, o auditorías de aseguradoras.</p>
+        <p><strong>Interlocutores secundarios:</strong> gerentes generales de clínicas que evalúan riesgo operativo y responsables de compras institucionales que negocian contratos de mantenimiento preventivo.</p>
+        <p>No apuntamos al segmento que compra exclusivamente por precio. Apuntamos al segmento que ya reconoce el costo de no tener la documentación cuando la necesita.</p>
+        <p style="font-size:13.5px; color:var(--text-3);">Contexto regulatorio: el marco de habilitación de servicios de salud en Colombia exige programas de mantenimiento documentados para los equipos biomédicos. Las instituciones en proceso de acreditación — ICONTEC, JCI — deben demostrar continuidad y trazabilidad en la gestión de sus activos técnicos. Este contexto no crea la necesidad de documentación por sí solo, pero explica por qué la disponibilidad documental tiene consecuencias operativas y legales reales para las instituciones.</p>
+      </div>
+    </div>
+
+    <div class="brief-item">
+      <div class="brief-q">Qué nos diferencia</div>
+      <div class="brief-a">
+        <p>No solo hacemos el mantenimiento — anclamos el conocimiento técnico al activo, no a las personas que lo gestionan. El historial de un equipo es accesible para cualquier responsable de la institución en cualquier momento, sin necesidad de saber a quién preguntarle ni de buscar en carpetas o correos heredados.</p>
+        <p><strong>La evidencia técnica es parte constitutiva del servicio, no un extra.</strong> Cada cotización, orden de trabajo, acta técnica y resultado de servicio existe en un sistema trazable, vinculado al activo específico. Cuando cambia el coordinador de infraestructura o el jefe de mantenimiento, el historial no se va con él.</p>
+        <p>En la práctica institucional, el historial técnico de los activos suele vivir disperso entre múltiples formatos, proveedores y responsables. STECH NODES ha construido su operación para que no tenga que ser así.</p>
+        <p style="font-size:13.5px; color:var(--text-3); margin-top:4px;"><strong style="color:var(--text-2);">Principio de propiedad del historial:</strong> la información técnica generada durante la prestación del servicio pertenece al cliente. STECH NODES considera la continuidad del historial técnico como un principio de la relación, no como un beneficio opcional. La política de portabilidad — que definirá formato, alcance y condiciones — será desarrollada e implementada como parte de la evolución del ERP y del ecosistema QR. Este principio debe preceder a cualquier decisión de arquitectura que afecte el acceso, el almacenamiento o la transferencia de los datos del cliente.</p>
+      </div>
+    </div>
+
+    <div class="brief-item">
+      <div class="brief-q">Papel del ERP</div>
+      <div class="brief-a">
+        <div class="tool-card" style="margin-top:2px;">
+          <div class="tool-label">ERP interno</div>
+          <div class="tool-def">El sistema operativo de la empresa. Garantiza que cada cotización, orden de trabajo, acta técnica, contrato y evidencia fotográfica exista, sea trazable y esté conectado a los activos correspondientes del cliente.</div>
+          <div class="tool-role">Es la infraestructura que hace posible la promesa — no un producto para vender.</div>
+        </div>
+        <p style="margin-top:14px; font-size:14px; color:var(--text-3);">Si el ERP no existe, la trazabilidad es una intención sin sustrato. Si existe pero los registros están incompletos, la promesa es falsa. La calidad de los registros es la métrica operativa más crítica de todo el sistema estratégico.</p>
+      </div>
+    </div>
+
+    <div class="brief-item">
+      <div class="brief-q">Papel del ecosistema QR</div>
+      <div class="brief-a">
+        <div class="tool-card" style="margin-top:2px;">
+          <div class="tool-label">QR + portal público</div>
+          <div class="tool-def">El canal que hace visible al cliente la evidencia que el ERP acumula. Un código adherido al equipo que, al escanearse, muestra el historial técnico verificable de ese activo sin necesidad de solicitarlo al proveedor.</div>
+          <div class="tool-role">Es la interfaz de la promesa — no la promesa misma.</div>
+        </div>
+        <p style="margin-top:14px; font-size:14px; color:var(--text-3);">El QR sin datos de calidad es marketing vacío. Los datos sin QR son un activo invisible. La combinación convierte la trazabilidad interna en diferenciación externamente verificable.</p>
+      </div>
+    </div>
+
+    <div class="brief-item">
+      <div class="brief-q">Qué promesa podemos hacer hoy</div>
+      <div class="brief-a">
+        <div class="promise-block">
+          <div class="promise-eyebrow">Promesa válida — sin exagerar</div>
+          <div class="promise-text">"Cada equipo que mantenemos tiene un historial técnico real, sistemático y accesible — y ese historial viaja con el equipo, no con la persona que lo administra. Cuando cambie su coordinador o su jefe de mantenimiento, el historial no se va con ellos. La información técnica que generamos le pertenece a usted. Si en algún punto no puede acceder a ella, tenemos un problema — y es nuestro problema resolverlo."</div>
+        </div>
+        <p style="margin-top:16px; font-size:14px; color:var(--text-3);">Esta promesa no incluye predicción de fallas, optimización de portafolios ni análisis comparativo entre clientes. Incluye exactamente lo que podemos garantizar hoy: que el estado técnico documentado de cada activo existe, es preciso, y no depende de que nadie recuerde dónde guardó el último informe.</p>
+      </div>
+    </div>
+
+    <div class="brief-item">
+      <div class="brief-q">Capacidades futuras a construir — no comunicar aún</div>
+      <div class="brief-a">
+        <p style="font-size:13.5px; color:var(--text-3); margin-bottom:10px;">Las siguientes capacidades son objetivos legítimos de mediano plazo. Solo deben comunicarse al mercado cuando exista evidencia suficiente para sustentarlas — datos reales, no intención. Comunicarlas antes daña la credibilidad de la promesa actual.</p>
+        <div class="future-list">
+          <div class="future-item">
+            <div class="future-dot"></div>
+            <div>
+              <div class="future-text">Inteligencia predictiva basada en patrones de falla acumulados</div>
+              <div class="future-note">Requiere masa crítica de datos (500+ eventos de servicio documentados por tipo de equipo)</div>
+            </div>
+          </div>
+          <div class="future-item">
+            <div class="future-dot"></div>
+            <div>
+              <div class="future-text">Recomendaciones de intervalo de mantenimiento ajustadas a condiciones locales reales</div>
+              <div class="future-note">Hoy los intervalos vienen del fabricante. La capacidad propia requiere años de datos en campo colombiano</div>
+            </div>
+          </div>
+          <div class="future-item">
+            <div class="future-dot"></div>
+            <div>
+              <div class="future-text">Análisis de costo total de propiedad por tipo de equipo y por cliente</div>
+              <div class="future-note">Depende de datos históricos de piezas, tiempos y frecuencias de falla — no disponibles en cantidad suficiente hoy</div>
+            </div>
+          </div>
+          <div class="future-item">
+            <div class="future-dot"></div>
+            <div>
+              <div class="future-text">Comparación de comportamiento de activos similares entre clientes (anonimizada)</div>
+              <div class="future-note">Requiere volumen de clientes y consentimiento de uso de datos — infraestructura legal y técnica pendiente</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /brief -->
+
+  <!-- Governance -->
+  <div class="gov-block">
+    <div class="gov-head">
+      <svg class="gov-head-icon" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.3"/>
+        <line x1="5" y1="6.5" x2="13" y2="6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="5" y1="9" x2="13" y2="9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="5" y1="11.5" x2="9.5" y2="11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span class="gov-head-label">Gobierno del posicionamiento estratégico</span>
+    </div>
+    <div class="gov-body">
+      <div class="gov-principle">
+        Este documento es la <strong>fuente de verdad del posicionamiento de STECH NODES</strong>. No es un documento de trabajo ni una versión preliminar: es la declaración oficial que define qué es la empresa, qué problema resuelve y cómo comunica su valor al mercado.
+      </div>
+      <div class="gov-principle">
+        Ningún contenido del sitio web, portafolio comercial, presentación institucional, documento para convocatorias de financiación, estrategia comercial ni desarrollo del ERP o del ecosistema QR puede contradecir los principios aquí definidos. <strong>La coherencia entre este documento y todo lo que la empresa comunica es una responsabilidad de la dirección.</strong>
+      </div>
+      <div class="gov-principle">
+        Cuando la estrategia evolucione — porque el mercado cambie, porque la empresa crezca, porque aparezcan capacidades nuevas — <strong>este documento se actualiza primero</strong>. El resto de los materiales se actualiza después. Nunca al revés. Actualizar materiales externos sin actualizar este documento es construir sobre una base que ya no existe.
+      </div>
+      <div class="gov-rule">
+        Cualquier modificación a este documento requiere una decisión estratégica explícita de la dirección de STECH NODES y debe quedar registrada con fecha y motivo. Las correcciones de estilo no constituyen una revisión estratégica.
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-note">
+      Este documento establece la base estratégica que debe orientar<br>
+      todos los materiales de comunicación externa de STECH NODES.
+    </div>
+    <div>
+      <div class="footer-uses" style="margin-bottom:4px; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3);">Aplica a</div>
+      <span>Sitio web</span><span>Correos comerciales</span><span>Presentaciones B2B</span><span>Estrategia de ventas</span>
+    </div>
+  </div>
+
+</div>

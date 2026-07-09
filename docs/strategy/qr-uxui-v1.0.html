@@ -1,0 +1,1414 @@
+<title>Portal QR — Diseño UX/UI · STECH NODES</title>
+<style>
+/* ── Tokens ─────────────────────────────────────────────── */
+:root {
+  --bg:        #F8F7F6;
+  --surface:   #FFFFFF;
+  --text:      #1C1917;
+  --text-2:    #57534E;
+  --text-3:    #A8A29E;
+  --border:    #E7E5E4;
+  --border-2:  #D6D3D1;
+  --blue-dark: #042C53;
+  --blue-mid:  #185FA5;
+  --blue:      #378ADD;
+  --green:     #0F6E56;
+  --amber:     #92400E;
+  --amber-bg:  #FFFBEB;
+  --amber-bdr: #FCD34D;
+  --red:       #7F1D1D;
+  --red-bg:    #FEF2F2;
+  --red-bdr:   #FECACA;
+  --teal-bg:   #ECFDF5;
+  --teal-bdr:  #6EE7B7;
+  --teal:      #065F46;
+  --blue-bg:   #EFF6FF;
+  --blue-bdr:  #93C5FD;
+  --blue-text: #1E3A5F;
+  --gray-bg:   #F5F5F4;
+  --gray:      #78716C;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0C1520;
+    --surface:   #152030;
+    --text:      #F5F5F4;
+    --text-2:    #A8A29E;
+    --text-3:    #57534E;
+    --border:    #1E3045;
+    --border-2:  #2A4060;
+    --amber-bg:  #1C1200;
+    --amber-bdr: #92400E;
+    --amber:     #FCD34D;
+    --red-bg:    #200000;
+    --red-bdr:   #7F1D1D;
+    --red:       #FCA5A5;
+    --teal-bg:   #002A1A;
+    --teal-bdr:  #0F6E56;
+    --teal:      #6EE7B7;
+    --blue-bg:   #001833;
+    --blue-bdr:  #185FA5;
+    --blue-text: #93C5FD;
+    --gray-bg:   #1C1C1A;
+    --gray:      #A8A29E;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:        #0C1520;
+  --surface:   #152030;
+  --text:      #F5F5F4;
+  --text-2:    #A8A29E;
+  --text-3:    #57534E;
+  --border:    #1E3045;
+  --border-2:  #2A4060;
+  --amber-bg:  #1C1200;
+  --amber-bdr: #92400E;
+  --amber:     #FCD34D;
+  --red-bg:    #200000;
+  --red-bdr:   #7F1D1D;
+  --red:       #FCA5A5;
+  --teal-bg:   #002A1A;
+  --teal-bdr:  #0F6E56;
+  --teal:      #6EE7B7;
+  --blue-bg:   #001833;
+  --blue-bdr:  #185FA5;
+  --blue-text: #93C5FD;
+  --gray-bg:   #1C1C1A;
+  --gray:      #A8A29E;
+}
+:root[data-theme="light"] {
+  --bg:        #F8F7F6;
+  --surface:   #FFFFFF;
+  --text:      #1C1917;
+  --text-2:    #57534E;
+  --text-3:    #A8A29E;
+  --border:    #E7E5E4;
+  --border-2:  #D6D3D1;
+  --blue-dark: #042C53;
+  --blue-mid:  #185FA5;
+  --blue:      #378ADD;
+  --green:     #0F6E56;
+  --amber:     #92400E;
+  --amber-bg:  #FFFBEB;
+  --amber-bdr: #FCD34D;
+  --red:       #7F1D1D;
+  --red-bg:    #FEF2F2;
+  --red-bdr:   #FECACA;
+  --teal-bg:   #ECFDF5;
+  --teal-bdr:  #6EE7B7;
+  --teal:      #065F46;
+  --blue-bg:   #EFF6FF;
+  --blue-bdr:  #93C5FD;
+  --blue-text: #1E3A5F;
+  --gray-bg:   #F5F5F4;
+  --gray:      #78716C;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  padding: 48px 24px 80px;
+}
+.doc { max-width: 720px; margin: 0 auto; }
+
+/* ── Cabecera ───────────────────────────────────────────── */
+.doc-header { border-bottom: 1px solid var(--border-2); padding-bottom: 28px; margin-bottom: 40px; }
+.doc-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+.doc-title { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 10px; }
+.doc-meta { font-size: 12px; color: var(--text-3); display: flex; gap: 20px; flex-wrap: wrap; }
+
+/* ── Secciones ──────────────────────────────────────────── */
+.section { margin-bottom: 52px; }
+.section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.section-num { font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: 0.08em; flex-shrink: 0; min-width: 24px; }
+.section-title { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+p { margin-bottom: 14px; color: var(--text-2); }
+p:last-child { margin-bottom: 0; }
+strong { color: var(--text); font-weight: 600; }
+h3 { font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 0.06em; text-transform: uppercase; margin: 22px 0 10px; }
+ul, ol { padding-left: 20px; margin-bottom: 14px; }
+li { margin-bottom: 6px; color: var(--text-2); font-size: 14.5px; }
+li strong { color: var(--text); }
+
+/* ── Callouts ───────────────────────────────────────────── */
+.callout { border-radius: 6px; padding: 14px 18px; margin: 18px 0; border-left: 3px solid; font-size: 14px; line-height: 1.6; }
+.callout-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+.callout.decision { background: var(--blue-bg); border-color: var(--blue-bdr); }
+.callout.decision .callout-label, .callout.decision p { color: var(--blue-text); }
+.callout.note { background: var(--gray-bg); border-color: var(--border-2); }
+.callout.note .callout-label { color: var(--text-3); }
+.callout.note p { color: var(--text-2); }
+
+/* ── Tablas ─────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin: 18px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { background: var(--surface); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border-2); }
+td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); color: var(--text-2); vertical-align: top; }
+td strong { color: var(--text); }
+tr:last-child td { border-bottom: none; }
+
+/* ── Principios cards ───────────────────────────────────── */
+.principles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+.principle { padding: 16px; border: 0.5px solid var(--border-2); border-radius: 8px; background: var(--surface); }
+.principle-num { font-size: 22px; font-weight: 800; color: var(--border-2); line-height: 1; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+.principle-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.principle-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
+
+/* ── Info architecture tree ─────────────────────────────── */
+.ia-tree { margin: 18px 0; }
+.ia-level { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.ia-indent { width: 20px; flex-shrink: 0; }
+.ia-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+.ia-dot.l0 { background: var(--blue-dark); }
+.ia-dot.l1 { background: var(--blue-mid); }
+.ia-dot.l2 { background: var(--blue); }
+.ia-dot.l3 { background: var(--border-2); }
+.ia-label { font-size: 13.5px; color: var(--text); }
+.ia-meta { font-size: 12px; color: var(--text-3); margin-left: 4px; }
+
+/* ── Navigation map ─────────────────────────────────────── */
+.navmap { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 18px 0; }
+.nm-row { display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.nm-node {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 120px;
+  line-height: 1.3;
+}
+.nm-node.trigger { background: var(--blue-dark); color: white; }
+.nm-node.screen { background: var(--surface); border: 1px solid var(--border-2); color: var(--text); }
+.nm-node.state { background: var(--gray-bg); border: 1px solid var(--border); color: var(--text-2); font-size: 11px; }
+.nm-node.error { background: var(--red-bg); border: 1px solid var(--red-bdr); color: var(--red); }
+.nm-arrow { color: var(--text-3); font-size: 18px; line-height: 1; }
+.nm-arrow.right { }
+.nm-label { font-size: 10px; color: var(--text-3); letter-spacing: 0.06em; text-align: center; font-weight: 600; margin: 4px 0; }
+.nm-divider { display: flex; align-items: center; gap: 8px; margin: 10px 0 6px; width: 100%; }
+.nm-divider-line { flex: 1; height: 0.5px; background: var(--border); }
+.nm-divider-text { font-size: 10px; color: var(--text-3); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ── Phone frames ───────────────────────────────────────── */
+.phones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
+.phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.phone-label { font-size: 11px; font-weight: 700; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+.phone-sub { font-size: 11px; color: var(--text-3); text-align: center; margin-top: -6px; }
+.phone {
+  width: 240px;
+  border: 2px solid var(--text);
+  border-radius: 28px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+/* phone notch */
+.phone-notch {
+  background: var(--text);
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phone-notch-pill {
+  width: 48px;
+  height: 10px;
+  background: #000;
+  border-radius: 999px;
+}
+.phone-screen {
+  background: white;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+/* Portal header — actual brand color */
+.pw-header {
+  background: #042C53;
+  padding: 10px 14px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.pw-mark {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.pw-brand { flex: 1; min-width: 0; }
+.pw-name { font-size: 10px; font-weight: 800; color: white; letter-spacing: 0.12em; text-transform: uppercase; line-height: 1; }
+.pw-tag { font-size: 7.5px; color: #378ADD; letter-spacing: 0.06em; margin-top: 2px; line-height: 1; }
+
+/* Hero zone */
+.pw-hero { padding: 12px 14px 10px; border-bottom: 0.5px solid #E7E5E4; }
+.pw-eq-name { font-size: 13px; font-weight: 700; color: #1C1917; line-height: 1.3; margin-bottom: 2px; }
+.pw-eq-model { font-size: 10px; color: #A8A29E; margin-bottom: 8px; }
+.pw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+.pw-badge.active { background: #ECFDF5; color: #065F46; }
+.pw-badge.maintenance { background: #EFF6FF; color: #185FA5; }
+.pw-badge.offline { background: #FFFBEB; color: #92400E; }
+.pw-badge.retired { background: #F5F5F4; color: #78716C; }
+.pw-badge.expired { background: #FEF2F2; color: #7F1D1D; }
+.pw-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* Sections */
+.pw-section { padding: 10px 14px; border-bottom: 0.5px solid #E7E5E4; }
+.pw-section:last-of-type { border-bottom: none; }
+.pw-section-label { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8A29E; margin-bottom: 7px; }
+.pw-row { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+.pw-row:last-child { margin-bottom: 0; }
+.pw-field { font-size: 10px; color: #A8A29E; flex-shrink: 0; }
+.pw-value { font-size: 10.5px; color: #1C1917; font-weight: 500; text-align: right; }
+.pw-value.active-pill { color: #065F46; font-weight: 700; font-size: 9.5px; }
+.pw-value.expired-pill { color: #7F1D1D; font-weight: 700; font-size: 9.5px; }
+.pw-value.muted { color: #A8A29E; }
+
+/* Alert banner */
+.pw-alert {
+  margin: 8px 14px;
+  padding: 7px 10px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.pw-alert.warn { background: #FFFBEB; color: #92400E; border-left: 2.5px solid #FCD34D; }
+.pw-alert.error { background: #FEF2F2; color: #7F1D1D; border-left: 2.5px solid #FECACA; }
+.pw-alert.info { background: #EFF6FF; color: #185FA5; border-left: 2.5px solid #93C5FD; }
+.pw-alert.neutral { background: #F5F5F4; color: #78716C; border-left: 2.5px solid #E7E5E4; }
+
+/* Contact */
+.pw-contact { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; background: #F8F7F6; }
+.pw-contact-row { display: flex; align-items: center; gap: 6px; }
+.pw-contact-icon { width: 12px; height: 12px; border-radius: 50%; background: #185FA5; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pw-contact-text { font-size: 9.5px; color: #185FA5; font-weight: 500; }
+
+/* Footer */
+.pw-footer { padding: 8px 14px; background: #042C53; display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+.pw-footer-name { font-size: 8.5px; font-weight: 700; color: #378ADD; letter-spacing: 0.06em; }
+.pw-footer-url { font-size: 8px; color: rgba(255,255,255,0.4); }
+
+/* Error screen special */
+.pw-error-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 18px; text-align: center; gap: 10px; }
+.pw-error-icon { width: 40px; height: 40px; border-radius: 50%; background: #FEF2F2; display: flex; align-items: center; justify-content: center; }
+.pw-error-title { font-size: 12px; font-weight: 700; color: #1C1917; }
+.pw-error-desc { font-size: 10px; color: #A8A29E; line-height: 1.5; }
+
+/* ── Component library ───────────────────────────────────── */
+.comp-grid { display: flex; flex-direction: column; gap: 16px; margin: 18px 0; }
+.comp-card { border: 0.5px solid var(--border-2); border-radius: 8px; overflow: hidden; }
+.comp-card-head { padding: 10px 16px; background: var(--surface); border-bottom: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.comp-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.comp-note { font-size: 11px; color: var(--text-3); }
+.comp-body { padding: 16px; background: var(--bg); display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+.comp-body.column { flex-direction: column; }
+
+/* Status badges — larger for component showcase */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.badge.active { background: #ECFDF5; color: #065F46; }
+.badge.maintenance { background: #EFF6FF; color: #185FA5; }
+.badge.offline { background: #FFFBEB; color: #92400E; }
+.badge.retired { background: #F5F5F4; color: #78716C; border: 1px solid #E7E5E4; }
+.badge.expired { background: #FEF2F2; color: #7F1D1D; }
+.badge.no-history { background: #F5F5F4; color: #A8A29E; border: 1px solid #E7E5E4; }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* DataRow component */
+.data-row-demo {
+  background: white;
+  border: 0.5px solid var(--border-2);
+  border-radius: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+.data-row-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 13px;
+}
+.data-row-item:last-child { border-bottom: none; }
+.data-row-field { color: var(--text-3); }
+.data-row-value { color: var(--text); font-weight: 500; }
+
+/* Alert demos */
+.alert-demo { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.alert {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  border-left: 3px solid;
+}
+.alert.warn { background: var(--amber-bg); border-color: var(--amber-bdr); color: var(--amber); }
+.alert.error { background: var(--red-bg); border-color: var(--red-bdr); color: var(--red); }
+.alert.info { background: var(--blue-bg); border-color: var(--blue-bdr); color: var(--blue-text); }
+.alert.neutral { background: var(--gray-bg); border-color: var(--border-2); color: var(--text-2); }
+
+/* Desktop mockup */
+.desktop-mock {
+  border: 1.5px solid var(--border-2);
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+  margin: 18px 0;
+}
+.desktop-mock-bar {
+  background: var(--border);
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+}
+.desktop-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-2); }
+.desktop-url { flex: 1; height: 12px; background: var(--surface); border-radius: 3px; margin: 0 8px; display: flex; align-items: center; padding: 0 8px; }
+.desktop-url-text { font-size: 9px; color: var(--text-3); }
+.desktop-screen { display: grid; grid-template-columns: 280px 1fr; min-height: 320px; }
+.desktop-left {
+  border-right: 0.5px solid #E7E5E4;
+  display: flex;
+  flex-direction: column;
+}
+.desktop-right { padding: 20px; background: #F8F7F6; }
+.dw-header { background: #042C53; padding: 14px 18px; display: flex; align-items: center; gap: 10px; }
+.dw-hero { padding: 16px 18px; border-bottom: 0.5px solid #E7E5E4; }
+.dw-eq-name { font-size: 15px; font-weight: 700; color: #1C1917; margin-bottom: 3px; }
+.dw-eq-model { font-size: 11px; color: #A8A29E; margin-bottom: 10px; }
+.dw-section { padding: 12px 18px; border-bottom: 0.5px solid #E7E5E4; }
+.dw-section-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8A29E; margin-bottom: 8px; }
+.dw-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
+.dw-field { color: #A8A29E; }
+.dw-value { color: #1C1917; font-weight: 500; }
+.desktop-right-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #A8A29E; margin-bottom: 12px; }
+.timeline-item { display: flex; gap: 10px; margin-bottom: 14px; }
+.timeline-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: #185FA5; flex-shrink: 0; margin-top: 2px; }
+.timeline-line { flex: 1; width: 1px; background: #E7E5E4; }
+.timeline-content { flex: 1; padding-bottom: 14px; }
+.timeline-date { font-size: 10px; color: #A8A29E; }
+.timeline-title { font-size: 12px; font-weight: 600; color: #1C1917; }
+.timeline-tech { font-size: 11px; color: #57534E; }
+
+/* Accessibility table */
+.a11y-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+.a11y-card { padding: 14px; border: 0.5px solid var(--border-2); border-radius: 8px; background: var(--surface); }
+.a11y-icon { font-size: 18px; margin-bottom: 6px; }
+.a11y-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.a11y-desc { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+/* Token table */
+.token-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+.token-row:last-child { border-bottom: none; }
+.token-swatch { width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0; border: 0.5px solid rgba(0,0,0,0.08); }
+.token-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.token-value { font-size: 11px; color: var(--text-3); font-family: monospace; }
+.token-role { font-size: 11px; color: var(--text-2); }
+
+@media (max-width: 540px) {
+  .phones-grid { grid-template-columns: 1fr; }
+  .principles { grid-template-columns: 1fr; }
+  .a11y-grid { grid-template-columns: 1fr; }
+  .phone { width: 100%; max-width: 280px; }
+}
+</style>
+
+<div class="doc">
+
+  <div class="doc-header">
+    <div class="doc-eyebrow">Documento de diseño UX/UI · STECH NODES</div>
+    <div class="doc-title">Portal QR — Experiencia e Interfaz</div>
+    <div class="doc-meta">
+      <span>Versión 1.0 · Pre-implementación</span>
+      <span>Fecha: 8 de julio de 2026</span>
+      <span>Estado: Borrador para validación</span>
+    </div>
+  </div>
+
+  <!-- §01 CONTEXTO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Contexto y alcance</span>
+    </div>
+    <p>Este documento define la experiencia del usuario y la interfaz visual del portal QR de STECH NODES para la <strong>Fase 1: portal público sin autenticación</strong>. Cubre la arquitectura de información, la navegación, los estados del sistema, los wireframes de media fidelidad y los componentes reutilizables para la implementación posterior.</p>
+    <p>El dispositivo principal es el <strong>teléfono móvil</strong> — el actor escanea el QR físico con la cámara del celular y llega directamente al portal. El diseño es mobile-first y toda decisión de layout parte de esta premisa. El escritorio es un canal secundario, principalmente para auditores o ingenieros biomédicos que gestionan múltiples equipos desde un computador.</p>
+    <div class="callout note">
+      <div class="callout-label">Alcance de este documento</div>
+      <p>Este documento no incluye código. Las decisiones de implementación técnica (componentes React, llamadas API, estructura de rutas) pertenecen al documento de arquitectura funcional ya congelado. Este documento responde únicamente a: ¿qué ve el usuario?, ¿cómo lo navega?, y ¿cómo percibe la marca STECH NODES?</p>
+    </div>
+  </div>
+
+  <!-- §02 PRINCIPIOS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Principios de diseño UX/UI</span>
+    </div>
+    <div class="principles">
+      <div class="principle">
+        <div class="principle-num">01</div>
+        <div class="principle-title">Cero fricción en el primer segundo</div>
+        <div class="principle-desc">El usuario llega sin contexto previo. La información más crítica — estado del equipo y última visita — debe ser legible antes de cualquier scroll. No hay onboarding, no hay explicaciones.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">02</div>
+        <div class="principle-title">Confianza a través de la claridad</div>
+        <div class="principle-desc">El portal es la cara pública de STECH NODES. Cada elemento — tipografía, color, espaciado — debe comunicar precisión técnica y profesionalismo. El descuido visual destruye la confianza antes de que el usuario lea una sola línea.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">03</div>
+        <div class="principle-title">Estados explícitos, nunca ambiguos</div>
+        <div class="principle-desc">El estado de un equipo hospitalario tiene consecuencias reales. "Activo", "fuera de servicio" o "contrato vencido" deben ser inmediatamente distinguibles por color, forma y texto — nunca solo por matices cromáticos.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">04</div>
+        <div class="principle-title">Legible en condiciones de campo</div>
+        <div class="principle-desc">El portal puede usarse bajo luz fluorescente intensa, en pasillos de hospital, con guantes. Tamaños de toque mínimos de 44px, contraste WCAG AA como piso, texto ≥ 14px para contenido principal.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">05</div>
+        <div class="principle-title">Identidad coherente, no réplica del ERP</div>
+        <div class="principle-desc">El portal comparte la paleta y la tipografía de STECH NODES, pero no es el ERP. Es más limpio, más ligero, orientado a la lectura. El usuario debe sentir la misma marca en un formato diferente.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">06</div>
+        <div class="principle-title">Sin información innecesaria</div>
+        <div class="principle-desc">El portal muestra exactamente lo que el actor necesita para su tarea, nada más. No hay menús de navegación, no hay dashboards, no hay listas de otros equipos. Un QR → un equipo → una pantalla.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §03 ARQUITECTURA DE INFORMACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Arquitectura de información</span>
+    </div>
+    <p>El portal de la Fase 1 tiene una sola pantalla por equipo. La información se organiza en cuatro niveles de jerarquía, diseñados para responder preguntas en orden de urgencia: ¿de qué equipo se trata? → ¿está operativo? → ¿cuándo fue atendido? → ¿cómo contacto soporte?</p>
+
+    <div class="ia-tree">
+      <div class="ia-level">
+        <div class="ia-dot l0"></div>
+        <div><span class="ia-label"><strong>Identidad del equipo</strong></span> <span class="ia-meta">— Siempre visible, primer elemento</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Nombre completo del equipo</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Fabricante y modelo</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label"><strong>Estado operativo</strong></span> <span class="ia-meta">— Prominente, visible sin scroll</span></div>
+      </div>
+
+      <div style="height:10px;"></div>
+
+      <div class="ia-level">
+        <div class="ia-dot l0"></div>
+        <div><span class="ia-label"><strong>Información del activo</strong></span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Número de serie</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Sede y área de ubicación</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Criticidad del equipo</span> <span class="ia-meta">— Solo si es CRÍTICO</span></div>
+      </div>
+
+      <div style="height:10px;"></div>
+
+      <div class="ia-level">
+        <div class="ia-dot l0"></div>
+        <div><span class="ia-label"><strong>Mantenimiento</strong></span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Fecha y tipo del último mantenimiento completado</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Próxima visita programada</span> <span class="ia-meta">— "—" si no existe</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Estado del contrato de mantenimiento</span> <span class="ia-meta">— ACTIVO / VENCIDO</span></div>
+      </div>
+
+      <div style="height:10px;"></div>
+
+      <div class="ia-level">
+        <div class="ia-dot l0"></div>
+        <div><span class="ia-label"><strong>Contacto de soporte</strong></span> <span class="ia-meta">— Siempre presente al final</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Email del área de soporte</span></div>
+      </div>
+      <div class="ia-level">
+        <div class="ia-indent"></div>
+        <div class="ia-dot l1"></div>
+        <div><span class="ia-label">Teléfono institucional</span></div>
+      </div>
+    </div>
+
+    <div class="callout decision">
+      <div class="callout-label">Regla de jerarquía</div>
+      <p>El estado operativo y el nombre del equipo son los únicos dos elementos que deben ser legibles sin ningún scroll en cualquier dispositivo. Todo lo demás puede requerir desplazamiento, pero la respuesta a "¿está bien este equipo?" debe obtenerse en el primer vistazo.</p>
+    </div>
+  </div>
+
+  <!-- §04 MAPA DE NAVEGACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Mapa de navegación</span>
+    </div>
+    <p>La navegación del portal Fase 1 es deliberadamente plana — no hay menús, no hay rutas secundarias, no hay "volver". Un escaneo lleva a exactamente una pantalla. Los estados son variantes de la misma pantalla, no páginas separadas.</p>
+
+    <div class="navmap">
+      <div class="nm-row">
+        <div class="nm-node trigger">Escaneo QR físico</div>
+      </div>
+      <div class="nm-arrow">↓</div>
+      <div class="nm-label">Resolución de URL → API pública</div>
+      <div class="nm-arrow">↓</div>
+
+      <div class="nm-divider">
+        <div class="nm-divider-line"></div>
+        <div class="nm-divider-text">Bifurcación por resultado de API</div>
+        <div class="nm-divider-line"></div>
+      </div>
+
+      <div class="nm-row" style="gap:8px; flex-wrap:wrap;">
+        <div class="nm-node screen">Ficha pública<br><span style="font-size:10px;font-weight:400;color:#A8A29E">equipo encontrado</span></div>
+        <div class="nm-arrow">  </div>
+        <div class="nm-node error">QR no reconocido<br><span style="font-size:10px;font-weight:400">código inválido</span></div>
+      </div>
+
+      <div style="display:flex; width:100%; justify-content:center; margin-top:8px;">
+        <div class="nm-arrow" style="margin-right:80px;">↓</div>
+      </div>
+      <div class="nm-label" style="margin-right:80px;">Estado del activo</div>
+
+      <div class="nm-row" style="gap:8px; flex-wrap:wrap; margin-top:4px;">
+        <div class="nm-node state">ACTIVO</div>
+        <div class="nm-node state">EN MANTENIMIENTO</div>
+        <div class="nm-node state">FUERA DE SERVICIO</div>
+        <div class="nm-node state">DADO DE BAJA</div>
+        <div class="nm-node state">CONTRATO VENCIDO</div>
+        <div class="nm-node state">SIN HISTORIAL</div>
+      </div>
+      <div class="nm-label" style="margin-top:6px;">Todos los estados renderizan la misma plantilla con variantes visuales</div>
+    </div>
+
+    <div class="callout note">
+      <div class="callout-label">Ausencia intencional de navegación</div>
+      <p>El portal no tiene header de navegación, breadcrumbs, ni enlace "ver todos los equipos". Esta limitación es una decisión de diseño: el QR codifica un activo específico, no una sesión de usuario. Cualquier navegación adicional implica autenticación — lo cual pertenece a la Fase 2.</p>
+    </div>
+  </div>
+
+  <!-- §05 WIREFRAMES MÓVILES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Wireframes móviles — media fidelidad</span>
+    </div>
+    <p>Los wireframes muestran el tratamiento visual real del portal en su estado de Fase 1. Los colores, la jerarquía tipográfica y los componentes corresponden a la identidad STECH NODES aprobada.</p>
+
+    <!-- Row 1: activo + en mantenimiento -->
+    <div class="phones-grid">
+      <div class="phone-wrap">
+        <div class="phone-label">A · Equipo activo</div>
+        <div class="phone-sub">Estado principal — golden path</div>
+        <div class="phone">
+          <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+          <div class="phone-screen">
+            <div class="pw-header">
+              <svg class="pw-mark" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0" cy="0" r="7.5" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="0" cy="0" r="4.2" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="0" cy="0" r="1.6" fill="white"/>
+                <line x1="0" y1="-11" x2="0" y2="-5.8" stroke="white" stroke-width="1"/>
+                <line x1="0" y1="5.8" x2="0" y2="11" stroke="white" stroke-width="1"/>
+                <line x1="-11" y1="0" x2="-5.8" y2="0" stroke="white" stroke-width="1"/>
+                <line x1="5.8" y1="0" x2="11" y2="0" stroke="white" stroke-width="1"/>
+              </svg>
+              <div class="pw-brand">
+                <div class="pw-name">STECH NODES</div>
+                <div class="pw-tag">Operaciones técnicas, bajo control.</div>
+              </div>
+            </div>
+            <div class="pw-hero">
+              <div class="pw-eq-name">Ventilador Mecánico SERVO-i</div>
+              <div class="pw-eq-model">MAQUET · SN: MQ-2024-00847</div>
+              <div class="pw-badge active"><div class="pw-badge-dot"></div>ACTIVO</div>
+            </div>
+            <div class="pw-section">
+              <div class="pw-section-label">Información del activo</div>
+              <div class="pw-row"><span class="pw-field">N.° de serie</span><span class="pw-value">MQ-2024-00847</span></div>
+              <div class="pw-row"><span class="pw-field">Sede</span><span class="pw-value">Hosp. Central — UCI</span></div>
+              <div class="pw-row"><span class="pw-field">Criticidad</span><span class="pw-value">Alta</span></div>
+            </div>
+            <div class="pw-section">
+              <div class="pw-section-label">Mantenimiento</div>
+              <div class="pw-row"><span class="pw-field">Último</span><span class="pw-value">15 jun 2026 · Prev.</span></div>
+              <div class="pw-row"><span class="pw-field">Próxima visita</span><span class="pw-value">15 sep 2026</span></div>
+              <div class="pw-row"><span class="pw-field">Contrato</span><span class="pw-value active-pill">● ACTIVO</span></div>
+            </div>
+            <div class="pw-contact">
+              <div class="pw-contact-row">
+                <div class="pw-contact-icon"></div>
+                <span class="pw-contact-text">soporte@stechnodes.com</span>
+              </div>
+              <div class="pw-contact-row">
+                <div class="pw-contact-icon"></div>
+                <span class="pw-contact-text">+57 (601) 000-0000</span>
+              </div>
+            </div>
+            <div class="pw-footer">
+              <span class="pw-footer-name">STECH NODES</span>
+              <span class="pw-footer-url">stechnodes.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone-label">B · En mantenimiento</div>
+        <div class="phone-sub">Visita en curso al momento del escaneo</div>
+        <div class="phone">
+          <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+          <div class="phone-screen">
+            <div class="pw-header">
+              <svg class="pw-mark" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0" cy="0" r="7.5" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="0" cy="0" r="4.2" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="0" cy="0" r="1.6" fill="white"/>
+                <line x1="0" y1="-11" x2="0" y2="-5.8" stroke="white" stroke-width="1"/>
+                <line x1="0" y1="5.8" x2="0" y2="11" stroke="white" stroke-width="1"/>
+                <line x1="-11" y1="0" x2="-5.8" y2="0" stroke="white" stroke-width="1"/>
+                <line x1="5.8" y1="0" x2="11" y2="0" stroke="white" stroke-width="1"/>
+              </svg>
+              <div class="pw-brand">
+                <div class="pw-name">STECH NODES</div>
+                <div class="pw-tag">Operaciones técnicas, bajo control.</div>
+              </div>
+            </div>
+            <div class="pw-hero">
+              <div class="pw-eq-name">Monitor de Signos Vitales BeneView T5</div>
+              <div class="pw-eq-model">MINDRAY · SN: MR-2023-01142</div>
+              <div class="pw-badge maintenance"><div class="pw-badge-dot"></div>EN MANTENIMIENTO</div>
+            </div>
+            <div class="pw-alert info">Visita de mantenimiento en curso. El equipo está siendo atendido por el equipo técnico de STECH NODES.</div>
+            <div class="pw-section">
+              <div class="pw-section-label">Información del activo</div>
+              <div class="pw-row"><span class="pw-field">N.° de serie</span><span class="pw-value">MR-2023-01142</span></div>
+              <div class="pw-row"><span class="pw-field">Sede</span><span class="pw-value">Clínica Norte — Urgencias</span></div>
+            </div>
+            <div class="pw-section">
+              <div class="pw-section-label">Mantenimiento</div>
+              <div class="pw-row"><span class="pw-field">Visita actual</span><span class="pw-value">8 jul 2026 · Prev.</span></div>
+              <div class="pw-row"><span class="pw-field">Anterior</span><span class="pw-value">8 abr 2026</span></div>
+              <div class="pw-row"><span class="pw-field">Contrato</span><span class="pw-value active-pill">● ACTIVO</span></div>
+            </div>
+            <div class="pw-contact">
+              <div class="pw-contact-row">
+                <div class="pw-contact-icon"></div>
+                <span class="pw-contact-text">soporte@stechnodes.com</span>
+              </div>
+            </div>
+            <div class="pw-footer">
+              <span class="pw-footer-name">STECH NODES</span>
+              <span class="pw-footer-url">stechnodes.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: fuera de servicio + contrato vencido -->
+    <div class="phones-grid">
+      <div class="phone-wrap">
+        <div class="phone-label">C · Fuera de servicio</div>
+        <div class="phone-sub">Avería o retiro temporal de operación</div>
+        <div class="phone">
+          <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+          <div class="phone-screen">
+            <div class="pw-header">
+              <svg class="pw-mark" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0" cy="0" r="7.5" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="0" cy="0" r="4.2" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="0" cy="0" r="1.6" fill="white"/>
+                <line x1="0" y1="-11" x2="0" y2="-5.8" stroke="white" stroke-width="1"/>
+                <line x1="0" y1="5.8" x2="0" y2="11" stroke="white" stroke-width="1"/>
+                <line x1="-11" y1="0" x2="-5.8" y2="0" stroke="white" stroke-width="1"/>
+                <line x1="5.8" y1="0" x2="11" y2="0" stroke="white" stroke-width="1"/>
+              </svg>
+              <div class="pw-brand">
+                <div class="pw-name">STECH NODES</div>
+                <div class="pw-tag">Operaciones técnicas, bajo control.</div>
+              </div>
+            </div>
+            <div class="pw-hero">
+              <div class="pw-eq-name">Desfibrilador ZOLL R Series</div>
+              <div class="pw-eq-model">ZOLL · SN: ZL-2022-00331</div>
+              <div class="pw-badge offline"><div class="pw-badge-dot"></div>FUERA DE SERVICIO</div>
+            </div>
+            <div class="pw-alert warn">Este equipo ha sido marcado fuera de servicio. Contacte al área de soporte para más información.</div>
+            <div class="pw-section">
+              <div class="pw-section-label">Información del activo</div>
+              <div class="pw-row"><span class="pw-field">N.° de serie</span><span class="pw-value">ZL-2022-00331</span></div>
+              <div class="pw-row"><span class="pw-field">Sede</span><span class="pw-value">Hosp. Central — Cardiol.</span></div>
+            </div>
+            <div class="pw-section">
+              <div class="pw-section-label">Último mantenimiento registrado</div>
+              <div class="pw-row"><span class="pw-field">Fecha</span><span class="pw-value">2 may 2026</span></div>
+              <div class="pw-row"><span class="pw-field">Tipo</span><span class="pw-value">Correctivo</span></div>
+              <div class="pw-row"><span class="pw-field">Próxima visita</span><span class="pw-value muted">—</span></div>
+            </div>
+            <div class="pw-contact">
+              <div class="pw-contact-row">
+                <div class="pw-contact-icon"></div>
+                <span class="pw-contact-text">soporte@stechnodes.com</span>
+              </div>
+              <div class="pw-contact-row">
+                <div class="pw-contact-icon"></div>
+                <span class="pw-contact-text">+57 (601) 000-0000</span>
+              </div>
+            </div>
+            <div class="pw-footer">
+              <span class="pw-footer-name">STECH NODES</span>
+              <span class="pw-footer-url">stechnodes.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone-label">D · Contrato vencido</div>
+        <div class="phone-sub">Equipo operativo, sin mantenimiento vigente</div>
+        <div class="phone">
+          <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+          <div class="phone-screen">
+            <div class="pw-header">
+              <svg class="pw-mark" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0" cy="0" r="7.5" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="0" cy="0" r="4.2" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="0" cy="0" r="1.6" fill="white"/>
+                <line x1="0" y1="-11" x2="0" y2="-5.8" stroke="white" stroke-width="1"/>
+                <line x1="0" y1="5.8" x2="0" y2="11" stroke="white" stroke-width="1"/>
+                <line x1="-11" y1="0" x2="-5.8" y2="0" stroke="white" stroke-width="1"/>
+                <line x1="5.8" y1="0" x2="11" y2="0" stroke="white" stroke-width="1"/>
+              </svg>
+              <div class="pw-brand">
+                <div class="pw-name">STECH NODES</div>
+                <div class="pw-tag">Operaciones técnicas, bajo control.</div>
+              </div>
+            </div>
+            <div class="pw-hero">
+              <div class="pw-eq-name">Bomba de Infusión B. Braun Infusomat</div>
+              <div class="pw-eq-model">B. BRAUN · SN: BB-2021-00788</div>
+              <div class="pw-badge active"><div class="pw-badge-dot"></div>ACTIVO</div>
+            </div>
+            <div class="pw-alert warn">Sin contrato de mantenimiento vigente. El historial de servicio puede estar desactualizado.</div>
+            <div class="pw-section">
+              <div class="pw-section-label">Información del activo</div>
+              <div class="pw-row"><span class="pw-field">N.° de serie</span><span class="pw-value">BB-2021-00788</span></div>
+              <div class="pw-row"><span class="pw-field">Sede</span><span class="pw-value">Clínica Norte — Cirugía</span></div>
+            </div>
+            <div class="pw-section">
+              <div class="pw-section-label">Mantenimiento</div>
+              <div class="pw-row"><span class="pw-field">Último</span><span class="pw-value">10 ene 2026</span></div>
+              <div class="pw-row"><span class="pw-field">Próxima visita</span><span class="pw-value muted">Sin programar</span></div>
+              <div class="pw-row"><span class="pw-field">Contrato</span><span class="pw-value expired-pill">VENCIDO · mar 2026</span></div>
+            </div>
+            <div class="pw-contact">
+              <div class="pw-contact-row">
+                <div class="pw-contact-icon"></div>
+                <span class="pw-contact-text">ventas@stechnodes.com</span>
+              </div>
+              <div class="pw-contact-row">
+                <div class="pw-contact-icon"></div>
+                <span class="pw-contact-text">+57 (601) 000-0000</span>
+              </div>
+            </div>
+            <div class="pw-footer">
+              <span class="pw-footer-name">STECH NODES</span>
+              <span class="pw-footer-url">stechnodes.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: dado de baja + QR inválido -->
+    <div class="phones-grid">
+      <div class="phone-wrap">
+        <div class="phone-label">E · Dado de baja</div>
+        <div class="phone-sub">Equipo retirado permanentemente de operación</div>
+        <div class="phone">
+          <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+          <div class="phone-screen">
+            <div class="pw-header">
+              <svg class="pw-mark" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0" cy="0" r="7.5" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="0" cy="0" r="4.2" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="0" cy="0" r="1.6" fill="white"/>
+                <line x1="0" y1="-11" x2="0" y2="-5.8" stroke="white" stroke-width="1"/>
+                <line x1="0" y1="5.8" x2="0" y2="11" stroke="white" stroke-width="1"/>
+                <line x1="-11" y1="0" x2="-5.8" y2="0" stroke="white" stroke-width="1"/>
+                <line x1="5.8" y1="0" x2="11" y2="0" stroke="white" stroke-width="1"/>
+              </svg>
+              <div class="pw-brand">
+                <div class="pw-name">STECH NODES</div>
+                <div class="pw-tag">Operaciones técnicas, bajo control.</div>
+              </div>
+            </div>
+            <div class="pw-hero">
+              <div class="pw-eq-name">Electrobisturí Valleylab Force FX</div>
+              <div class="pw-eq-model">MEDTRONIC · SN: VL-2018-00214</div>
+              <div class="pw-badge retired">DADO DE BAJA</div>
+            </div>
+            <div class="pw-alert neutral">Este equipo ha sido retirado permanentemente de operación. Para información adicional contacte al área de soporte.</div>
+            <div class="pw-section">
+              <div class="pw-section-label">Información del activo</div>
+              <div class="pw-row"><span class="pw-field">N.° de serie</span><span class="pw-value muted">VL-2018-00214</span></div>
+              <div class="pw-row"><span class="pw-field">Fecha de baja</span><span class="pw-value muted">15 mar 2026</span></div>
+            </div>
+            <div style="flex:1;"></div>
+            <div class="pw-contact">
+              <div class="pw-contact-row">
+                <div class="pw-contact-icon"></div>
+                <span class="pw-contact-text">soporte@stechnodes.com</span>
+              </div>
+            </div>
+            <div class="pw-footer">
+              <span class="pw-footer-name">STECH NODES</span>
+              <span class="pw-footer-url">stechnodes.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone-label">F · QR no reconocido</div>
+        <div class="phone-sub">Código inválido, dañado o no registrado</div>
+        <div class="phone">
+          <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+          <div class="phone-screen">
+            <div class="pw-header">
+              <svg class="pw-mark" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0" cy="0" r="7.5" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="0" cy="0" r="4.2" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="0" cy="0" r="1.6" fill="white"/>
+                <line x1="0" y1="-11" x2="0" y2="-5.8" stroke="white" stroke-width="1"/>
+                <line x1="0" y1="5.8" x2="0" y2="11" stroke="white" stroke-width="1"/>
+                <line x1="-11" y1="0" x2="-5.8" y2="0" stroke="white" stroke-width="1"/>
+                <line x1="5.8" y1="0" x2="11" y2="0" stroke="white" stroke-width="1"/>
+              </svg>
+              <div class="pw-brand">
+                <div class="pw-name">STECH NODES</div>
+                <div class="pw-tag">Operaciones técnicas, bajo control.</div>
+              </div>
+            </div>
+            <div class="pw-error-body">
+              <div class="pw-error-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 6v5M10 13.5v.5M3 10a7 7 0 1014 0A7 7 0 003 10z" stroke="#7F1D1D" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="pw-error-title">Código QR no reconocido</div>
+              <div class="pw-error-desc">Este código no corresponde a ningún activo registrado en el sistema. Si el equipo debería estar registrado, contacte al área de soporte.</div>
+              <div style="width:100%; background:#F8F7F6; border:0.5px solid #E7E5E4; border-radius:6px; padding:10px 12px; margin-top:8px;">
+                <div style="font-size:9px; color:#A8A29E; margin-bottom:5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;">Soporte técnico</div>
+                <div style="font-size:10px; color:#185FA5; font-weight:500;">soporte@stechnodes.com</div>
+                <div style="font-size:10px; color:#185FA5; font-weight:500; margin-top:3px;">+57 (601) 000-0000</div>
+              </div>
+            </div>
+            <div class="pw-footer" style="margin-top:0;">
+              <span class="pw-footer-name">STECH NODES</span>
+              <span class="pw-footer-url">stechnodes.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §06 DESKTOP -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Vista escritorio</span>
+    </div>
+    <p>En escritorio, el portal aprovecha el espacio horizontal para presentar la ficha del equipo en la columna izquierda y el historial de mantenimientos en la columna derecha. Esto es especialmente útil para un ingeniero biomédico o auditor que accede desde su computador y necesita revisar múltiples mantenimientos.</p>
+
+    <div class="desktop-mock">
+      <div class="desktop-mock-bar">
+        <div class="desktop-dot"></div>
+        <div class="desktop-dot"></div>
+        <div class="desktop-dot"></div>
+        <div class="desktop-url">
+          <span class="desktop-url-text">stechnodes.com/e/eq_k7m2p9x1</span>
+        </div>
+      </div>
+      <div class="desktop-screen">
+        <div class="desktop-left">
+          <div class="dw-header">
+            <svg width="24" height="24" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="0" cy="0" r="7.5" fill="none" stroke="white" stroke-width="1.2"/>
+              <circle cx="0" cy="0" r="4.2" fill="none" stroke="white" stroke-width="0.8"/>
+              <circle cx="0" cy="0" r="1.6" fill="white"/>
+              <line x1="0" y1="-11" x2="0" y2="-5.8" stroke="white" stroke-width="1"/>
+              <line x1="0" y1="5.8" x2="0" y2="11" stroke="white" stroke-width="1"/>
+              <line x1="-11" y1="0" x2="-5.8" y2="0" stroke="white" stroke-width="1"/>
+              <line x1="5.8" y1="0" x2="11" y2="0" stroke="white" stroke-width="1"/>
+            </svg>
+            <div style="margin-left:10px;">
+              <div style="font-size:11px; font-weight:800; color:white; letter-spacing:0.1em;">STECH NODES</div>
+              <div style="font-size:8.5px; color:#378ADD; letter-spacing:0.05em;">Operaciones técnicas, bajo control.</div>
+            </div>
+          </div>
+          <div class="dw-hero">
+            <div class="dw-eq-name">Ventilador Mecánico SERVO-i</div>
+            <div class="dw-eq-model">MAQUET · SN: MQ-2024-00847</div>
+            <div class="badge active"><div class="badge-dot" style="width:6px;height:6px;"></div>ACTIVO</div>
+          </div>
+          <div class="dw-section">
+            <div class="dw-section-label">Información del activo</div>
+            <div class="dw-row"><span class="dw-field">N.° de serie</span><span class="dw-value">MQ-2024-00847</span></div>
+            <div class="dw-row"><span class="dw-field">Fabricante</span><span class="dw-value">MAQUET</span></div>
+            <div class="dw-row"><span class="dw-field">Sede</span><span class="dw-value">Hospital Central</span></div>
+            <div class="dw-row"><span class="dw-field">Área</span><span class="dw-value">UCI · Piso 4</span></div>
+            <div class="dw-row"><span class="dw-field">Criticidad</span><span class="dw-value">Alta</span></div>
+          </div>
+          <div class="dw-section">
+            <div class="dw-section-label">Mantenimiento</div>
+            <div class="dw-row"><span class="dw-field">Último</span><span class="dw-value">15 jun 2026</span></div>
+            <div class="dw-row"><span class="dw-field">Tipo</span><span class="dw-value">Preventivo</span></div>
+            <div class="dw-row"><span class="dw-field">Próxima visita</span><span class="dw-value">15 sep 2026</span></div>
+            <div class="dw-row"><span class="dw-field">Contrato</span><span class="dw-value" style="color:#065F46;font-weight:700;">ACTIVO</span></div>
+          </div>
+          <div class="dw-section" style="flex:1;">
+            <div class="dw-section-label">Soporte</div>
+            <div class="dw-row"><span class="dw-field">Email</span><span class="dw-value" style="color:#185FA5;">soporte@stechnodes.com</span></div>
+            <div class="dw-row"><span class="dw-field">Teléfono</span><span class="dw-value" style="color:#185FA5;">+57 (601) 000-0000</span></div>
+          </div>
+        </div>
+        <div class="desktop-right">
+          <div class="desktop-right-label">Historial de mantenimientos</div>
+          <div class="timeline-item">
+            <div class="timeline-dot-wrap">
+              <div class="timeline-dot"></div>
+              <div class="timeline-line"></div>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-date">15 jun 2026 · Preventivo</div>
+              <div class="timeline-title">Mantenimiento preventivo trimestral</div>
+              <div class="timeline-tech">Ing. Carlos Mora</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot-wrap">
+              <div class="timeline-dot" style="background:#A8A29E;"></div>
+              <div class="timeline-line"></div>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-date">12 mar 2026 · Preventivo</div>
+              <div class="timeline-title">Mantenimiento preventivo trimestral</div>
+              <div class="timeline-tech">Ing. Ana Rincón</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot-wrap">
+              <div class="timeline-dot" style="background:#A8A29E;"></div>
+              <div class="timeline-line" style="display:none;"></div>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-date">8 dic 2025 · Correctivo</div>
+              <div class="timeline-title">Reemplazo sensor de flujo</div>
+              <div class="timeline-tech">Ing. Carlos Mora</div>
+            </div>
+          </div>
+          <div style="margin-top:16px; padding:10px 14px; background:white; border-radius:6px; border:0.5px solid #E7E5E4; font-size:11px; color:#A8A29E; text-align:center;">
+            Historial completo disponible para contactos autenticados · Fase 2
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout note">
+      <div class="callout-label">Diferencia clave móvil / escritorio</div>
+      <p>En móvil, el historial no se muestra en la Fase 1 — solo el último mantenimiento. En escritorio, se muestra una línea de tiempo con los últimos 3 registros, con un placeholder que indica que el historial completo es de la Fase 2. Esta diferencia es de layout, no de datos — el backend entrega los mismos datos en ambos casos.</p>
+    </div>
+  </div>
+
+  <!-- §07 ESTADOS DEL SISTEMA -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Estados del sistema</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Estado</th><th>Badge visual</th><th>Alerta</th><th>Datos visibles</th><th>Email de soporte</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>ACTIVO</strong></td>
+            <td><span class="badge active" style="font-size:10px;padding:2px 8px;"><span class="badge-dot"></span>ACTIVO</span></td>
+            <td>Ninguna</td>
+            <td>Todos los campos</td>
+            <td>soporte@</td>
+          </tr>
+          <tr>
+            <td><strong>EN MANTENIMIENTO</strong></td>
+            <td><span class="badge maintenance" style="font-size:10px;padding:2px 8px;"><span class="badge-dot"></span>EN MANTENIMIENTO</span></td>
+            <td>Info — visita en curso</td>
+            <td>Todos los campos</td>
+            <td>soporte@</td>
+          </tr>
+          <tr>
+            <td><strong>FUERA DE SERVICIO</strong></td>
+            <td><span class="badge offline" style="font-size:10px;padding:2px 8px;"><span class="badge-dot"></span>FUERA DE SERVICIO</span></td>
+            <td>Warning — contactar soporte</td>
+            <td>Identidad + último mantenimiento</td>
+            <td>soporte@</td>
+          </tr>
+          <tr>
+            <td><strong>CONTRATO VENCIDO</strong></td>
+            <td><span class="badge active" style="font-size:10px;padding:2px 8px;"><span class="badge-dot"></span>ACTIVO</span></td>
+            <td>Warning — sin contrato vigente</td>
+            <td>Todos los campos + fecha vencimiento</td>
+            <td>ventas@</td>
+          </tr>
+          <tr>
+            <td><strong>DADO DE BAJA</strong></td>
+            <td><span class="badge retired" style="font-size:10px;padding:2px 8px;">DADO DE BAJA</span></td>
+            <td>Neutral — retirado de operación</td>
+            <td>Identidad + fecha de baja</td>
+            <td>soporte@</td>
+          </tr>
+          <tr>
+            <td><strong>SIN HISTORIAL</strong></td>
+            <td><span class="badge active" style="font-size:10px;padding:2px 8px;"><span class="badge-dot"></span>ACTIVO</span></td>
+            <td>Info — sin registros aún</td>
+            <td>Identidad solamente</td>
+            <td>soporte@</td>
+          </tr>
+          <tr>
+            <td><strong>QR INVÁLIDO</strong></td>
+            <td>— (no aplica)</td>
+            <td>Error — código no reconocido</td>
+            <td>Solo datos de contacto</td>
+            <td>contacto@</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout decision">
+      <div class="callout-label">Nota de implementación</div>
+      <p>El estado "CONTRATO VENCIDO" no tiene badge propio — el equipo puede estar técnicamente ACTIVO aunque el contrato haya expirado. La distinción se comunica únicamente a través de la alerta y del campo de contrato. Esto evita confundir el estado operativo del equipo con el estado comercial del contrato.</p>
+    </div>
+  </div>
+
+  <!-- §08 COMPONENTES REUTILIZABLES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">Componentes reutilizables</span>
+    </div>
+    <p>El portal se construye sobre un conjunto mínimo de componentes que cubre todos los estados. Su implementación correcta garantiza consistencia visual sin depender de decisiones caso por caso.</p>
+
+    <div class="comp-grid">
+
+      <div class="comp-card">
+        <div class="comp-card-head">
+          <span class="comp-name">StatusBadge</span>
+          <span class="comp-note">Props: status, size?</span>
+        </div>
+        <div class="comp-body">
+          <span class="badge active"><span class="badge-dot"></span>ACTIVO</span>
+          <span class="badge maintenance"><span class="badge-dot"></span>EN MANTENIMIENTO</span>
+          <span class="badge offline"><span class="badge-dot"></span>FUERA DE SERVICIO</span>
+          <span class="badge expired"><span class="badge-dot"></span>CONTRATO VENCIDO</span>
+          <span class="badge retired">DADO DE BAJA</span>
+          <span class="badge no-history">SIN HISTORIAL</span>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-head">
+          <span class="comp-name">AlertBanner</span>
+          <span class="comp-note">Props: variant, message</span>
+        </div>
+        <div class="comp-body column">
+          <div class="alert-demo">
+            <div class="alert info">Visita de mantenimiento en curso. El equipo está siendo atendido.</div>
+            <div class="alert warn">Sin contrato de mantenimiento vigente. Historial puede estar desactualizado.</div>
+            <div class="alert error">Código QR no reconocido. No corresponde a ningún activo registrado.</div>
+            <div class="alert neutral">Este equipo ha sido retirado permanentemente de operación.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-head">
+          <span class="comp-name">DataRow / SectionBlock</span>
+          <span class="comp-note">Props: label, rows[]</span>
+        </div>
+        <div class="comp-body column">
+          <div class="data-row-demo">
+            <div class="data-row-item">
+              <span class="data-row-field">N.° de serie</span>
+              <span class="data-row-value">MQ-2024-00847</span>
+            </div>
+            <div class="data-row-item">
+              <span class="data-row-field">Sede</span>
+              <span class="data-row-value">Hospital Central — UCI</span>
+            </div>
+            <div class="data-row-item">
+              <span class="data-row-field">Próxima visita</span>
+              <span class="data-row-value">15 sep 2026</span>
+            </div>
+            <div class="data-row-item">
+              <span class="data-row-field">Contrato</span>
+              <span class="data-row-value" style="color:var(--teal);font-weight:700;">ACTIVO</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-head">
+          <span class="comp-name">PortalHeader</span>
+          <span class="comp-note">Fijo, sin props variables</span>
+        </div>
+        <div class="comp-body" style="padding:0;">
+          <div style="background:#042C53; padding:12px 18px; display:flex; align-items:center; gap:10px; width:100%;">
+            <svg width="24" height="24" viewBox="-11 -11 22 22" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="0" cy="0" r="7.5" fill="none" stroke="white" stroke-width="1.2"/>
+              <circle cx="0" cy="0" r="4.2" fill="none" stroke="white" stroke-width="0.8"/>
+              <circle cx="0" cy="0" r="1.6" fill="white"/>
+              <line x1="0" y1="-11" x2="0" y2="-5.8" stroke="white" stroke-width="1"/>
+              <line x1="0" y1="5.8" x2="0" y2="11" stroke="white" stroke-width="1"/>
+              <line x1="-11" y1="0" x2="-5.8" y2="0" stroke="white" stroke-width="1"/>
+              <line x1="5.8" y1="0" x2="11" y2="0" stroke="white" stroke-width="1"/>
+            </svg>
+            <div>
+              <div style="font-size:12px;font-weight:800;color:white;letter-spacing:0.1em;">STECH NODES</div>
+              <div style="font-size:9px;color:#378ADD;letter-spacing:0.06em;">Operaciones técnicas, bajo control.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-head">
+          <span class="comp-name">ContactCard</span>
+          <span class="comp-note">Props: email, phone?</span>
+        </div>
+        <div class="comp-body column">
+          <div style="background:var(--gray-bg); border-radius:6px; padding:12px 16px; width:100%; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);">Soporte técnico</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:14px;height:14px;border-radius:50%;background:#185FA5;flex-shrink:0;"></div>
+              <span style="font-size:13px;color:#185FA5;font-weight:500;">soporte@stechnodes.com</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:14px;height:14px;border-radius:50%;background:#185FA5;flex-shrink:0;"></div>
+              <span style="font-size:13px;color:#185FA5;font-weight:500;">+57 (601) 000-0000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-head">
+          <span class="comp-name">EquipmentHero</span>
+          <span class="comp-note">Props: name, model, serial, status</span>
+        </div>
+        <div class="comp-body column">
+          <div style="padding:16px 18px; border:0.5px solid var(--border-2); border-radius:6px; background:var(--surface); width:100%;">
+            <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:3px;">Ventilador Mecánico SERVO-i</div>
+            <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;">MAQUET · SN: MQ-2024-00847</div>
+            <span class="badge active"><span class="badge-dot"></span>ACTIVO</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- §09 ACCESIBILIDAD -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <span class="section-title">Accesibilidad y usabilidad</span>
+    </div>
+
+    <div class="a11y-grid">
+      <div class="a11y-card">
+        <div class="a11y-icon">👁</div>
+        <div class="a11y-title">Contraste — WCAG AA mínimo</div>
+        <div class="a11y-desc">Todo texto sobre fondo blanco: ratio mínimo 4.5:1. El header azul (#042C53) sobre texto blanco supera 10:1. Los badges de estado nunca comunican solo por color — siempre incluyen punto + texto.</div>
+      </div>
+      <div class="a11y-card">
+        <div class="a11y-icon">👆</div>
+        <div class="a11y-title">Tamaños de toque</div>
+        <div class="a11y-desc">Todos los elementos interactivos (emails, teléfonos) tienen área de toque mínima de 44×44px. En móvil, los links de contacto abren el cliente de correo o el marcador sin fricción adicional.</div>
+      </div>
+      <div class="a11y-card">
+        <div class="a11y-icon">☀</div>
+        <div class="a11y-title">Legibilidad en exteriores</div>
+        <div class="a11y-desc">Texto de contenido principal ≥ 14px. Estado del equipo ≥ 12px bold en badge con fondo de alto contraste. El fondo blanco del portal maximiza legibilidad bajo luz directa.</div>
+      </div>
+      <div class="a11y-card">
+        <div class="a11y-icon">📱</div>
+        <div class="a11y-title">Sin gestos especiales</div>
+        <div class="a11y-desc">El portal es scroll vertical simple. No hay carousels, tabs ni gestos de deslizamiento. Funciona correctamente con una sola mano y con guantes de nitrilo estándar de laboratorio.</div>
+      </div>
+      <div class="a11y-card">
+        <div class="a11y-icon">⚡</div>
+        <div class="a11y-title">Carga rápida</div>
+        <div class="a11y-desc">El portal no carga imágenes, fuentes externas ni librerías pesadas. El isotipo es SVG inline. El objetivo es que la información del equipo sea visible en menos de 2 segundos en 4G.</div>
+      </div>
+      <div class="a11y-card">
+        <div class="a11y-icon">🔤</div>
+        <div class="a11y-title">Semántica HTML correcta</div>
+        <div class="a11y-desc">Uso de <code>&lt;main&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;h1&gt;–&lt;h3&gt;</code> y <code>&lt;dl&gt;</code>/<code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> para los campos. Los lectores de pantalla deben poder navegar la ficha sin depender del ratón.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §10 IDENTIDAD VISUAL -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <span class="section-title">Identidad visual y tokens de diseño</span>
+    </div>
+    <p>El portal hereda los tokens de identidad de STECH NODES aprobados. No introduce colores, tipografías ni patrones nuevos — es la misma marca expresada en un contexto de lectura pública, más limpio y más contenido que el ERP.</p>
+
+    <h3>Paleta del portal</h3>
+    <div style="border:0.5px solid var(--border-2);border-radius:8px;overflow:hidden;margin:14px 0;">
+      <div style="padding:12px 16px;">
+        <div class="token-row">
+          <div class="token-swatch" style="background:#042C53;"></div>
+          <div>
+            <div class="token-name">Azul Noche — Header y footer</div>
+            <div class="token-value">#042C53</div>
+          </div>
+          <div class="token-role">Superficie de marca — solo en header/footer</div>
+        </div>
+        <div class="token-row">
+          <div class="token-swatch" style="background:#185FA5;"></div>
+          <div>
+            <div class="token-name">Azul Técnico — Links e iconos</div>
+            <div class="token-value">#185FA5</div>
+          </div>
+          <div class="token-role">Elementos interactivos y acción</div>
+        </div>
+        <div class="token-row">
+          <div class="token-swatch" style="background:#378ADD;"></div>
+          <div>
+            <div class="token-name">Azul Símbolo — Tagline</div>
+            <div class="token-value">#378ADD</div>
+          </div>
+          <div class="token-role">Solo en header sobre fondo oscuro</div>
+        </div>
+        <div class="token-row">
+          <div class="token-swatch" style="background:#0F6E56;"></div>
+          <div>
+            <div class="token-name">Verde Control — Estado ACTIVO</div>
+            <div class="token-value">#0F6E56</div>
+          </div>
+          <div class="token-role">Badge activo, contrato vigente</div>
+        </div>
+        <div class="token-row">
+          <div class="token-swatch" style="background:#FFFFFF; border:1px solid #E7E5E4;"></div>
+          <div>
+            <div class="token-name">Blanco — Fondo de pantalla</div>
+            <div class="token-value">#FFFFFF</div>
+          </div>
+          <div class="token-role">Fondo de la ficha del equipo</div>
+        </div>
+        <div class="token-row">
+          <div class="token-swatch" style="background:#F8F7F6;"></div>
+          <div>
+            <div class="token-name">Gris Cálido — Fondo de sección</div>
+            <div class="token-value">#F8F7F6</div>
+          </div>
+          <div class="token-role">Sección de contacto, fondo de escritorio</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Tipografía</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rol</th><th>Fuente</th><th>Tamaño</th><th>Peso</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Marca</strong></td><td>Space Grotesk</td><td>10–12px</td><td>800</td><td>Nombre STECH NODES en header, tracking amplio</td></tr>
+          <tr><td><strong>Título de equipo</strong></td><td>Space Grotesk o Inter</td><td>16–18px (desk) / 13–15px (mob)</td><td>700</td><td>Nombre del activo — elemento más prominente</td></tr>
+          <tr><td><strong>Cuerpo de datos</strong></td><td>Inter o sistema</td><td>14px</td><td>400–500</td><td>Campos y valores de la ficha</td></tr>
+          <tr><td><strong>Labels</strong></td><td>Inter o sistema</td><td>11px</td><td>700</td><td>Etiquetas de sección, tracking 0.08em, uppercase</td></tr>
+          <tr><td><strong>Meta</strong></td><td>Inter o sistema</td><td>10–11px</td><td>400</td><td>Modelo, N.° de serie, fechas secundarias</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout note">
+      <div class="callout-label">Fuente de sistema como fallback aceptable</div>
+      <p>Si Space Grotesk no puede cargarse (sin conexión o restricción de red), el sistema de fuentes de cada dispositivo (<code>-apple-system, Segoe UI, Arial</code>) produce un resultado visualmente aceptable. El portal no depende de una fuente específica para ser funcional o legible.</p>
+    </div>
+
+    <h3>Coherencia con el ERP</h3>
+    <p>El usuario que haya interactuado previamente con el ERP de STECH NODES reconocerá inmediatamente la paleta y la estructuración de la información. El portal no es una réplica del ERP — es más simple, más directa — pero comparte el mismo lenguaje visual. Este reconocimiento es intencional: refuerza que el portal y el ERP son partes del mismo ecosistema y no productos separados.</p>
+  </div>
+
+</div>

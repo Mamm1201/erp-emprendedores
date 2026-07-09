@@ -1,0 +1,650 @@
+<title>Posicionamiento estratégico 10 años · STECH NODES</title>
+<style>
+:root {
+  --bg:       #F5F4F2;
+  --surface:  #FFFFFF;
+  --text:     #18170F;
+  --text-2:   #5C5850;
+  --text-3:   #9C9488;
+  --border:   #E0DDD8;
+  --border-2: #C8C4BC;
+  --accent:   #042C53;
+  --accent-2: #185FA5;
+  --green:    #054F3A;
+  --green-bg: #E8F5EF;
+  --green-bdr:#8ECFB0;
+  --red:      #6B1111;
+  --red-bg:   #FDF2F2;
+  --red-bdr:  #F5BFBF;
+  --amber:    #6B4200;
+  --amber-bg: #FDF6E8;
+  --amber-bdr:#F0CC80;
+  --ghost:    rgba(4,44,83,0.045);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:       #0D1118;
+    --surface:  #161C28;
+    --text:     #EEE8DF;
+    --text-2:   #9C9488;
+    --text-3:   #5C5850;
+    --border:   #222B3A;
+    --border-2: #2E3A4E;
+    --accent:   #378ADD;
+    --accent-2: #93C5FD;
+    --green:    #6EE7B7;
+    --green-bg: #012A1C;
+    --green-bdr:#054F3A;
+    --red:      #FCA5A5;
+    --red-bg:   #1A0808;
+    --red-bdr:  #6B1111;
+    --amber:    #FCD34D;
+    --amber-bg: #1A1000;
+    --amber-bdr:#6B4200;
+    --ghost:    rgba(55,138,221,0.04);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:       #0D1118;
+  --surface:  #161C28;
+  --text:     #EEE8DF;
+  --text-2:   #9C9488;
+  --text-3:   #5C5850;
+  --border:   #222B3A;
+  --border-2: #2E3A4E;
+  --accent:   #378ADD;
+  --accent-2: #93C5FD;
+  --green:    #6EE7B7;
+  --green-bg: #012A1C;
+  --green-bdr:#054F3A;
+  --red:      #FCA5A5;
+  --red-bg:   #1A0808;
+  --red-bdr:  #6B1111;
+  --amber:    #FCD34D;
+  --amber-bg: #1A1000;
+  --amber-bdr:#6B4200;
+  --ghost:    rgba(55,138,221,0.04);
+}
+:root[data-theme="light"] {
+  --bg:       #F5F4F2;
+  --surface:  #FFFFFF;
+  --text:     #18170F;
+  --text-2:   #5C5850;
+  --text-3:   #9C9488;
+  --border:   #E0DDD8;
+  --border-2: #C8C4BC;
+  --accent:   #042C53;
+  --accent-2: #185FA5;
+  --green:    #054F3A;
+  --green-bg: #E8F5EF;
+  --green-bdr:#8ECFB0;
+  --red:      #6B1111;
+  --red-bg:   #FDF2F2;
+  --red-bdr:  #F5BFBF;
+  --amber:    #6B4200;
+  --amber-bg: #FDF6E8;
+  --amber-bdr:#F0CC80;
+  --ghost:    rgba(4,44,83,0.045);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15.5px;
+  line-height: 1.78;
+  padding: 52px 24px 96px;
+}
+.doc { max-width: 740px; margin: 0 auto; }
+
+.header { border-bottom: 1px solid var(--border-2); padding-bottom: 28px; margin-bottom: 36px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 10px; }
+.doc-title { font-size: 27px; font-weight: 800; color: var(--text); line-height: 1.15; margin-bottom: 12px; letter-spacing: -0.015em; }
+.doc-sub { font-size: 16px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px; }
+.doc-meta { display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--text-3); }
+
+/* Thesis box */
+.thesis {
+  background: var(--accent);
+  border-radius: 8px;
+  padding: 26px 28px;
+  margin-bottom: 44px;
+  color: white;
+}
+.thesis-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+.thesis-text { font-size: 17px; font-weight: 600; line-height: 1.6; color: white; }
+.thesis-text em { color: #378ADD; font-style: normal; }
+
+/* Sections */
+.section { margin-bottom: 54px; }
+.section-header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.section-num { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent-2); flex-shrink: 0; min-width: 28px; }
+.section-title { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; letter-spacing: -0.01em; }
+
+.section.adversarial { background: var(--ghost); border-radius: 8px; padding: 24px 26px; margin-left: -26px; margin-right: -26px; }
+
+p { color: var(--text-2); margin-bottom: 16px; }
+p:last-child { margin-bottom: 0; }
+p strong, li strong { color: var(--text); font-weight: 600; }
+h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); margin: 26px 0 10px; }
+h4 { font-size: 15px; font-weight: 700; color: var(--text); margin: 20px 0 8px; }
+ul, ol { padding-left: 22px; margin-bottom: 16px; }
+li { color: var(--text-2); margin-bottom: 7px; font-size: 15px; line-height: 1.6; }
+
+/* Callouts */
+.call { padding: 14px 20px; border-radius: 6px; border-left: 3px solid; margin: 20px 0; }
+.call-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+.call p { font-size: 14.5px; margin-bottom: 6px; }
+.call p:last-child { margin-bottom: 0; }
+.call.red { background: var(--red-bg); border-color: var(--red-bdr); }
+.call.red .call-label, .call.red p { color: var(--red); }
+.call.green { background: var(--green-bg); border-color: var(--green-bdr); }
+.call.green .call-label, .call.green p { color: var(--green); }
+.call.amber { background: var(--amber-bg); border-color: var(--amber-bdr); }
+.call.amber .call-label, .call.amber p { color: var(--amber); }
+.call.neutral { background: var(--surface); border-color: var(--border-2); }
+.call.neutral .call-label { color: var(--text-3); }
+.call.neutral p { color: var(--text-2); }
+
+/* Flywheel SVG container */
+.flywheel-wrap { margin: 28px 0; display: flex; justify-content: center; }
+
+/* Moat layers */
+.moat { display: flex; flex-direction: column; gap: 0; margin: 20px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); }
+.moat-layer { display: flex; align-items: flex-start; gap: 16px; padding: 16px 20px; border-bottom: 0.5px solid var(--border); }
+.moat-layer:last-child { border-bottom: none; }
+.moat-depth {
+  width: 64px;
+  flex-shrink: 0;
+  text-align: center;
+  padding-top: 2px;
+}
+.moat-depth-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.moat-depth-bar { height: 4px; border-radius: 999px; margin-top: 5px; }
+.moat-depth.surface .moat-depth-label { color: var(--red); }
+.moat-depth.surface .moat-depth-bar { background: var(--red-bdr); width: 25%; }
+.moat-depth.mid .moat-depth-label { color: var(--amber); }
+.moat-depth.mid .moat-depth-bar { background: var(--amber-bdr); width: 55%; }
+.moat-depth.deep .moat-depth-label { color: var(--accent-2); }
+.moat-depth.deep .moat-depth-bar { background: var(--accent-2); width: 80%; }
+.moat-depth.bedrock .moat-depth-label { color: var(--green); }
+.moat-depth.bedrock .moat-depth-bar { background: var(--green); width: 100%; }
+.moat-content { flex: 1; }
+.moat-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.moat-desc { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+.moat-copy { font-size: 11.5px; color: var(--text-3); margin-top: 4px; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 20px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); padding: 8px 14px; text-align: left; border-bottom: 1px solid var(--border-2); background: var(--surface); }
+td { padding: 10px 14px; border-bottom: 0.5px solid var(--border); color: var(--text-2); vertical-align: top; line-height: 1.55; }
+tr:last-child td { border-bottom: none; }
+td strong { color: var(--text); }
+
+/* Horizon cards */
+.horizons { display: flex; flex-direction: column; gap: 0; margin: 20px 0; border: 1px solid var(--border-2); border-radius: 8px; overflow: hidden; }
+.horizon { display: grid; grid-template-columns: 100px 1fr; border-bottom: 0.5px solid var(--border); }
+.horizon:last-child { border-bottom: none; }
+.horizon-label { padding: 16px 18px; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; justify-content: center; background: var(--ghost); }
+.horizon-time { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.horizon-name { font-size: 13px; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1.3; }
+.horizon-body { padding: 16px 18px; }
+.horizon-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.horizon-items { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+.horizon-items li { margin-bottom: 4px; }
+
+/* Risk matrix */
+.risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+.risk-card { border: 0.5px solid var(--border-2); border-radius: 8px; padding: 16px 18px; background: var(--surface); }
+.risk-severity { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.risk-severity.critical { color: var(--red); }
+.risk-severity.high { color: var(--amber); }
+.risk-severity.med { color: var(--accent-2); }
+.risk-title { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.risk-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+/* Strategic test */
+.test-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+.test-item { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; background: var(--surface); border: 0.5px solid var(--border-2); border-radius: 6px; }
+.test-num { width: 22px; height: 22px; border-radius: 50%; background: var(--ghost); border: 1px solid var(--border-2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent-2); flex-shrink: 0; margin-top: 1px; }
+.test-text { flex: 1; }
+.test-q { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.test-note { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+/* Final call */
+.final-call {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 26px 28px;
+  margin-top: 40px;
+}
+.final-call-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 14px; }
+.final-call p { color: var(--text-2); }
+
+@media (max-width: 520px) {
+  .risk-grid { grid-template-columns: 1fr; }
+  .horizon { grid-template-columns: 1fr; }
+  .horizon-label { border-right: none; border-bottom: 0.5px solid var(--border); }
+  .section.adversarial { margin-left: -14px; margin-right: -14px; padding: 18px; }
+}
+</style>
+
+<div class="doc">
+
+  <div class="header">
+    <div class="eyebrow">Análisis estratégico · STECH NODES</div>
+    <div class="doc-title">¿Qué debería ser STECH NODES en 10 años?</div>
+    <div class="doc-sub">Posicionamiento, ventaja competitiva y la integración del ERP, el ecosistema QR, la metodología y la evidencia técnica</div>
+    <div class="doc-meta">
+      <span>8 de julio de 2026</span>
+      <span>Análisis crítico independiente</span>
+    </div>
+  </div>
+
+  <!-- TESIS -->
+  <div class="thesis">
+    <div class="thesis-eyebrow">Tesis propuesta — para ser cuestionada a lo largo de este documento</div>
+    <div class="thesis-text">STECH NODES debería posicionarse no como una empresa de mantenimiento que usa tecnología, sino como <em>la infraestructura de confianza técnica</em> para la gestión del ciclo de vida de activos biomédicos en Colombia. El ERP, el QR, la metodología y la evidencia técnica no son productos distintos: son las capas de un mismo sistema que convierte la excelencia operativa en un activo que se acumula con el tiempo y que ningún competidor puede replicar comprando software.</div>
+  </div>
+
+  <!-- §01 POR QUÉ ESTA PREGUNTA ES MÁS DIFÍCIL -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Por qué esta pregunta es más difícil de lo que parece</span>
+    </div>
+    <p>La pregunta anterior —si el QR es el diferenciador— tenía una respuesta relativamente clara: no por sí solo. Esta pregunta es más difícil porque exige distinguir entre lo que una empresa <em>desea ser</em>, lo que el mercado <em>está dispuesto a pagar</em>, y lo que la economía del negocio <em>puede sostener</em>. Esas tres cosas raramente coinciden desde el principio.</p>
+    <p>El riesgo específico en esta conversación es el siguiente: STECH NODES está construyendo capacidades técnicas avanzadas en una etapa temprana. Eso puede ser visionario o puede ser una trampa de over-engineering que consume recursos antes de que haya suficiente base de clientes para sostenerlo. Determinar cuál de las dos es requiere honestidad sobre el estado actual y el ritmo de crecimiento del negocio.</p>
+    <div class="call amber">
+      <div class="call-label">La pregunta que este análisis intenta responder</div>
+      <p>¿Hay un camino creíble — no solo deseable — desde donde está STECH NODES hoy hasta el posicionamiento que la tesis propone? ¿O estamos describiendo lo que una empresa mucho más grande haría, y confundiendo aspiración con estrategia?</p>
+    </div>
+  </div>
+
+  <!-- §02 LOS TRES CANDIDATOS A "DIFERENCIADOR PRINCIPAL" -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Los tres candidatos al diferenciador real</span>
+    </div>
+    <p>Si se descarta el QR como diferenciador primario, quedan al menos tres candidatos con argumentos distintos. Ninguno es obviamente incorrecto; el debate es cuál de los tres puede construirse de manera sistemática y cuál resiste mejor la presión competitiva en el tiempo.</p>
+
+    <h4>Candidato A — La excelencia técnica del equipo humano</h4>
+    <p>STECH NODES mantiene equipos que requieren conocimiento especializado: ventiladores mecánicos, monitores de signos, equipos de diagnóstico por imagen. El conocimiento de cómo funcionan esos equipos —sus modos de falla, sus patrones de deterioro, sus tolerancias reales en condiciones colombianas— es genuinamente difícil de adquirir y reemplazar.</p>
+    <p>El problema: este diferenciador vive en las personas, no en la empresa. Si el técnico clave renuncia, el diferenciador se va con él. Las empresas de servicio que centran su ventaja exclusivamente en el talento individual tienen un problema estructural de escalabilidad y retención. El conocimiento que existe en una cabeza no puede venderse, auditarse ni transferirse fácilmente.</p>
+
+    <h4>Candidato B — La calidad y profundidad de los datos acumulados</h4>
+    <p>Con cada visita registrada correctamente, STECH NODES acumula algo que ningún competidor puede simplemente comprar: el historial real de comportamiento de equipos específicos, en hospitales específicos, bajo condiciones de uso reales en Colombia. Con suficiente volumen, ese historial empieza a revelar patrones que transforman la forma de prestar el servicio.</p>
+    <p>El problema: los datos tienen valor estratégico solo a escala. Con 50 equipos, los patrones no son estadísticamente significativos. Con 500, empiezan a serlo. Con 2.000, son un activo real. El camino de 50 a 2.000 requiere tiempo, crecimiento y disciplina operativa sostenida — tres cosas que no se garantizan solo con buena intención.</p>
+
+    <h4>Candidato C — La confianza institucional acumulada</h4>
+    <p>En el sector salud colombiano, cambiar de proveedor de mantenimiento no es solo cambiar de proveedor: es asumir el riesgo de que el nuevo proveedor no conozca los equipos, que los técnicos no estén certificados, que la documentación de transición sea incompleta. Ese costo de cambio se acumula con cada año de relación exitosa. Un hospital que lleva cuatro años trabajando con STECH NODES —con registros completos, sin incidentes, con buena respuesta— tiene un costo de cambio real y alto.</p>
+    <p>El problema: la confianza institucional es el activo más valioso pero el más frágil. Un solo incidente relevante —un equipo que falla después de un mantenimiento, una respuesta tardía en una emergencia, un dato incorrecto en el portal QR— puede erosionar años de acumulación. Y no es completamente controlable: depende de terceros, de condiciones del mercado, de eventos imprevistos.</p>
+
+    <div class="call neutral">
+      <div class="call-label">La respuesta que este análisis defiende</div>
+      <p>Los tres candidatos son correctos y los tres son incompletos. El diferenciador real no es ninguno de ellos en aislamiento — es el <strong>sistema que hace que cada uno refuerce a los demás</strong>. El conocimiento técnico produce mejores datos. Los mejores datos mejoran el servicio. El mejor servicio construye confianza. La confianza atrae mejores clientes. Los mejores clientes exponen al equipo a equipos más desafiantes. Equipos más desafiantes desarrollan más conocimiento técnico. El ciclo se refuerza o se rompe en cualquiera de sus nodos.</p>
+    </div>
+  </div>
+
+  <!-- §03 EL VOLANTE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">El volante estratégico — y por qué importa más que cualquier elemento individual</span>
+    </div>
+    <p>Las empresas con ventajas competitivas duraderas raramente tienen un solo activo defensible. Tienen sistemas donde cada elemento potencia a los demás. Jeff Bezos lo llamó el flywheel. En el contexto de STECH NODES, el sistema se ve así:</p>
+
+    <div class="flywheel-wrap">
+      <svg viewBox="0 0 520 420" width="100%" style="max-width:520px;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <polygon points="0 0, 7 3.5, 0 7" fill="#9C9488"/>
+          </marker>
+        </defs>
+
+        <!-- center circle -->
+        <circle cx="260" cy="210" r="54" fill="#042C53" opacity="0.9"/>
+        <text x="260" y="204" text-anchor="middle" font-size="11" font-weight="700" fill="white" font-family="-apple-system,sans-serif" letter-spacing="0.04em">STECH</text>
+        <text x="260" y="220" text-anchor="middle" font-size="11" font-weight="700" fill="white" font-family="-apple-system,sans-serif" letter-spacing="0.04em">NODES</text>
+        <text x="260" y="236" text-anchor="middle" font-size="9" fill="#378ADD" font-family="-apple-system,sans-serif">sistema</text>
+
+        <!-- 6 nodes in a circle, r=150 from center -->
+        <!-- Node 1: top center (270°) — Excelencia técnica -->
+        <circle cx="260" cy="56" r="38" fill="white" stroke="#C8C4BC" stroke-width="1"/>
+        <text x="260" y="48" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">Excelencia</text>
+        <text x="260" y="62" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">técnica</text>
+        <text x="260" y="76" text-anchor="middle" font-size="9" fill="#9C9488" font-family="-apple-system,sans-serif">(personas)</text>
+
+        <!-- Node 2: top-right (330°) — Datos de calidad -->
+        <circle cx="404" cy="131" r="38" fill="white" stroke="#C8C4BC" stroke-width="1"/>
+        <text x="404" y="123" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">Datos de</text>
+        <text x="404" y="137" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">calidad</text>
+        <text x="404" y="151" text-anchor="middle" font-size="9" fill="#9C9488" font-family="-apple-system,sans-serif">(ERP)</text>
+
+        <!-- Node 3: bottom-right (30°) — Trazabilidad visible -->
+        <circle cx="404" cy="289" r="38" fill="white" stroke="#C8C4BC" stroke-width="1"/>
+        <text x="404" y="281" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">Trazabilidad</text>
+        <text x="404" y="295" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">visible</text>
+        <text x="404" y="309" text-anchor="middle" font-size="9" fill="#9C9488" font-family="-apple-system,sans-serif">(QR + portal)</text>
+
+        <!-- Node 4: bottom center (90°) — Confianza cliente -->
+        <circle cx="260" cy="364" r="38" fill="white" stroke="#C8C4BC" stroke-width="1"/>
+        <text x="260" y="356" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">Confianza</text>
+        <text x="260" y="370" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">del cliente</text>
+        <text x="260" y="384" text-anchor="middle" font-size="9" fill="#9C9488" font-family="-apple-system,sans-serif">(relación)</text>
+
+        <!-- Node 5: bottom-left (150°) — Mejores contratos -->
+        <circle cx="116" cy="289" r="38" fill="white" stroke="#C8C4BC" stroke-width="1"/>
+        <text x="116" y="281" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">Mejores</text>
+        <text x="116" y="295" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">contratos</text>
+        <text x="116" y="309" text-anchor="middle" font-size="9" fill="#9C9488" font-family="-apple-system,sans-serif">(escala)</text>
+
+        <!-- Node 6: top-left (210°) — Más equip complejos -->
+        <circle cx="116" cy="131" r="38" fill="white" stroke="#C8C4BC" stroke-width="1"/>
+        <text x="116" y="118" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">Equipos más</text>
+        <text x="116" y="132" text-anchor="middle" font-size="10" font-weight="700" fill="#18170F" font-family="-apple-system,sans-serif">complejos</text>
+        <text x="116" y="146" text-anchor="middle" font-size="9" fill="#9C9488" font-family="-apple-system,sans-serif">(experiencia)</text>
+
+        <!-- Arrows — clockwise arc between nodes -->
+        <!-- 1→2: Excelencia técnica → Datos -->
+        <path d="M 292 72 Q 360 72 376 110" stroke="#9C9488" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+        <!-- 2→3: Datos → Trazabilidad -->
+        <path d="M 420 168 Q 430 210 420 253" stroke="#9C9488" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+        <!-- 3→4: Trazabilidad → Confianza -->
+        <path d="M 376 310 Q 340 348 298 358" stroke="#9C9488" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+        <!-- 4→5: Confianza → Mejores contratos -->
+        <path d="M 222 358 Q 172 356 148 318" stroke="#9C9488" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+        <!-- 5→6: Mejores contratos → Equipos complejos -->
+        <path d="M 102 251 Q 90 200 102 168" stroke="#9C9488" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+        <!-- 6→1: Equipos complejos → Excelencia técnica -->
+        <path d="M 144 112 Q 190 72 222 68" stroke="#9C9488" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+
+        <!-- Break label -->
+        <text x="260" y="415" text-anchor="middle" font-size="10" fill="#9C9488" font-family="-apple-system,sans-serif">El ciclo se rompe si cualquier nodo falla de manera sostenida</text>
+      </svg>
+    </div>
+
+    <p>El volante tiene una propiedad importante: <strong>es más fácil detenerlo que girarlo</strong>. Una vez que gira con velocidad — clientes satisfechos, datos de calidad, técnicos con experiencia, contratos nuevos — se auto-sostiene. Pero un fallo sostenido en cualquier nodo puede detenerlo o invertirlo. Un técnico que no registra sus visitas daña los datos. Datos malos dañan el portal. Un portal con información incorrecta daña la confianza. La confianza perdida reduce los contratos. Menos contratos reducen la exposición a equipos complejos. Y así hacia atrás.</p>
+
+    <p>Esto tiene una implicación operativa concreta: en una empresa como STECH NODES, la gestión de calidad de registros no es una tarea administrativa — es la pieza de infraestructura más crítica del sistema estratégico completo.</p>
+  </div>
+
+  <!-- §04 EL CASO EN CONTRA DE LA TESIS (adversarial) -->
+  <div class="section adversarial">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">El caso en contra — dónde la tesis tiene debilidades reales</span>
+    </div>
+    <p>La tesis propuesta tiene problemas. No son argumentos para descartarla, pero sí son obstáculos que deben reconocerse antes de que la estrategia se declare válida.</p>
+
+    <h4>Debilidad 1 — La confusión entre empresa de servicios y empresa de tecnología</h4>
+    <p>STECH NODES es, por su modelo de negocio actual, una empresa de servicios que usa tecnología como herramienta. La tesis propuesta la describe como si fuera —o pudiera convertirse en— una empresa de tecnología con un componente de servicios. Estas son estructuras de negocio fundamentalmente distintas: diferentes márgenes, diferentes métricas, diferente talento, diferente velocidad de escala.</p>
+    <p>Una empresa de servicios cobra por tiempo de técnicos y contratos de mantenimiento. Una empresa de tecnología cobra por acceso a plataformas, por datos procesados, por inteligencia predictiva. El camino de una a la otra no es gradual — requiere una transformación de modelo de negocio que muchas empresas intentan y pocas logran. La tesis no reconoce esta tensión.</p>
+
+    <h4>Debilidad 2 — El problema del huevo y la gallina</h4>
+    <p>La ventaja competitiva que describe la tesis — datos acumulados, inteligencia predictiva, estándar de referencia — requiere escala. La escala requiere clientes. Los clientes más sofisticados, que valoran la trazabilidad verificable, generalmente prefieren proveedores con trayectoria demostrada. Para una empresa joven, esta es una trampa real: el activo estratégico que justifica el posicionamiento premium solo existe cuando ya se tiene el tamaño que el posicionamiento debería atraer.</p>
+
+    <h4>Debilidad 3 — El mercado colombiano puede no estar listo</h4>
+    <p>La mayor parte de los hospitales colombianos, especialmente los públicos y los de segundo nivel, no tienen una demanda activa de trazabilidad digital avanzada. El diferenciador existe en la mente de STECH NODES antes de existir en la mente del cliente. Construir una propuesta de valor sofisticada para un mercado que aún evalúa principalmente en precio es un riesgo real: se invierte en educación del mercado que otros pueden aprovechar cuando el mercado madure.</p>
+
+    <h4>Debilidad 4 — La "inteligencia de datos" requiere masa crítica que no es inmediata</h4>
+    <p>El argumento de que los datos acumulados generan ventaja asume que habrá suficientes datos para que los patrones sean estadísticamente significativos. Con 50 equipos de 10 tipos distintos en 8 hospitales, los patrones son anécdotas, no datos. Con 500 equipos de 30 tipos en 40 hospitales, empiezan a ser relevantes. Ese volumen requiere crecimiento sostenido durante 4-6 años. La ventaja no llega en el año 2; llega en el año 5 o 6 si el crecimiento es real.</p>
+
+    <div class="call red">
+      <div class="call-label">La debilidad que podría invalidar la tesis completa</div>
+      <p>Si STECH NODES no logra crecer de manera sostenida en los próximos 3-4 años, ninguna de las capas profundas del moat se materializa. Los datos no alcanzan escala. La confianza no se acumula. La tecnología se convierte en costo sin retorno estratégico. La tesis de los 10 años es válida únicamente si el crecimiento del negocio es real. Sin crecimiento, es una narrativa sin sustrato.</p>
+    </div>
+  </div>
+
+  <!-- §05 LAS CAPAS DEL MOAT -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Las capas del moat — qué es profundo y qué es superficie</span>
+    </div>
+    <p>Si la tesis se sostiene, la ventaja competitiva tiene capas de profundidad distinta. Lo que importa no es solo tener las capas — es saber en cuál está el verdadero activo y cuál es más vulnerable.</p>
+
+    <div class="moat">
+      <div class="moat-layer">
+        <div class="moat-depth surface">
+          <div class="moat-depth-label">Superficie</div>
+          <div class="moat-depth-bar"></div>
+        </div>
+        <div class="moat-content">
+          <div class="moat-title">El portal QR y la interfaz del ERP</div>
+          <div class="moat-desc">La tecnología visible: el portal público, el código QR, la interfaz del ERP. Valioso como canal y como señal. No como moat.</div>
+          <div class="moat-copy">Tiempo de copia por un competidor determinado: 4–12 semanas.</div>
+        </div>
+      </div>
+      <div class="moat-layer">
+        <div class="moat-depth mid">
+          <div class="moat-depth-label">Medio</div>
+          <div class="moat-depth-bar"></div>
+        </div>
+        <div class="moat-content">
+          <div class="moat-title">El sistema operativo completo (ERP + metodología)</div>
+          <div class="moat-desc">La arquitectura que integra cotizaciones, órdenes de trabajo, actas técnicas, contratos y evidencia. Más difícil de replicar porque requiere decisiones de diseño y adopción interna.</div>
+          <div class="moat-copy">Tiempo de copia: 8–18 meses. Posible con inversión. No imposible.</div>
+        </div>
+      </div>
+      <div class="moat-layer">
+        <div class="moat-depth deep">
+          <div class="moat-depth-label">Profundo</div>
+          <div class="moat-depth-bar"></div>
+        </div>
+        <div class="moat-content">
+          <div class="moat-title">El corpus de datos verificados — historial de activos</div>
+          <div class="moat-desc">Los registros reales de mantenimiento acumulados durante años: qué falló, cuándo, en qué condición, bajo qué protocolo se resolvió. Este corpus no se puede fabricar ni comprar. Es el resultado de años de operación disciplinada.</div>
+          <div class="moat-copy">Tiempo de copia: 3–6 años de operación real. Prácticamente no replicable a corto plazo.</div>
+        </div>
+      </div>
+      <div class="moat-layer">
+        <div class="moat-depth bedrock">
+          <div class="moat-depth-label">Roca base</div>
+          <div class="moat-depth-bar"></div>
+        </div>
+        <div class="moat-content">
+          <div class="moat-title">La confianza institucional acumulada + conocimiento tácito</div>
+          <div class="moat-desc">La combinación de relaciones de largo plazo con clientes, la reputación en el sector, y el conocimiento tácito del equipo humano sobre equipos específicos y condiciones locales. No se construye con tecnología — se construye siendo confiable durante años.</div>
+          <div class="moat-copy">Tiempo de copia: imposible directamente. Solo erosionable desde adentro (rotación del equipo, incidentes).</div>
+        </div>
+      </div>
+    </div>
+
+    <p>La implicación táctica es esta: <strong>STECH NODES debería invertir sus recursos en profundidad, no en superficie</strong>. El portal QR y el ERP son necesarios, pero son la capa de arriba. Proteger y desarrollar el corpus de datos y la confianza institucional debería ser la prioridad, porque son las capas que los competidores no pueden alcanzar con dinero o tiempo razonable.</p>
+  </div>
+
+  <!-- §06 EL POSICIONAMIENTO EN LOS TRES HORIZONTES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Posicionamiento en tres horizontes</span>
+    </div>
+    <p>El error más común en estrategia es intentar tener hoy el posicionamiento que solo es posible en el año 7. La tesis de 10 años tiene que construirse en etapas, y cada etapa tiene una propuesta de valor distinta — no porque la visión cambie, sino porque el sustrato disponible para sustentarla cambia con el tiempo.</p>
+
+    <div class="horizons">
+      <div class="horizon">
+        <div class="horizon-label">
+          <div class="horizon-time">Años 1–3</div>
+          <div class="horizon-name">Operador de excelencia documentada</div>
+        </div>
+        <div class="horizon-body">
+          <div class="horizon-title">Propuesta de valor: hacemos bien lo que hacemos, y podemos demostrarlo</div>
+          <ul class="horizon-items">
+            <li>El diferenciador es la calidad del servicio combinada con la documentación sistemática</li>
+            <li>El ERP garantiza que cada visita queda registrada correctamente</li>
+            <li>El QR hace esa documentación accesible al cliente sin intermediación</li>
+            <li>El argumento comercial es de reducción de riesgo regulatorio, no de tecnología</li>
+            <li>El cliente tipo: clínicas privadas y hospitales en proceso de acreditación</li>
+            <li>Éxito medible: tasa de retención de clientes, completitud de registros, crecimiento en contratos preventivos</li>
+          </ul>
+        </div>
+      </div>
+      <div class="horizon">
+        <div class="horizon-label">
+          <div class="horizon-time">Años 3–6</div>
+          <div class="horizon-name">Gestor inteligente del ciclo de vida de activos</div>
+        </div>
+        <div class="horizon-body">
+          <div class="horizon-title">Propuesta de valor: entendemos el comportamiento de los equipos mejor que nadie en Colombia</div>
+          <ul class="horizon-items">
+            <li>Con masa crítica de datos (300+ equipos, 1.000+ eventos de servicio), aparecen patrones reales</li>
+            <li>STECH NODES puede recomendar intervalos de mantenimiento basados en datos reales, no en manuales del fabricante</li>
+            <li>Puede identificar qué equipos en el portafolio de un cliente tienen mayor riesgo de falla en los próximos 90 días</li>
+            <li>El argumento comercial se desplaza de "cumplimos el contrato" a "reducimos el riesgo de falla no programada"</li>
+            <li>Diferenciador: ningún competidor local tiene este volumen de datos estructurados</li>
+            <li>Éxito medible: capacidad predictiva verificable, reducción de fallas no programadas en clientes activos</li>
+          </ul>
+        </div>
+      </div>
+      <div class="horizon">
+        <div class="horizon-label">
+          <div class="horizon-time">Años 6–10</div>
+          <div class="horizon-name">Infraestructura de referencia del sector</div>
+        </div>
+        <div class="horizon-body">
+          <div class="horizon-title">Propuesta de valor: somos el estándar al que el sector se compara</div>
+          <ul class="horizon-items">
+            <li>STECH NODES es el proveedor cuya metodología de documentación se convierte en referencia para el sector</li>
+            <li>Los reguladores (INVIMA, acreditadoras) reconocen la evidencia de STECH NODES como documentación válida</li>
+            <li>Los hospitales que quieren acreditación JCI o ICONTEC prefieren proveedores que ya trabajan bajo este estándar</li>
+            <li>La plataforma puede expandirse a otros tipos de activos técnicos más allá de biomédica</li>
+            <li>Éxito medible: referencias en procesos regulatorios, reconocimiento sectorial, expansión geográfica o de categoría</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="call amber">
+      <div class="call-label">La trampa del salto de horizonte</div>
+      <p>El posicionamiento del Horizonte 3 es atractivo. El riesgo es intentar comunicarlo al mercado antes de tener el sustrato del Horizonte 1. Un hospital que recibe una propuesta donde se les habla de "inteligencia predictiva de activos" cuando no conoce a STECH NODES va a desconfiar, no a entusiasmarse. El mensaje externo debe estar siempre un horizonte por debajo del pensamiento estratégico interno.</p>
+    </div>
+  </div>
+
+  <!-- §07 RIESGOS CRÍTICOS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Riesgos que podrían invalidar la tesis</span>
+    </div>
+
+    <div class="risk-grid">
+      <div class="risk-card">
+        <div class="risk-severity critical">Riesgo crítico</div>
+        <div class="risk-title">Stagnación del crecimiento</div>
+        <div class="risk-desc">Toda la tesis depende de acumulación: de datos, de clientes, de experiencia. Si STECH NODES no crece de manera sostenida en los próximos 3-4 años, ninguna de las capas profundas del moat se materializa. La tecnología se convierte en costo sin retorno estratégico.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-severity critical">Riesgo crítico</div>
+        <div class="risk-title">Rotación del equipo técnico</div>
+        <div class="risk-desc">El conocimiento tácito vive en las personas. Si los técnicos más experimentados abandonan la empresa, parte del moat más profundo —el conocimiento de equipos específicos en condiciones reales— se pierde. La documentación mitiga esto, pero no lo elimina completamente.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-severity high">Riesgo alto</div>
+        <div class="risk-title">Un jugador grande entra con la misma estrategia</div>
+        <div class="risk-desc">Una empresa regional o internacional con recursos mayores podría decidir construir el mismo stack tecnológico. Con más capital y más técnicos, podría acortar el tiempo de acumulación. STECH NODES tendría que haber construido suficiente profundidad de datos y confianza para que el entrante tarde al menos 3-5 años en alcanzarla.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-severity high">Riesgo alto</div>
+        <div class="risk-title">El mercado no madura al ritmo esperado</div>
+        <div class="risk-desc">Si los hospitales colombianos siguen evaluando principalmente en precio durante los próximos 5 años, la inversión en trazabilidad digital produce diferenciación mínima. El regulador puede no exigir nunca documentación digital sistemática. La tesis asume una maduración del mercado que no está garantizada.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-severity med">Riesgo medio</div>
+        <div class="risk-title">Commoditización tecnológica</div>
+        <div class="risk-desc">En 5 años puede existir un SaaS de mantenimiento biomédico construido para el mercado latinoamericano que cualquier competidor puede comprar por $300/mes. Si ese producto aparece, la ventaja tecnológica de STECH NODES desaparece. Lo que permanece son los datos acumulados y la confianza — que son el moat real.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-severity med">Riesgo medio</div>
+        <div class="risk-title">Tensión entre servicios y tecnología</div>
+        <div class="risk-desc">Mantener un ERP propio, un portal QR, y construir capacidades de inteligencia de datos requiere inversión tecnológica continua. Esa inversión compite con los recursos que el negocio de servicios necesita para crecer. La tensión entre ambas prioridades puede fragmentar la atención y el capital de la empresa.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §08 LO QUE CAMBIA CON ESTA REFORMULACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">Lo que cambia en las decisiones de hoy si se acepta esta tesis</span>
+    </div>
+    <p>Una estrategia que no cambia ninguna decisión presente es solo una narrativa. Si STECH NODES acepta la tesis propuesta, algunas prioridades y decisiones deberían cambiar:</p>
+
+    <h3>Lo que sube de prioridad</h3>
+    <ul>
+      <li><strong>La calidad de los registros por encima de la velocidad de desarrollo</strong>. No importa cuántos módulos tenga el ERP si los registros están incompletos. La métrica más importante del sistema no es "funcionalidades construidas" — es "porcentaje de visitas con OT cerrada correctamente en menos de 48 horas".</li>
+      <li><strong>El diseño de la metodología de trabajo antes que la automatización</strong>. El proceso de cómo STECH NODES hace un mantenimiento preventivo — qué revisa, qué registra, cómo documenta los hallazgos — es una ventaja competitiva antes que el software que lo soporta. La metodología es el activo; el ERP es el sistema que la captura.</li>
+      <li><strong>La retención de técnicos como prioridad estratégica</strong>. No como beneficio de recursos humanos, sino como decisión de negocio. Un técnico con tres años de experiencia en una cuenta específica es un activo estratégico. Su salida es una pérdida de moat, no de capacidad operativa.</li>
+    </ul>
+
+    <h3>Lo que baja de prioridad</h3>
+    <ul>
+      <li><strong>Las funcionalidades del portal QR que no afectan la calidad de datos</strong>. Notificaciones, firma digital, reporte de incidentes — son valiosas en el Horizonte 2. Construirlas antes de tener la base de datos completa y confiable es optimizar la superficie antes de tener el fondo.</li>
+      <li><strong>El posicionamiento tecnológico en el mensaje externo</strong>. Hablar de ecosistemas QR y plataformas digitales antes de poder demostrar consistencia operativa es ruido. El mensaje debe estar calibrado al Horizonte 1: "cada mantenimiento queda registrado y verificable".</li>
+    </ul>
+
+    <h3>La pregunta estratégica que la tesis genera</h3>
+    <p>Si la ventaja de largo plazo está en el corpus de datos acumulados, entonces la pregunta correcta no es "¿qué funcionalidad construyo siguiente?" sino "¿cómo garantizo que cada visita técnica produce un registro de la calidad suficiente para ser un dato estratégico útil?". Esa pregunta es más de metodología, disciplina y cultura organizacional que de ingeniería de software.</p>
+  </div>
+
+  <!-- §09 TEST ESTRATÉGICO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <span class="section-title">El test estratégico — cómo saber si estamos en el camino correcto</span>
+    </div>
+    <p>Una tesis sin métricas es fe. Las siguientes preguntas deberían responderse afirmativamente para confirmar que la estrategia está materializándose, no solo como narrativa sino como realidad operativa:</p>
+
+    <div class="test-list">
+      <div class="test-item">
+        <div class="test-num">1</div>
+        <div class="test-text">
+          <div class="test-q">¿Qué porcentaje de las OTs se cierran con acta técnica completa en las 48 horas siguientes a la visita?</div>
+          <div class="test-note">Si la respuesta es menor al 90%, la base del moat está siendo erosionada en tiempo real. El dato estratégico solo existe si la disciplina operativa lo produce.</div>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">2</div>
+        <div class="test-text">
+          <div class="test-q">¿Cuál es la tasa de renovación de contratos de clientes activos?</div>
+          <div class="test-note">Si es menor al 80%, la confianza institucional no se está acumulando — puede estar activamente disminuyendo. La retención es el indicador más honesto de si el modelo de valor realmente funciona.</div>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">3</div>
+        <div class="test-text">
+          <div class="test-q">¿Un cliente nuevo menciona la trazabilidad o la documentación como razón de elección, sin que STECH NODES lo haya mencionado primero?</div>
+          <div class="test-note">Si la respuesta es nunca, el diferenciador no está siendo percibido como valor por el mercado — solo por STECH NODES internamente. Este es el gap más peligroso.</div>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">4</div>
+        <div class="test-text">
+          <div class="test-q">¿STECH NODES puede hoy identificar, a partir de sus datos, qué tipo de equipo tiene mayor probabilidad de falla en los próximos 60 días?</div>
+          <div class="test-note">Si la respuesta es no, los datos aún no tienen suficiente volumen o calidad para generar inteligencia. Esto no es un fracaso — es información sobre en qué horizonte se está realmente.</div>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">5</div>
+        <div class="test-text">
+          <div class="test-q">¿Si los tres técnicos más antiguos renunciaran mañana, cuánto tardaría STECH NODES en recuperar el nivel de calidad de servicio actual?</div>
+          <div class="test-note">Si la respuesta es "meses" o "no sabemos", el conocimiento tácito no está siendo sistematizado en la metodología ni en los datos. La empresa está más frágil de lo que la tesis requiere.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCLUSIÓN -->
+  <div class="final-call">
+    <div class="final-call-eyebrow">Conclusión — ¿La tesis se sostiene?</div>
+    <p>La tesis se sostiene, pero con una condición importante: <strong>depende de que el crecimiento del negocio sea real</strong>. La ventaja competitiva descrita en este documento no existe hoy en su forma completa — se está construyendo. Lo que existe hoy es el sistema correcto para crearla. Y eso no es poco: muchas empresas nunca construyen el sistema.</p>
+    <p>El verdadero activo estratégico de STECH NODES no es el QR, ni el ERP, ni la metodología por separado. Es <strong>la combinación de disciplina operativa y captura sistemática de conocimiento a lo largo del tiempo</strong>. Cada visita bien registrada es un ladrillo. El ERP es el molde. El QR es la ventana por la que el cliente ve la pared. Pero la pared la construye la operación, un ladrillo por vez, durante años.</p>
+    <p>La propuesta de valor que STECH NODES debería poder articular con claridad, independientemente del horizonte, es esta: <em>"Sabemos más sobre el estado real de sus equipos que cualquier otro proveedor, porque lo hemos documentado sistemáticamente desde el primer día. Y podemos demostrarlo."</em></p>
+    <p>Si eso es verdad hoy, la tesis de 10 años es alcanzable. Si no lo es todavía, construirlo es la prioridad antes que cualquier decisión de posicionamiento externo.</p>
+  </div>
+
+</div>

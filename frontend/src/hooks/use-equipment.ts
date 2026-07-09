@@ -86,3 +86,22 @@ export function useDeleteEquipment() {
     },
   });
 }
+
+export function useAssignQrCode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      clientId,
+      branchId,
+      id,
+    }: {
+      clientId: string;
+      branchId: string;
+      id: string;
+    }) =>
+      api.post<Equipment>(`${equipmentBase(clientId, branchId)}/${id}/qr-code`, {}),
+    onSuccess: (_r, vars) => {
+      qc.invalidateQueries({ queryKey: ['equipment', vars.clientId, vars.branchId] });
+    },
+  });
+}

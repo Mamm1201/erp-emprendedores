@@ -93,7 +93,7 @@ export class MaintenanceVisitsService {
       );
     }
 
-    // Resolve clientId from plan → contract
+    // Resolve clientId from plan → contract, and planEquipment for equipmentId linking
     const plan = await this.prisma.maintenancePlan.findUnique({
       where: { id: planId },
       select: {
@@ -101,6 +101,7 @@ export class MaintenanceVisitsService {
         contract: {
           select: { clientId: true, id: true, number: true },
         },
+        planEquipment: { select: { equipmentId: true } },
       },
     });
 
@@ -119,6 +120,9 @@ export class MaintenanceVisitsService {
         WORK_ORDER_NUMBER_PREFIX,
       );
 
+      const singleEquipmentId =
+        plan.planEquipment.length === 1 ? plan.planEquipment[0].equipmentId : null;
+
       const workOrder = await tx.workOrder.create({
         data: {
           number,
@@ -127,6 +131,7 @@ export class MaintenanceVisitsService {
           title,
           scheduledAt: new Date(visit.scheduledDate),
           createdById: userId,
+          equipmentId: singleEquipmentId,
         },
         select: { id: true, number: true, status: true },
       });

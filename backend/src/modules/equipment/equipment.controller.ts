@@ -10,6 +10,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { UserRole } from '../../generated/prisma/client';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { EquipmentService } from './equipment.service';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
 import { QueryEquipmentDto } from './dto/query-equipment.dto';
@@ -54,6 +56,17 @@ export class EquipmentController {
     @Body() dto: UpdateEquipmentDto,
   ) {
     return this.equipmentService.update(clientId, branchId, id, dto);
+  }
+
+  @Post(':id/qr-code')
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  assignQrCode(
+    @Param('clientId') clientId: string,
+    @Param('branchId') branchId: string,
+    @Param('id') id: string,
+  ) {
+    return this.equipmentService.assignQrCode(clientId, branchId, id);
   }
 
   @Delete(':id')

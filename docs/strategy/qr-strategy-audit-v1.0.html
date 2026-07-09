@@ -1,0 +1,619 @@
+<title>Auditoría estratégica — Hipótesis QR · STECH NODES</title>
+<style>
+:root {
+  --bg:       #F7F6F4;
+  --surface:  #FFFFFF;
+  --text:     #1A1917;
+  --text-2:   #57534E;
+  --text-3:   #9C948C;
+  --border:   #E3E0DC;
+  --border-2: #CCC8C2;
+  --accent:   #185FA5;
+  --red:      #7F1D1D;
+  --red-bg:   #FEF2F2;
+  --red-bdr:  #FECACA;
+  --green:    #065F46;
+  --green-bg: #ECFDF5;
+  --green-bdr:#6EE7B7;
+  --amber:    #78350F;
+  --amber-bg: #FFFBEB;
+  --amber-bdr:#FDE68A;
+  --blue-bg:  #EFF6FF;
+  --blue-bdr: #BFDBFE;
+  --blue-txt: #1E3A5F;
+  --ghost:    rgba(24,95,165,0.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:       #0F1218;
+    --surface:  #181D26;
+    --text:     #F0EDE8;
+    --text-2:   #9C948C;
+    --text-3:   #57534E;
+    --border:   #252B38;
+    --border-2: #303848;
+    --red:      #FCA5A5;
+    --red-bg:   #1C0808;
+    --red-bdr:  #7F1D1D;
+    --green:    #6EE7B7;
+    --green-bg: #022A1A;
+    --green-bdr:#065F46;
+    --amber:    #FCD34D;
+    --amber-bg: #1C1000;
+    --amber-bdr:#78350F;
+    --blue-bg:  #0A1628;
+    --blue-bdr: #1E3A5F;
+    --blue-txt: #93C5FD;
+    --ghost:    rgba(147,197,253,0.04);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:       #0F1218;
+  --surface:  #181D26;
+  --text:     #F0EDE8;
+  --text-2:   #9C948C;
+  --text-3:   #57534E;
+  --border:   #252B38;
+  --border-2: #303848;
+  --red:      #FCA5A5;
+  --red-bg:   #1C0808;
+  --red-bdr:  #7F1D1D;
+  --green:    #6EE7B7;
+  --green-bg: #022A1A;
+  --green-bdr:#065F46;
+  --amber:    #FCD34D;
+  --amber-bg: #1C1000;
+  --amber-bdr:#78350F;
+  --blue-bg:  #0A1628;
+  --blue-bdr: #1E3A5F;
+  --blue-txt: #93C5FD;
+  --ghost:    rgba(147,197,253,0.04);
+}
+:root[data-theme="light"] {
+  --bg:       #F7F6F4;
+  --surface:  #FFFFFF;
+  --text:     #1A1917;
+  --text-2:   #57534E;
+  --text-3:   #9C948C;
+  --border:   #E3E0DC;
+  --border-2: #CCC8C2;
+  --accent:   #185FA5;
+  --red:      #7F1D1D;
+  --red-bg:   #FEF2F2;
+  --red-bdr:  #FECACA;
+  --green:    #065F46;
+  --green-bg: #ECFDF5;
+  --green-bdr:#6EE7B7;
+  --amber:    #78350F;
+  --amber-bg: #FFFBEB;
+  --amber-bdr:#FDE68A;
+  --blue-bg:  #EFF6FF;
+  --blue-bdr: #BFDBFE;
+  --blue-txt: #1E3A5F;
+  --ghost:    rgba(24,95,165,0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15.5px;
+  line-height: 1.75;
+  padding: 52px 24px 88px;
+}
+.doc { max-width: 740px; margin: 0 auto; }
+
+/* ── Encabezado ─────────────────────────────────────────── */
+.header { border-bottom: 1px solid var(--border-2); padding-bottom: 28px; margin-bottom: 36px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.doc-title { font-size: 27px; font-weight: 800; color: var(--text); line-height: 1.15; margin-bottom: 12px; letter-spacing: -0.01em; }
+.doc-meta { display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--text-3); }
+
+/* ── Veredicto principal (aparece primero) ─────────────────────────────── */
+.verdict {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  padding: 22px 26px;
+  margin-bottom: 44px;
+}
+.verdict-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.verdict-text { font-size: 15.5px; color: var(--text); line-height: 1.7; }
+.verdict-text strong { color: var(--text); }
+
+/* ── Secciones ──────────────────────────────────────────── */
+.section { margin-bottom: 52px; position: relative; }
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.section-num { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent); flex-shrink: 0; min-width: 28px; }
+.section-title { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; letter-spacing: -0.01em; }
+
+/* ── Adversarial section (el caso en contra) ────────────── */
+.section.adversarial { background: var(--ghost); border-radius: 8px; padding: 24px; margin-left: -24px; margin-right: -24px; }
+.section.adversarial .section-header { border-color: var(--border-2); }
+
+/* ── Prosa ──────────────────────────────────────────────── */
+p { color: var(--text-2); margin-bottom: 16px; }
+p:last-child { margin-bottom: 0; }
+p strong, li strong { color: var(--text); font-weight: 600; }
+h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin: 24px 0 10px; }
+h4 { font-size: 14.5px; font-weight: 700; color: var(--text); margin: 18px 0 8px; }
+ul, ol { padding-left: 22px; margin-bottom: 16px; }
+li { color: var(--text-2); margin-bottom: 7px; font-size: 15px; line-height: 1.6; }
+li p { margin-bottom: 4px; }
+
+/* ── Callouts ───────────────────────────────────────────── */
+.call {
+  padding: 14px 20px;
+  border-radius: 6px;
+  border-left: 3px solid;
+  margin: 20px 0;
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+.call .call-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+.call p { font-size: 14.5px; margin-bottom: 6px; }
+.call p:last-child { margin-bottom: 0; }
+.call.red { background: var(--red-bg); border-color: var(--red-bdr); }
+.call.red .call-label, .call.red p { color: var(--red); }
+.call.green { background: var(--green-bg); border-color: var(--green-bdr); }
+.call.green .call-label, .call.green p { color: var(--green); }
+.call.amber { background: var(--amber-bg); border-color: var(--amber-bdr); }
+.call.amber .call-label, .call.amber p { color: var(--amber); }
+.call.blue { background: var(--blue-bg); border-color: var(--blue-bdr); }
+.call.blue .call-label, .call.blue p { color: var(--blue-txt); }
+
+/* ── Tablas ─────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin: 20px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); padding: 8px 14px; text-align: left; border-bottom: 1px solid var(--border-2); background: var(--surface); }
+td { padding: 10px 14px; border-bottom: 0.5px solid var(--border); color: var(--text-2); vertical-align: top; line-height: 1.55; }
+tr:last-child td { border-bottom: none; }
+
+/* ── Scorecards ─────────────────────────────────────────── */
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+.score-card { background: var(--surface); border: 0.5px solid var(--border-2); border-radius: 8px; padding: 16px; }
+.score-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.score-bar-wrap { height: 5px; background: var(--border); border-radius: 999px; overflow: hidden; margin-bottom: 6px; }
+.score-bar { height: 100%; border-radius: 999px; }
+.score-bar.low { background: var(--red); width: 20%; }
+.score-bar.mid-low { background: var(--amber); width: 35%; }
+.score-bar.mid { background: #C2810A; width: 50%; }
+.score-bar.high { background: var(--green); width: 80%; }
+.score-bar.very-high { background: var(--green); width: 95%; }
+.score-note { font-size: 12px; color: var(--text-3); }
+
+/* ── Objection cards ────────────────────────────────────── */
+.obj-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+.obj { background: var(--surface); border: 0.5px solid var(--border-2); border-radius: 6px; overflow: hidden; }
+.obj-head { padding: 9px 16px; background: var(--ghost); border-bottom: 0.5px solid var(--border); }
+.obj-who { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+.obj-quote { padding: 10px 16px; font-size: 13.5px; color: var(--text-2); line-height: 1.55; font-style: italic; }
+.obj-resp { padding: 8px 16px 12px; font-size: 13px; color: var(--text-3); border-top: 0.5px solid var(--border); }
+
+/* ── Axis reframe ───────────────────────────────────────── */
+.reframe {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.reframe-head { padding: 12px 20px; background: #042C53; }
+.reframe-head-text { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+.reframe-grid { display: grid; grid-template-columns: 1fr 1fr; }
+.reframe-col { padding: 18px 20px; }
+.reframe-col:first-child { border-right: 0.5px solid var(--border); }
+.reframe-col-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+.reframe-col-label.wrong { color: var(--red); }
+.reframe-col-label.right { color: var(--green); }
+.reframe-item { font-size: 13px; color: var(--text-2); padding: 5px 0; border-bottom: 0.5px solid var(--border); line-height: 1.5; }
+.reframe-item:last-child { border-bottom: none; }
+.reframe-item strong { color: var(--text); }
+
+/* ── Final conclusions ──────────────────────────────────── */
+.conclusions { display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
+.conclusion { display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 8px; background: var(--surface); border: 0.5px solid var(--border-2); }
+.conclusion-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+.conclusion-icon.valid { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-bdr); }
+.conclusion-icon.invalid { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-bdr); }
+.conclusion-icon.nuance { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-bdr); }
+.conclusion-text { flex: 1; }
+.conclusion-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.conclusion-body { font-size: 13.5px; color: var(--text-2); line-height: 1.6; }
+
+@media (max-width: 520px) {
+  .score-grid { grid-template-columns: 1fr; }
+  .reframe-grid { grid-template-columns: 1fr; }
+  .reframe-col:first-child { border-right: none; border-bottom: 0.5px solid var(--border); }
+}
+</style>
+
+<div class="doc">
+
+  <div class="header">
+    <div class="eyebrow">Auditoría estratégica · STECH NODES</div>
+    <div class="doc-title">¿Es el ecosistema QR el principal diferenciador competitivo de STECH NODES?</div>
+    <div class="doc-meta">
+      <span>Análisis crítico independiente</span>
+      <span>8 de julio de 2026</span>
+      <span>Rol: arquitecto de producto + auditor estratégico</span>
+    </div>
+  </div>
+
+  <!-- VEREDICTO PRIMERO -->
+  <div class="verdict">
+    <div class="verdict-eyebrow">Veredicto — lea esto antes que el análisis</div>
+    <div class="verdict-text">
+      <p>La hipótesis es <strong>parcialmente correcta, pero está apuntando al objeto equivocado</strong>. El QR no es el diferenciador. El QR es la interfaz que hace visible el diferenciador real.</p>
+      <p>El diferenciador real de STECH NODES no es una etiqueta en un equipo ni una página web. Es la <strong>excelencia operativa convertida en dato verificable</strong>: registros de mantenimiento completos, exactos y auditables acumulados durante años de servicio real. Eso es lo que no se puede copiar en seis semanas. El QR solo tiene valor si ese sustrato existe.</p>
+      <p>Si STECH NODES posiciona el QR como el diferenciador, tiene meses antes de que la ventaja desaparezca. Si posiciona la trazabilidad verificable como el diferenciador, tiene años. La diferencia entre ambas estrategias no es tecnológica — es de qué lado del QR se sitúa el valor.</p>
+    </div>
+  </div>
+
+  <!-- §01 ANATOMÍA DE LA HIPÓTESIS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Anatomía de la hipótesis</span>
+    </div>
+    <p>Antes de cuestionarla, vale la pena descomponerla. La hipótesis original contiene en realidad tres afirmaciones separadas, cada una con sus propias implicaciones:</p>
+    <ol>
+      <li><strong>El QR es un diferenciador competitivo</strong> — que distingue a STECH NODES de sus competidores en la mente del cliente.</li>
+      <li><strong>El QR es el diferenciador principal</strong> — que es el factor más importante que impulsa la preferencia del cliente.</li>
+      <li><strong>El QR es uno de los activos más valiosos de la empresa</strong> — que tiene valor intrínseco, no solo instrumental.</li>
+    </ol>
+    <p>Estas tres afirmaciones pueden tener respuestas distintas. Es posible que el QR sea un diferenciador (1) sin ser el principal (2), y que el activo de valor no sea el QR en sí sino algo más profundo (3). El análisis siguiente las trata por separado.</p>
+  </div>
+
+  <!-- §02 EL CASO EN CONTRA -->
+  <div class="section adversarial">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">El caso en contra — argumentos para demostrar que la hipótesis está equivocada</span>
+    </div>
+    <p>Esta sección asume deliberadamente la postura contraria. Los siguientes son los argumentos más sólidos en contra de la hipótesis, presentados como los articularía un competidor o un inversionista escéptico.</p>
+
+    <h4>Argumento 1 — El QR es trivialmente imitable</h4>
+    <p>Un desarrollador con acceso a cualquier base de datos de mantenimiento puede construir una página pública con información de equipos — y pegarle un QR — en cuatro semanas. No hay patente, no hay algoritmo propietario, no hay barrera de entrada técnica. Lo que STECH NODES está llamando "ecosistema" es, desde la perspectiva de un ingeniero de software, un endpoint GET más una etiqueta adhesiva.</p>
+    <p>La pregunta correcta no es "¿pueden copiarlo?" — obvio que sí — sino "¿cuánto tardarán?" La respuesta honesta: cualquier competidor con recursos mínimos puede tener una réplica funcional en 30 a 90 días de detectarlo en el mercado.</p>
+
+    <h4>Argumento 2 — El QR vacío es peor que ningún QR</h4>
+    <p>Un portal que muestra datos incompletos, atrasados o inconsistentes genera más desconfianza que ausencia de portal. Cada visita no registrada, cada acta faltante, cada fecha incorrecta se convierte en evidencia pública de negligencia operativa. El QR convierte la excelencia en activo y el descuido en pasivo. Si la disciplina operativa de STECH NODES no es genuinamente alta, el QR acelera la pérdida de credibilidad, no la construcción de ella.</p>
+
+    <h4>Argumento 3 — El comprador real puede no valorarlo</h4>
+    <p>En las licitaciones hospitalarias colombianas, los criterios de adjudicación incluyen precio, experiencia verificable, certificaciones técnicas y tiempos de respuesta. Los portales digitales no aparecen en los pliegos de condiciones. El jefe de biomédica que ama la trazabilidad no siempre es el mismo que firma el contrato. Si el diferenciador no influye en quien toma la decisión final, no es un diferenciador comercial — es una ventaja operativa interna.</p>
+
+    <h4>Argumento 4 — Diferenciador vs. factor higiénico</h4>
+    <p>Hoy el QR diferencia porque nadie más lo tiene. Pero los diferenciadores que son fáciles de replicar se convierten en factores higiénicos — condición necesaria para participar, pero no suficiente para ganar. Cuando tres competidores tengan portales similares, la pregunta ya no será "¿tiene QR?" sino "¿qué más ofrece?" STECH NODES puede estar construyendo hoy el estándar de mañana, sin garantía de que seguirá siendo su ventaja.</p>
+
+    <h4>Argumento 5 — La retención por "lock-in" es más débil de lo que parece</h4>
+    <p>El argumento de que el historial digital genera switching costs tiene una falla: el historial de mantenimientos de un equipo pertenece conceptualmente al cliente. Si la política de exportación de datos existe — y debe existir — el cliente puede llevar su historial a otro proveedor. El verdadero lock-in en servicios de mantenimiento hospitalario no viene de los datos: viene de la relación, la confianza y el costo de reentrenar a otro proveedor en los equipos específicos. Eso no lo produce el QR.</p>
+
+    <div class="call red">
+      <div class="call-label">Argumento definitivo contra la estrategia</div>
+      <p>Si yo fuera a construir una empresa competidora de STECH NODES, el portal QR sería mi semana cuatro. Pasaría tres semanas construyendo un ERP básico y una semana añadiendo páginas públicas de equipos. Podría igualar la funcionalidad completa de su ecosistema QR en treinta días de desarrollo. Lo que no puedo copiar en treinta días es el historial acumulado de cien equipos durante tres años. Eso es lo que vale. El QR es solo la ventana por la que se ve ese valor.</p>
+    </div>
+  </div>
+
+  <!-- §03 EVIDENCIA DE MERCADO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Evidencia de mercado</span>
+    </div>
+
+    <h3>Precedentes en otras industrias</h3>
+    <p>Los portales de transparencia de servicio no son un concepto nuevo en mantenimiento industrial. KONE, Schindler y ThyssenKrupp — los tres grandes del mantenimiento de ascensores — ofrecen portales de trazabilidad para sus clientes corporativos. Los fabricantes de equipos médicos de alta gama (Philips, Siemens Healthineers, GE Healthcare) tienen portales similares para sus contratos de service. ¿Qué nos dice esto?</p>
+    <ul>
+      <li>El concepto es validado — clientes sofisticados valoran la trazabilidad.</li>
+      <li>Lo tienen empresas con recursos masivos — lo cual significa que la barrera de entrada es baja.</li>
+      <li>El portal solo distingue en mercados donde los clientes son suficientemente sofisticados para pedirlo.</li>
+      <li>En mantenimiento de ascensores, el portal no eliminó la competencia por precio — solo se convirtió en parte del paquete estándar.</li>
+    </ul>
+
+    <h3>El contexto colombiano</h3>
+    <p>En el sector biomédico colombiano, el mercado de mantenimiento tercerizado está fragmentado: conviven grandes multinacionales (con recursos para copiar cualquier feature), integradores medianos (con menos recursos pero más agilidad), y proveedores locales pequeños (que compiten exclusivamente en precio). En ese contexto:</p>
+    <ul>
+      <li>La ventana de first-mover para una funcionalidad de software en este mercado es estimable entre 12 y 24 meses.</li>
+      <li>Los competidores grandes tienen la capacidad técnica de replicarlo pero pueden no considerarlo prioritario si el mercado de STECH NODES es pequeño.</li>
+      <li>Los competidores locales no tienen la capacidad de replicarlo a corto plazo — pero tampoco tienen acceso a los clientes donde el QR importa.</li>
+      <li>El principal criterio de adjudicación en licitaciones públicas sigue siendo precio con experiencia verificable, no herramientas digitales.</li>
+    </ul>
+
+    <div class="call amber">
+      <div class="call-label">Matiz crítico</div>
+      <p>El QR tiene más impacto en contratos privados (clínicas, IPS privadas) que en licitaciones públicas. En el sector privado, la decisión de compra está más influenciada por quien gestiona biomédica, y el diferenciador de trazabilidad resuena más. En el sector público, el precio domina con frecuencia. La estrategia de posicionamiento del QR debe distinguir entre ambos segmentos.</p>
+    </div>
+  </div>
+
+  <!-- §04 FACILIDAD DE IMITACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">¿Qué tan fácil es copiarlo?</span>
+    </div>
+    <p>La respuesta cambia según qué se esté copiando:</p>
+
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="score-label">Copiar el portal QR</div>
+        <div class="score-bar-wrap"><div class="score-bar low"></div></div>
+        <div class="score-note">Trivialmente fácil. 4-8 semanas de desarrollo. Sin barreras técnicas. Cualquier equipo con un desarrollador web puede replicarlo.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label">Copiar el ERP detrás del QR</div>
+        <div class="score-bar-wrap"><div class="score-bar mid"></div></div>
+        <div class="score-note">Moderadamente difícil. 6-18 meses. Requiere producto, desarrollo y adopción interna. Pero sí se puede construir.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label">Copiar los datos acumulados</div>
+        <div class="score-bar-wrap"><div class="score-bar very-high"></div></div>
+        <div class="score-note">Extremadamente difícil. Los registros de mantenimiento son el resultado de años de visitas, técnicos, clientes y disciplina operativa. Son el activo no replicable.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label">Copiar la confianza del cliente</div>
+        <div class="score-bar-wrap"><div class="score-bar very-high"></div></div>
+        <div class="score-note">Prácticamente imposible a corto plazo. En el sector salud, la confianza se construye a lo largo de años de cumplimiento sostenido. No se copia con tecnología.</div>
+      </div>
+    </div>
+
+    <p>La conclusión que emerge es clara: <strong>cuanto más profundo es el elemento, más difícil es copiarlo</strong>. El QR está en la superficie. La tecnología operativa está en el medio. Los datos y la confianza están en el fondo. La estrategia debería proteger lo que está en el fondo, no lo que está en la superficie.</p>
+  </div>
+
+  <!-- §05 QUÉ PERCIBE EL CLIENTE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">¿Qué percibe realmente el cliente y qué solo tiene valor interno?</span>
+    </div>
+    <p>Existe un riesgo clásico en producto: construir cosas que internamente nos parecen valiosas sin verificar que el cliente percibe el mismo valor. Para el ecosistema QR, el análisis por actor es revelador:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Actor</th><th>¿Percibe valor?</th><th>¿Toma decisiones de compra?</th><th>Observación</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Jefe de biomédica / ing. hospitalario</strong></td>
+            <td>Sí — alto. Reduce trabajo administrativo, facilita trazabilidad, simplifica auditorías.</td>
+            <td>Influye pero raramente decide solo.</td>
+            <td>El cliente que más aprecia el QR frecuentemente no es el cliente que firma el contrato.</td>
+          </tr>
+          <tr>
+            <td><strong>Gerente general / dirección médica</strong></td>
+            <td>Sí — moderado. Lo percibe como reducción de riesgo regulatorio y como señal de seriedad del proveedor.</td>
+            <td>Sí, en decisiones estratégicas.</td>
+            <td>Este es el actor de mayor valor para el posicionamiento del QR. La propuesta debe formularse en términos de riesgo, no de tecnología.</td>
+          </tr>
+          <tr>
+            <td><strong>Compras / contratación</strong></td>
+            <td>Bajo. Los criterios de adjudicación raramente incluyen portales digitales.</td>
+            <td>Sí — en procesos formales.</td>
+            <td>El gap entre quien valora el QR y quien adjudica el contrato es el principal riesgo comercial del posicionamiento.</td>
+          </tr>
+          <tr>
+            <td><strong>Inspector / auditor regulatorio</strong></td>
+            <td>Sí — muy alto. Puede verificar trazabilidad en segundos.</td>
+            <td>No. Solo valida.</td>
+            <td>Valioso como argumento de venta al cliente: "facilita sus auditorías". El inspector no compra; el cliente compra para satisfacer al inspector.</td>
+          </tr>
+          <tr>
+            <td><strong>Personal operativo del hospital</strong></td>
+            <td>Marginal. Saber el estado de un equipo tiene valor puntual pero no influye en la decisión de contratación.</td>
+            <td>No.</td>
+            <td>Es una utilidad de campo, no un argumento de venta.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="call amber">
+      <div class="call-label">El gap que importa</div>
+      <p>El actor que más valora el QR (biomédica) raramente es quien firma el contrato. El actor que firma el contrato (compras/dirección) valora el QR moderadamente y en términos distintos — riesgo y cumplimiento, no transparencia técnica. La propuesta de valor del QR debe estar calibrada para quien toma la decisión, no para quien usa el portal.</p>
+    </div>
+  </div>
+
+  <!-- §06 OBJECIONES EN VENTA -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Objeciones reales en el proceso de venta</span>
+    </div>
+    <p>Si STECH NODES llevara hoy el ecosistema QR a una presentación comercial, estas son las objeciones que enfrentaría — y lo que revelan sobre el posicionamiento:</p>
+
+    <div class="obj-list">
+      <div class="obj">
+        <div class="obj-head"><span class="obj-who">Jefe de Biomédica</span></div>
+        <div class="obj-quote">"Interesante, pero nuestro proveedor actual también nos envía informes mensuales. ¿En qué es esto diferente?"</div>
+        <div class="obj-resp">Revela: el valor de la trazabilidad ya existe en formas menos elegantes. El QR mejora la experiencia, no crea el valor. Diferencia en forma, no en sustancia.</div>
+      </div>
+      <div class="obj">
+        <div class="obj-head"><span class="obj-who">Jefe de Biomédica</span></div>
+        <div class="obj-quote">"¿Y si STECH NODES cierra o cambia de plataforma? ¿Perdemos el historial del equipo?"</div>
+        <div class="obj-resp">Revela: el QR crea una dependencia percibida que puede generar resistencia. La respuesta (política de exportación de datos) debe existir y comunicarse proactivamente, no reactivamente.</div>
+      </div>
+      <div class="obj">
+        <div class="obj-head"><span class="obj-who">Gerente General</span></div>
+        <div class="obj-quote">"¿Esto tiene un costo adicional incluido en el contrato o es un extra?"</div>
+        <div class="obj-resp">Revela: el cliente puede no entender el QR como parte del servicio sino como un add-on. Si hay ambigüedad aquí, el diferenciador se convierte en punto de negociación de precio, no en argumento de valor.</div>
+      </div>
+      <div class="obj">
+        <div class="obj-head"><span class="obj-who">Gerente General</span></div>
+        <div class="obj-quote">"¿Cómo sé que la información que aparece en ese portal es correcta y completa? ¿Quién la verifica?"</div>
+        <div class="obj-resp">Esta es la objeción más importante. Revela que la credibilidad del portal depende de la credibilidad operativa de STECH NODES. El QR no genera confianza por sí solo — amplifica la confianza que ya existe. Si hay dudas sobre la calidad del servicio, el portal las amplifica también.</div>
+      </div>
+      <div class="obj">
+        <div class="obj-head"><span class="obj-who">Compras / Contratación</span></div>
+        <div class="obj-quote">"Los criterios de nuestra licitación están establecidos por pliego: precio, experiencia en años, certificaciones del personal. No hay puntuación para plataformas digitales."</div>
+        <div class="obj-resp">Revela: en compras formalizadas, el QR no mueve el marcador. No es un argumento en el proceso — es un argumento antes del proceso, para influir en quien define los criterios la próxima vez.</div>
+      </div>
+      <div class="obj">
+        <div class="obj-head"><span class="obj-who">Cualquier actor</span></div>
+        <div class="obj-quote">"El proveedor anterior también prometía cosas. Lo que importa es que el equipo funcione cuando se necesita y que el técnico llegue cuando llama."</div>
+        <div class="obj-resp">La objeción de fondo en todos los servicios: la confianza en el proveedor supera cualquier diferenciador tecnológico. El QR puede contribuir a construir esa confianza, pero no puede sustituirla.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §07 RIESGOS DE POSICIONAMIENTO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Riesgos si el QR se posiciona como pilar estratégico</span>
+    </div>
+
+    <div class="call red">
+      <div class="call-label">Riesgo principal — Calidad de datos como pasivo visible</div>
+      <p>Si STECH NODES posiciona el QR como diferenciador central y un técnico no registra tres visitas consecutivas, esa omisión es visible públicamente para cualquier persona que escanee el equipo. El QR convierte la excelencia en activo y el descuido en pasivo con igual eficiencia. El posicionamiento crea una obligación de disciplina operativa que debe existir antes, no después, de que el QR llegue al cliente.</p>
+    </div>
+
+    <div class="call red">
+      <div class="call-label">Riesgo de inflación de expectativas</div>
+      <p>Una vez que el cliente conoce el portal Fase 1 (público), la expectativa natural es ver el historial completo, firmar actas digitalmente, recibir notificaciones. Si STECH NODES no tiene un roadmap claro y comunicado, el portal que debía demostrar capacidad se convierte en evidencia de las limitaciones del producto.</p>
+    </div>
+
+    <div class="call amber">
+      <div class="call-label">Riesgo de fast-follow competitivo</div>
+      <p>Si el QR gana un contrato notable o aparece en medios del sector, los competidores con más recursos técnicos pueden tener una réplica funcional en 60-90 días. La ventaja temporal existe, pero es más corta de lo que parece. La pregunta estratégica no es "¿tenemos ventaja ahora?" sino "¿qué es lo que los competidores no pueden copiar en 90 días?" La respuesta a esa pregunta identifica el diferenciador real.</p>
+    </div>
+
+    <div class="call amber">
+      <div class="call-label">Riesgo de confundir feature con estrategia</div>
+      <p>Una empresa puede construir un feature excelente — el QR, por ejemplo — y creer que ha construido una estrategia. La estrategia es la decisión sobre dónde y cómo competir. El feature es una herramienta para ejecutar esa estrategia. Si STECH NODES diseña su estrategia comercial alrededor del QR, es posible que esté colocando la herramienta donde debería estar la decisión.</p>
+    </div>
+  </div>
+
+  <!-- §08 ¿DIFERENCIADOR REAL O FUNCIONALIDAD TEMPORAL? -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">¿Diferenciador real o funcionalidad que otros incorporarán pronto?</span>
+    </div>
+    <p>La distinción depende de qué está generando la diferencia. Un diferenciador sostenible cumple al menos una de estas condiciones:</p>
+    <ol>
+      <li><strong>Es difícil de replicar</strong> por su complejidad técnica, legal o de capital.</li>
+      <li><strong>Mejora con el tiempo</strong> a través de efectos de red o acumulación de datos.</li>
+      <li><strong>Crea costos de cambio reales</strong> para el cliente.</li>
+      <li><strong>Se basa en capacidades organizacionales</strong> que tardan años en desarrollarse.</li>
+    </ol>
+
+    <p>Evaluados contra estos criterios:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Elemento</th><th>¿Difícil de replicar?</th><th>¿Mejora con el tiempo?</th><th>¿Costos de cambio?</th><th>¿Capacidad organizacional?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>El portal QR</strong></td><td>No</td><td>No (sin datos nuevos)</td><td>Bajos</td><td>No</td></tr>
+          <tr><td><strong>El ERP como sistema</strong></td><td>Moderadamente</td><td>Sí (más módulos)</td><td>Medios</td><td>Sí</td></tr>
+          <tr><td><strong>Los datos acumulados</strong></td><td>Sí</td><td>Sí (acumulación)</td><td>Moderados</td><td>Sí (disciplina)</td></tr>
+          <tr><td><strong>La confianza del cliente</strong></td><td>Muy difícil</td><td>Sí (relación)</td><td>Altos</td><td>Sí (cultura)</td></tr>
+          <tr><td><strong>La excelencia técnica</strong></td><td>Difícil</td><td>Sí (experiencia)</td><td>Altos</td><td>Sí (talento)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>El QR solo, sin el sustrato, no cumple ningún criterio de diferenciador sostenible. Combinado con datos de calidad y confianza establecida, contribuye al diferenciador pero no lo constituye.</p>
+  </div>
+
+  <!-- §09 VEREDICTO DETALLADO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <span class="section-title">Veredicto detallado — las tres afirmaciones de la hipótesis</span>
+    </div>
+
+    <div class="conclusions">
+      <div class="conclusion">
+        <div class="conclusion-icon nuance">~</div>
+        <div class="conclusion-text">
+          <div class="conclusion-title">Afirmación 1 — "El QR es un diferenciador competitivo"</div>
+          <div class="conclusion-body">Verdadero hoy, falso como posición permanente. En el mercado colombiano de mantenimiento biomédico, nadie más lo tiene. Eso crea diferenciación temporal. Cuando la ventana se cierre — 12 a 24 meses si STECH NODES lo usa activamente — dejará de diferenciar y empezará a ser la expectativa mínima.</div>
+        </div>
+      </div>
+      <div class="conclusion">
+        <div class="conclusion-icon invalid">✕</div>
+        <div class="conclusion-text">
+          <div class="conclusion-title">Afirmación 2 — "El QR es el diferenciador principal"</div>
+          <div class="conclusion-body">Falso. El diferenciador principal no puede estar en algo que se puede replicar en cuatro semanas. El diferenciador principal está en la calidad del servicio técnico, en la confiabilidad del equipo humano, y en la calidad de los datos acumulados durante años. El QR amplifica ese diferenciador — no lo es.</div>
+        </div>
+      </div>
+      <div class="conclusion">
+        <div class="conclusion-icon nuance">~</div>
+        <div class="conclusion-text">
+          <div class="conclusion-title">Afirmación 3 — "El QR es uno de los activos más valiosos de la empresa"</div>
+          <div class="conclusion-body">Verdadero solo si se redefine qué es el QR. El activo valioso no es el código QR ni el portal — es la base de datos de mantenimientos verificados que el portal expone. Esa base, construida sobre años de registros disciplinados y reales, sí es un activo difícil de replicar. El QR es el mecanismo que lo hace visible y comercialmente relevante.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §10 REFORMULACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <span class="section-title">Reformulación — cuál es el activo real y cómo integrarlo</span>
+    </div>
+
+    <div class="reframe">
+      <div class="reframe-head">
+        <div class="reframe-head-text">Hipótesis original vs. formulación más precisa</div>
+      </div>
+      <div class="reframe-grid">
+        <div class="reframe-col">
+          <div class="reframe-col-label wrong">Lo que la hipótesis dice</div>
+          <div class="reframe-item">El <strong>ecosistema QR</strong> es el diferenciador</div>
+          <div class="reframe-item">El valor está en <strong>la tecnología visible</strong></div>
+          <div class="reframe-item">Posicionar la empresa <strong>alrededor del QR</strong></div>
+          <div class="reframe-item">El QR <strong>crea</strong> la confianza del cliente</div>
+          <div class="reframe-item">La ventaja está <strong>en la interfaz</strong></div>
+        </div>
+        <div class="reframe-col">
+          <div class="reframe-col-label right">Lo que el análisis sugiere</div>
+          <div class="reframe-item">La <strong>trazabilidad verificable</strong> es el diferenciador</div>
+          <div class="reframe-item">El valor está en <strong>los datos y la disciplina</strong> detrás</div>
+          <div class="reframe-item">Posicionar la empresa alrededor de <strong>la excelencia verificable</strong></div>
+          <div class="reframe-item">El QR <strong>expresa</strong> la confianza que la operación construyó</div>
+          <div class="reframe-item">La ventaja está <strong>en lo que la interfaz revela</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <h3>¿Cuál es entonces el activo real?</h3>
+    <p>El activo real de STECH NODES, si se construye con disciplina, es la <strong>base de datos de mantenimiento de activos técnicos con historial verificable</strong>. Cada visita registrada correctamente, cada OT cerrada a tiempo, cada acta firmada, cada hallazgo documentado — eso es el activo. El ERP es el sistema que lo produce. El QR es el canal por el que el cliente puede verificarlo.</p>
+
+    <p>Este activo tiene características de moat real:</p>
+    <ul>
+      <li>Se acumula con el tiempo — cada año de operación lo hace más valioso.</li>
+      <li>No se puede falsificar — un competidor no puede inventar tres años de registros de mantenimiento de equipos que no ha servido.</li>
+      <li>Tiene valor regulatorio — en auditorías de INVIMA o acreditaciones hospitalarias, la trazabilidad es un requisito, no un extra.</li>
+      <li>Genera switching costs genuinos — cambiar de proveedor interrumpe la continuidad del historial, lo cual sí tiene un costo real para el cliente.</li>
+    </ul>
+
+    <h3>Cómo debería integrarse en la propuesta de valor</h3>
+    <p>La propuesta de valor de STECH NODES no debería comenzar con "tenemos un portal QR". Debería comenzar con "cada mantenimiento que hacemos queda registrado, es verificable en cualquier momento y constituye su historial oficial de cumplimiento". El QR es la herramienta que hace esa promesa tangible y verificable desde el primer momento.</p>
+    <p>Esto tiene una implicación comercial concreta: el argumento de venta no es tecnológico sino de riesgo. La pregunta que STECH NODES debería plantearle al decisor es: "En su próxima auditoría de INVIMA, ¿cuánto tiempo le tomaría demostrar el historial de mantenimiento de sus ventiladores? Con nosotros, tarda 15 segundos." Eso no es un demo del portal — es un argumento de negocio.</p>
+
+    <div class="call green">
+      <div class="call-label">Hipótesis reformulada — más precisa y más robusta</div>
+      <p>"La base de datos de mantenimiento verificable que STECH NODES construye con cada visita es el activo más difícil de replicar de la empresa. El ecosistema QR es el mecanismo comercial que convierte ese activo interno en una ventaja visible para el cliente y en un argumento de venta diferenciador. El QR sin los datos es marketing. Los datos sin el QR son un activo invisible. Juntos, son la propuesta de valor."</p>
+    </div>
+
+    <h3>Lo que esto implica para las decisiones inmediatas</h3>
+    <ul>
+      <li><strong>Prioridad máxima:</strong> Que cada técnico registre cada visita correctamente en el ERP, siempre. Sin eso, el QR es teatro.</li>
+      <li><strong>Mensaje comercial:</strong> No "tenemos un portal QR" sino "cada cliente puede verificar su historial de mantenimiento en tiempo real". El QR es la herramienta para verificarlo, no el argumento.</li>
+      <li><strong>Segmento prioritario para el QR:</strong> Clínicas privadas y hospitales con acreditación o en proceso — donde la trazabilidad ya es una necesidad regulatoria, no solo un diferenciador conveniente.</li>
+      <li><strong>Condición previa al lanzamiento:</strong> Que la calidad de los datos en el ERP sea suficientemente alta para soportar la exposición pública. Un portal con datos incompletos es peor que ningún portal.</li>
+      <li><strong>No construir el pitch sobre el QR en solitario:</strong> El QR debe introducirse siempre como consecuencia de la disciplina operativa, no como el argumento principal. "Podemos mostrarle el historial porque lo registramos todo" es más fuerte que "tenemos un código QR en cada equipo".</li>
+    </ul>
+  </div>
+
+</div>

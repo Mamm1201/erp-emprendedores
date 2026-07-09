@@ -1,20 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Plus, Pencil, Trash2, Wrench, ChevronDown, Paperclip } from 'lucide-react';
+import { Plus, Pencil, Trash2, Wrench, ChevronDown, Paperclip, QrCode, Download } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 import {
   useEquipment,
   useCreateEquipment,
   useUpdateEquipment,
   useDeleteEquipment,
+  useAssignQrCode,
   type EquipmentFormData,
 } from '@/hooks/use-equipment';
 import { useClients } from '@/hooks/use-clients';
 import { useBranches } from '@/hooks/use-branches';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Equipment, EquipmentType, EquipmentStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -298,15 +301,131 @@ function DeleteConfirmDialog({
   );
 }
 
+// ─── QrCodePanel ─────────────────────────────────────────────────────────────
+
+const PORTAL_BASE =
+  (import.meta.env.VITE_PORTAL_URL as string | undefined) ??
+  'http://localhost:5174';
+
+function buildPortalUrl(qrCode: string) {
+  return `${PORTAL_BASE}/e/${qrCode}`;
+}
+
+function QrCodePanel({
+  equipment,
+  clientId,
+  branchId,
+  onOpenChange,
+  onAssigned,
+  isAdmin,
+}: {
+  equipment: Equipment | null;
+  clientId: string;
+  branchId: string;
+  onOpenChange: (open: boolean) => void;
+  onAssigned: (updated: Equipment) => void;
+  isAdmin: boolean;
+}) {
+  const assign = useAssignQrCode();
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const handleAssign = useCallback(async () => {
+    if (!equipment) return;
+    const updated = await assign.mutateAsync({ clientId, branchId, id: equipment.id });
+    onAssigned(updated);
+  }, [assign, clientId, branchId, equipment, onAssigned]);
+
+  const handleDownload = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !equipment?.qrCode) return;
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `qr-${equipment.qrCode}.png`;
+    a.click();
+  }, [equipment]);
+
+  const displayName = equipment
+    ? `${TYPE_LABELS[equipment.type]}${equipment.brand ? ` ${equipment.brand}` : ''}${equipment.model ? ` ${equipment.model}` : ''}`
+    : '';
+
+  return (
+    <Dialog open={!!equipment} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Código QR — {displayName}</DialogTitle>
+        </DialogHeader>
+
+        <div className="flex flex-col items-center gap-5 py-2">
+          {equipment?.qrCode ? (
+            <>
+              <div className="p-3 rounded-lg border bg-white">
+                <QRCodeCanvas
+                  ref={canvasRef}
+                  value={buildPortalUrl(equipment.qrCode)}
+                  size={200}
+                  level="M"
+                  marginSize={2}
+                />
+              </div>
+              <p className="text-xs font-mono text-[hsl(var(--muted-foreground))] select-all text-center break-all">
+                {buildPortalUrl(equipment.qrCode)}
+              </p>
+              <Button className="w-full" onClick={handleDownload}>
+                <Download className="h-4 w-4" />
+                Descargar PNG
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col items-center gap-2 py-4 text-[hsl(var(--muted-foreground))]">
+                <QrCode className="h-12 w-12 opacity-20" />
+                <p className="text-sm">Este equipo no tiene un código QR asignado.</p>
+              </div>
+              {isAdmin && (
+                <Button
+                  className="w-full"
+                  onClick={handleAssign}
+                  disabled={assign.isPending}
+                >
+                  {assign.isPending ? 'Generando…' : 'Generar código QR'}
+                </Button>
+              )}
+              {!isAdmin && (
+                <p className="text-xs text-[hsl(var(--muted-foreground))] text-center">
+                  Solo un administrador puede generar el código QR.
+                </p>
+              )}
+            </>
+          )}
+          {assign.error && (
+            <p className="text-sm text-[hsl(var(--destructive))]">{assign.error.message}</p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cerrar</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── EquipmentPage ────────────────────────────────────────────────────────────
 
 export function EquipmentPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedBranchId, setSelectedBranchId] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Equipment | null>(null);
   const [deleting, setDeleting] = useState<Equipment | null>(null);
   const [attachmentsEq, setAttachmentsEq] = useState<Equipment | null>(null);
+  const [qrEq, setQrEq] = useState<Equipment | null>(null);
 
   const { data: clientsData } = useClients('', 1);
   const clients = clientsData?.data ?? [];
@@ -436,27 +555,28 @@ export function EquipmentPage() {
                   <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))] hidden lg:table-cell">Ubicación</th>
                   <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))] hidden lg:table-cell">Instalado</th>
                   <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))]">Estado</th>
+                  <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))] hidden md:table-cell">QR</th>
                   <th className="px-4 py-3 text-right font-medium text-[hsl(var(--muted-foreground))]">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">
+                    <td colSpan={8} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">
                       Cargando equipos…
                     </td>
                   </tr>
                 )}
                 {isError && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-[hsl(var(--destructive))]">
+                    <td colSpan={8} className="px-4 py-10 text-center text-[hsl(var(--destructive))]">
                       Error al cargar los equipos.
                     </td>
                   </tr>
                 )}
                 {!isLoading && !isError && equipmentList.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">
+                    <td colSpan={8} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">
                       <Wrench className="h-6 w-6 mx-auto mb-2 opacity-30" />
                       No hay equipos registrados en esta sede.
                       <br />
@@ -507,8 +627,31 @@ export function EquipmentPage() {
                         {STATUS_LABELS[eq.status]}
                       </Badge>
                     </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <button
+                        onClick={() => setQrEq(eq)}
+                        title={eq.qrCode ? 'Ver / descargar QR' : 'Sin QR asignado'}
+                        className="flex items-center gap-1.5 text-xs"
+                      >
+                        <QrCode
+                          className={`h-4 w-4 ${eq.qrCode ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))] opacity-40'}`}
+                        />
+                        <span className={eq.qrCode ? 'font-mono text-[10px] text-[hsl(var(--muted-foreground))]' : 'text-[hsl(var(--muted-foreground))] opacity-40'}>
+                          {eq.qrCode ? eq.qrCode.slice(0, 6) + '…' : '—'}
+                        </span>
+                      </button>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setQrEq(eq)}
+                          title={eq.qrCode ? 'Ver / descargar QR' : 'Generar QR'}
+                          className="md:hidden"
+                        >
+                          <QrCode className={`h-4 w-4 ${eq.qrCode ? 'text-[hsl(var(--primary))]' : ''}`} />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -564,6 +707,14 @@ export function EquipmentPage() {
             onOpenChange={(open) => {
               if (!open) setDeleting(null);
             }}
+          />
+          <QrCodePanel
+            equipment={qrEq}
+            clientId={selectedClientId}
+            branchId={selectedBranchId}
+            onOpenChange={(open) => { if (!open) setQrEq(null); }}
+            onAssigned={(updated) => setQrEq(updated)}
+            isAdmin={isAdmin}
           />
           <Dialog open={!!attachmentsEq} onOpenChange={(open) => { if (!open) setAttachmentsEq(null); }}>
             <DialogContent className="max-w-lg">

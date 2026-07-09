@@ -16,6 +16,8 @@ export const WORK_ORDER_SELECT = {
   discountTotal: true,
   taxTotal: true,
   total: true,
+  equipmentId: true,
+  equipment: { select: { id: true, type: true, brand: true, model: true, serialNumber: true } },
   assignedToId: true,
   assignedTo: { select: { id: true, name: true } },
   createdAt: true,

@@ -6,6 +6,7 @@ export interface WorkOrderFormData {
   clientId: string;
   branchId?: string;
   quotationId?: string;
+  equipmentId?: string;
   title: string;
   description?: string;
   scheduledAt?: string;

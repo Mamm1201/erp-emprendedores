@@ -4,6 +4,365 @@
 
 ---
 
+## v2.3.0 — QR Bloque 6: lastMaintenance en portal (2026-07-08)
+
+### Backend — `public.service.ts` + DTO
+
+**`backend/src/modules/public/dto/equipment-public.dto.ts`**
+- Añadida clase `LastMaintenanceDto { date: string; type: 'PREVENTIVE' | 'CORRECTIVE' }`
+- `EquipmentPublicDto` ahora incluye `lastMaintenance: LastMaintenanceDto | null`
+
+**`backend/src/modules/public/public.service.ts`** — implementación D-4.1:
+- Importado `WorkOrderType` desde Prisma Client
+- Añadida interfaz interna `LastWorkOrderRow`
+- Extendida `EquipmentPublicRow` con `workOrders: LastWorkOrderRow[]`
+- Query Prisma: `workOrders` anidado con `where: { status: COMPLETED, type: IN [PREVENTIVE, CORRECTIVE], deletedAt: null }`, `orderBy: completedAt DESC`, `take: 1`
+- `toPublicDto()` mapea `workOrders[0].completedAt` → `lastMaintenance.date` (YYYY-MM-DD)
+- `lastMaintenance: null` cuando no hay OTs COMPLETED del tipo correcto
+
+### Frontend QR Portal
+
+**`qr-portal/src/api/types.ts`**
+- Añadida interfaz `LastMaintenanceDto`
+- `EquipmentPublicDto` incluye `lastMaintenance: LastMaintenanceDto | null`
+
+**`qr-portal/src/pages/EquipmentPage.tsx`**
+- Añadido `MAINTENANCE_TYPE_LABEL` (`PREVENTIVE` / `CORRECTIVE` → español)
+- Nueva sección "Último mantenimiento" en columna izquierda: `SectionBlock` con fecha y tipo, o `<section className="section-block">` con `section-empty-note` cuando `null`
+- Columna derecha (desktop): timeline con dot activo + fecha + tipo real, o dot muted + "Sin mantenimientos registrados"
+- Ambas secciones excluidas para estado `decommissioned` (D-2)
+
+**`qr-portal/src/index.css`**
+- Añadida clase `.section-empty-note` para null state
+
+### Verificación E2E (6 tests, todos PASS)
+
+| Test | Escenario | Resultado |
+|------|-----------|-----------|
+| T1 | QR inválido → 404 | ✅ PASS |
+| T2 | QR válido + OT PREVENTIVE COMPLETED → lastMaintenance populado | ✅ PASS |
+| T3 | Sin campos privados (id, deletedAt, etc.) en respuesta pública | ✅ PASS |
+| T4 | Fecha en formato YYYY-MM-DD (WorkOrder.completedAt) | ✅ PASS |
+| T5 | Equipment con `deletedAt != null` → 404 (SEC-C1) | ✅ PASS |
+| T6 | Equipment sin OTs → `lastMaintenance: null` | ✅ PASS |
+
+### TypeScript
+- Backend: 0 errores
+- QR Portal: 0 errores
+
+---
+
+## v2.2.6 — Precisión D-4.1: fuente de datos lastMaintenance corregida (2026-07-08)
+
+### Documentación estratégica — corrección de fuente de datos pre-Bloque 6
+
+**`docs/strategy/qr-functional-design-v1.2.html` actualizado a v1.4** con la Precisión D-4.1.
+
+La validación del modelo de datos realizada antes de implementar el Bloque 6 identificó dos problemas en la ruta de datos documentada en D-4:
+
+1. **Cobertura incompleta:** la ruta original atravesaba `MaintenanceVisit`, que solo existe para OTs generadas desde un `MaintenancePlan`. Las OTs correctivas (creadas directamente) no tienen `MaintenanceVisit` asociada, lo que hacía que `type: 'CORRECTIVE'` fuera inalcanzable por la ruta documentada.
+
+2. **Semántica de fecha incorrecta:** `MaintenanceVisit.scheduledDate` es la fecha planeada de la visita, no la fecha efectiva de ejecución. La fecha real de finalización es `WorkOrder.completedAt`, que el sistema escribe de forma garantizada cuando la OT transiciona a `COMPLETED`.
+
+**Corrección aplicada (D-4.1):**
+- `lastMaintenance.date` ← `WorkOrder.completedAt` (formateado YYYY-MM-DD)
+- Ruta de consulta: `Equipment → WorkOrders(equipmentId, status=COMPLETED, type IN [PREVENTIVE,CORRECTIVE], deletedAt=null) → ORDER BY completedAt DESC LIMIT 1`
+- No se traversa `MaintenanceVisit`
+
+**El contrato público del DTO no se modifica.** La estructura `{ date: string, type: 'PREVENTIVE' | 'CORRECTIVE' } | null` permanece intacta. Solo cambia la fuente interna de los datos.
+
+**Decisión D-4.1 registrada** en tabla de decisiones arquitectónicas de `DEVELOPMENT_CONTEXT.md`.
+
+---
+
+## v2.2.5 — MASTER_DOCUMENT_INDEX v1.0 (2026-07-08)
+
+### Documentación — índice maestro de autoridad
+
+**Creado `MASTER_DOCUMENT_INDEX.md`** en la raíz del proyecto.
+
+- Tabla maestra con 11 documentos registrados: 5 normativos, 3 de referencia, 3 operativos.
+- Columnas: Prioridad · Documento · Propósito · Tipo · Estado · Versión · Archivo.
+- **6 reglas de precedencia formalizadas:**
+  - R1: jerarquía numérica entre normativos
+  - R2: excepción por decisión arquitectónica posterior (3 condiciones simultáneas)
+  - R3: documentos de referencia no invalidan normativos
+  - R4: documentos operativos son descriptivos, nunca prescriptivos
+  - R5: orden de actualización invariable (doc rector → DEVELOPMENT_CONTEXT → código)
+  - R6: coherencia mínima obligatoria con P1 y P2 para todo documento nuevo
+- Protocolo para agregar nuevos documentos (8 pasos).
+- Protocolo para actualizar documentos existentes (tabla por tipo de cambio).
+- `DEVELOPMENT_CONTEXT.md` actualizado: mención del índice en la sección de reglas.
+
+---
+
+## v2.2.4 — Documento Rector Empresarial v1.0 + Revisión Estratégica Fondo Emprender v1.0 (2026-07-08)
+
+### Documentación estratégica — nuevos documentos permanentes
+
+**Documento Rector Empresarial v1.0** — `docs/strategy/business-rector-v1.0.html` + PDF
+- Consolida toda la estrategia corporativa de STECH NODES en un único documento ejecutivo de referencia permanente.
+- Cubre 12 secciones: declaración corporativa, problema, arquitectura de la oferta, propuesta de valor y promesa comercial, mercado objetivo, diferenciadores y moat en 4 capas, modelo de negocio, arquitectura tecnológica (nivel ejecutivo), visión a 3 horizontes, 5 principios de gobierno, estado actual de implementación y gobierno del documento.
+- Fuentes: únicamente los 5 documentos estratégicos existentes. Sin información inventada. Citas por fuente en cada sección.
+- **Jerarquía:** rector corporativo máximo — precede a todos los demás documentos del ecosistema.
+- Usos previstos: base para Fondo Emprender / PITCH VERDE 2026, presentaciones comerciales, onboarding de equipo, documentación corporativa.
+
+**Revisión Estratégica — Base Fondo Emprender v1.0** — `docs/strategy/strategic-review-fondo-emprender-v1.0.html` + PDF
+- Análisis estructurado de las 5 fuentes documentales con nivel de confianza explícito por afirmación (Confirmado / Inferido / Requiere validación).
+- Incluye mapa de jerarquía documental con dependencias, extracción sistemática de problema, solución, propuesta de valor, clientes, diferenciadores, modelo de negocio e impacto.
+- **Sección crítica §09:** 8 vacíos documentales que Fondo Emprender requiere y no existen en la documentación actual (tamaño de mercado, tracción comercial, proyecciones financieras, perfil de equipo, análisis de competencia nombrado, disposición a pagar, uso de recursos, impacto social).
+
+**PDFs generados vía Chrome headless:**
+- `docs/strategy/business-rector-v1.0.pdf` (≈ 373 KB)
+- `docs/strategy/strategic-review-fondo-emprender-v1.0.pdf` (≈ 411 KB)
+
+### Registro documental actualizado
+
+- `DEVELOPMENT_CONTEXT.md`: jerarquía documental ampliada a 5 niveles; los dos nuevos documentos agregados al registro con estado y dominio.
+- Versión interna bumpeada a `v2.2.4`.
+
+---
+
+## v2.2.3 — Cierre documental pre-Bloque 6: contrato DTO lastMaintenance (2026-07-08)
+
+### Documentación estratégica
+
+- `docs/strategy/qr-functional-design-v1.2.html` actualizado a **v1.3** con §14 Addendum D-4.
+- Formaliza el contrato exacto del campo `lastMaintenance` en `EquipmentPublicDto`:
+  - `lastMaintenance: { date: string (YYYY-MM-DD), type: 'PREVENTIVE' | 'CORRECTIVE' } | null`
+  - Origen: `MaintenanceVisit.scheduledDate` + `WorkOrder.type` (última visita COMPLETED por equipo)
+  - `null` cuando no existe ninguna visita completada — nunca campo vacío ni error
+- Excluidos explícitamente: datos del técnico, costos, hallazgos internos, recomendaciones, próxima visita, historial completo.
+- Nota estratégica incluida: `lastMaintenance` es la primera capa verificable de continuidad documental, no el historial completo. La promesa estratégica "el historial viaja con el equipo" es demostrable con este mínimo.
+- `DEVELOPMENT_CONTEXT.md` actualizado: versión del documento funcional registrada como v1.3.
+
+### Próximo paso autorizado
+
+Bloque 6 puede iniciarse. El contrato DTO está congelado en el documento rector. Cualquier campo adicional requiere actualizar `qr-functional-design-v1.2.html` antes de tocar código.
+
+---
+
+## v2.2.2 — Auditoría QR Fase 1 + corrección SEC-C1 (2026-07-08)
+
+### Seguridad — corrección crítica
+
+**SEC-C1:** `PublicService.findEquipmentByQrCode()` ahora filtra `deletedAt: null` en la consulta a Prisma.
+
+- Equipos con `deletedAt != null` (soft-deleted) responden `404` en el portal público.
+- Equipos con `status = DECOMMISSIONED` siguen siendo visibles por decisión D-2: representan un estado operativo, no un registro eliminado.
+- La distinción `DECOMMISSIONED` (estado) vs. `deletedAt != null` (eliminación) queda ahora correctamente modelada en el servicio.
+
+**Archivo modificado:** `backend/src/modules/public/public.service.ts`
+
+### Documentación
+
+- Auditoría QR Fase 1 registrada en `DEVELOPMENT_CONTEXT.md` (15 hallazgos, 3 decisiones nuevas).
+- Documento de decisión del Bloque 6 creado: `docs/strategy/qr-phase2-history-decision-v1.0.html`.
+- `.env.production.example` creado (ERP backend + frontend + portal).
+- Tabla de riesgos actualizada con 3 nuevos riesgos documentados.
+- Decisión D-3 congelada: equipos soft-deleted no son visibles en el portal público.
+- Decisión D-4 congelada: Bloque 6 = última visita de mantenimiento como mínimo demostrable.
+
+### Próximo hito
+
+Bloque 6: historial mínimo en portal (`qr-portal/`). Ver `docs/strategy/qr-phase2-history-decision-v1.0.html` para alcance exacto.
+
+---
+
+## v2.2.1 — Cierre documental Bloque 5 + decisión D-B1 (2026-07-08)
+
+### Documentación
+
+- `DEVELOPMENT_CONTEXT.md` actualizado con sección completa del portal QR: arquitectura interna de `qr-portal/`, tabla de estados implementados, tabla de estados del portal con condiciones exactas de activación.
+- Decisión **D-B1** registrada formalmente: Estado B "En mantenimiento" diferido a revisión estratégica. La razón es de modelo de datos y estrategia, no técnica. Cuatro preguntas estratégicas a responder antes de implementar.
+- Plan de auditoría QR Fase 1 registrado como paso obligatorio antes del Bloque 6.
+
+### Decisión estratégica — Estado B "En mantenimiento" (D-B1)
+
+El estado B no se implementará hasta resolver:
+1. Qué información de una visita activa puede hacerse pública sin afectar privacidad, seguridad o estrategia comercial.
+2. Qué mecanismo activa el estado: WorkOrder automática o bandera manual en `Equipment`.
+3. Si la visibilidad es siempre deseable en contexto hospitalario.
+
+**Restricción hasta resolver D-B1:** No modificar `PublicModule`, no ampliar `EquipmentPublicDto`, no implementar Estado B en el portal.
+
+### Próximo paso obligatorio
+
+Auditoría completa del ecosistema QR Fase 1 (seguridad, privacidad, coherencia UX/UI, flujo E2E, preparación comercial) antes de cualquier nueva funcionalidad.
+
+---
+
+## v2.2.0 — QR Fase 1, Bloque 5: Portal QR independiente `qr-portal/` (2026-07-08)
+
+### Nueva aplicación — `qr-portal/`
+
+App React + TypeScript + Vite independiente en `qr-portal/`. No comparte código con el ERP. Misma identidad visual STECH NODES, tokens CSS propios.
+
+**Stack:** React 18 + React Router DOM 6 + Vite 5. Sin shadcn/ui, sin Tailwind. CSS puro con custom properties. Sin TanStack Query — `fetch` nativo para una sola llamada de lectura.
+
+**Ruta implementada:** `/e/:qrCode` (D-R1 congelada). Sirve en puerto `5174`.
+
+### Estados implementados
+
+| Estado | Condición | Badge | Alerta |
+|--------|-----------|-------|--------|
+| **A — Activo** | `status=ACTIVE`, warranty vigente/sin warranty | Verde | Ninguna |
+| **C — Fuera de servicio** | `status=INACTIVE` | Ámbar | Warning |
+| **D — Contrato vencido** | `status=ACTIVE`, `warrantyExpiresAt` < hoy | Verde + Warning | Warn + email ventas@ |
+| **E — Dado de baja** | `status=DECOMMISSIONED` | Gris neutro | Neutral |
+| **F — QR inválido** | API 404 o error de red | Pantalla de error | Email contacto@ |
+
+**Estado B (En mantenimiento)** diferido a Fase 2 — requiere datos de WorkOrder en el PublicModule, que no están en el DTO actual.
+
+### Componentes implementados
+
+| Componente | Props | Notas |
+|------------|-------|-------|
+| `PortalHeader` | — | Fijo. Isotipo + marca + tagline sobre `#042C53` |
+| `PortalFooter` | — | Fijo. Nombre + URL sobre `#042C53` |
+| `NodeMark` | `size?` | SVG isotipo STECH NODES inline |
+| `StatusBadge` | `state` | 4 variantes: active, offline, retired, expired |
+| `AlertBanner` | `variant, message` | 4 variantes: info, warn, error, neutral |
+| `SectionBlock` | `label, rows[]` | Filas clave-valor con clases de valor opcionales |
+| `ContactCard` | `email, phone?, label?` | Links `mailto:` y `tel:` |
+
+### Arquitectura de información respetada
+
+- Identidad del equipo + estado visible sin scroll (arriba de todo)
+- Información del activo → Mantenimiento → Contacto (en ese orden)
+- Desktop: columna izquierda ficha + columna derecha historial (placeholder Fase 2)
+- Mobile: solo columna izquierda, historial oculto
+- Sin navegación, sin menú, sin lista de equipos — un QR → una pantalla
+
+### Decisión: estado B diferido
+
+El estado B (En mantenimiento) no puede derivarse del DTO público actual — requeriría exponer el estado de WorkOrders activas en el endpoint público. Esta es una decisión de Fase 2 que requiere actualizar `PublicModule` con nueva lógica y actualizar `EquipmentPublicDto`. Registrado como deuda técnica del portal.
+
+### Validación E2E (2026-07-08)
+
+| Estado | URL de prueba | Resultado |
+|--------|--------------|-----------|
+| A — Activo | `/e/d1Fiqw8QJzBS` | ✅ Badge verde, campos completos |
+| C — Fuera de servicio | `/e/TEST_INACTIVE_01` (temp) | ✅ Badge ámbar, alerta warning |
+| D — Contrato vencido | `/e/TEST_EXPIRED_001` (temp) | ✅ Badge activo, alerta warn, email ventas@ |
+| E — Dado de baja | `/e/TEST_DECOMMISSIONED` (temp) | ✅ Badge gris, alerta neutral |
+| F — QR inválido | `/e/codigoinvalido123` | ✅ Pantalla error, email contacto@ |
+| Mobile (375px) | todos | ✅ Columna derecha oculta, layout correcto |
+| Desktop (1280px) | todos | ✅ Grid 2 columnas, historial placeholder |
+| `tsc --noEmit` | — | ✅ 0 errores |
+
+---
+
+## v2.1.2 — QR Fase 1: Ruta pública `/e/:qrCode` congelada (D-R1) (2026-07-08)
+
+### Decisión arquitectónica congelada
+
+**D-R1 — Ruta pública definitiva del ecosistema QR:** `/e/:qrCode`
+
+Aprobada por dirección el 2026-07-08. Motivación: URL corta → QR menos denso → mejor confiabilidad de escaneo en etiquetas físicas pequeñas. Coherente con el QR como interfaz de acceso rápido, no URL de navegación humana.
+
+### Cambios de código
+
+- `frontend/src/pages/EquipmentPage.tsx` — `buildPortalUrl()`: `/equipment/${qrCode}` → `/e/${qrCode}`. Todos los QR generados desde el ERP ahora codifican la URL definitiva.
+
+### Impacto y restricciones
+
+Todos los QR generados desde este punto apuntan a `{VITE_PORTAL_URL}/e/{qrCode}`. Esta ruta **no debe modificarse** sin una migración planificada y reimpresión de todas las etiquetas físicas ya distribuidas.
+
+### Contrato para Bloque 5
+
+El router de `qr-portal/` debe implementar exactamente `/e/:qrCode` como ruta de la página del activo. Sin redirecciones, sin variantes. Estados A–F del diseño UX/UI v1.0, sin autenticación, mobile first.
+
+---
+
+## v2.1.1 — QR Fase 1, Bloques 3 y 4: Generación de QR + panel ERP (2026-07-08)
+
+### Nuevas funcionalidades
+
+**Backend — EquipmentModule (Bloque 3)**
+- `generateQrCode()` — método privado en `EquipmentService`. Genera 12 caracteres base64url mediante `crypto.randomBytes(9)` (Node built-in, sin dependencias externas). Formato: URL-safe, opaco, 72 bits de entropía.
+- `create()` — genera y persiste `qrCode` automáticamente al crear cualquier equipo nuevo. El cliente no puede influir en el valor.
+- `assignQrCode()` — genera y persiste `qrCode` para equipos existentes sin código. Lanza `409 Conflict` si el equipo ya tiene uno asignado. Regeneración deliberadamente no implementada en Fase 1.
+- `POST /clients/:cid/branches/:bid/equipment/:id/qr-code` — endpoint protegido con `@Roles(UserRole.ADMIN)`. TECHNICIAN y otros roles reciben `403 Forbidden`.
+- `EQUIPMENT_SELECT` actualizado: `qrCode` ahora incluido en todas las respuestas privadas del ERP (necesario para que el panel ERP muestre y gestione el código).
+
+**Frontend — EquipmentPage (Bloque 4)**
+- `useAssignQrCode` — nuevo hook de mutación en `use-equipment.ts`. Invalida la cache de `['equipment', clientId, branchId]` tras éxito.
+- `QrCodePanel` — dialog con dos estados:
+  - Sin QR: icono atenuado + botón "Generar código QR" (visible solo para ADMIN). No-ADMIN ve mensaje informativo.
+  - Con QR: imagen QR generada client-side (`qrcode.react` / `QRCodeCanvas`), URL del portal seleccionable, botón "Descargar PNG" (descarga desde `canvas.toDataURL`).
+- Columna QR en tabla de equipos: muestra código truncado (`d1Fiqw…`) si asignado, `—` si no. Clickable abre `QrCodePanel`.
+- Botón QR en acciones (visible en mobile donde la columna está oculta).
+- `Equipment` type en `types.ts` actualizado: `qrCode: string | null`.
+- Instalado `qrcode.react` como dependencia de producción.
+
+### Decisiones de arquitectura
+
+- **`crypto.randomBytes` en lugar de `nanoid`** — Node built-in, sin dependencia externa, sin problema CJS/ESM. Resultado idéntico: 12 chars base64url.
+- **El `qrCode` es el identificador público permanente del activo.** Una vez asignado, no cambia. Cambiar la URL del portal no invalida el código almacenado en DB.
+- **La URL codificada en el QR es configurable via `VITE_PORTAL_URL`** — no está hardcodeada. Producción debe configurar esta variable antes de imprimir etiquetas.
+- **Regeneración bloqueada en Fase 1.** Si se necesita en el futuro, requiere un endpoint explícito `PATCH .../qr-code` con confirmación — para evitar invalidar etiquetas físicas ya impresas.
+
+### Decisión pendiente — CRÍTICA antes de imprimir etiquetas físicas (D-R1)
+
+La ruta del portal que se codifica en el QR está actualmente como `/equipment/:qrCode`. El diseño funcional v1.2 usó `/e/:qrCode` como ejemplo ilustrativo pero declaró explícitamente que la ruta exacta es **una decisión de despliegue diferida**.
+
+**Esta decisión debe tomarse y congelarse antes del Bloque 5.** Una vez impresas etiquetas físicas, la ruta es permanente — cambiarla invalida todos los QR ya distribuidos.
+
+Opciones evaluadas: `/e/:qrCode` (recomendado — QR menos denso, mejor lectura en etiquetas pequeñas), `/equipment/:qrCode` (descriptivo pero más denso), `portal.stechnodes.com/e/:qrCode` (dominio dedicado).
+
+### Validación E2E (2026-07-08)
+
+| Caso | Resultado |
+|------|-----------|
+| Nuevo equipo `POST /equipment` → `qrCode` de 12 chars generado automáticamente | ✅ |
+| Equipo existente `POST .../qr-code` (ADMIN) → `200 OK`, `qrCode` asignado | ✅ |
+| Doble generación `POST .../qr-code` en equipo ya asignado → `409 Conflict` | ✅ |
+| TECHNICIAN `POST .../qr-code` → `403 Forbidden` | ✅ |
+| Panel QR abre con imagen QR + URL del portal + botón "Descargar PNG" | ✅ |
+| `tsc --noEmit` backend + frontend → 0 errores | ✅ |
+| Validación con teléfono físico | ⏳ Pendiente — requiere prueba manual del usuario |
+
+---
+
+## v2.1.0 — QR Fase 1, Bloques 1 y 2: Schema + PublicModule (2026-07-08)
+
+### Nuevas funcionalidades
+
+**Backend — Schema (Bloque 1)**
+- Campo `qrCode String? @unique` agregado al modelo `Equipment`. Nullable para compatibilidad con registros existentes; el código se asigna desde el ERP cuando se genera.
+- Índice `@@index([qrCode])` para búsqueda eficiente por código.
+- Migración `20260708000001_hito_qr_phase1_qrcode_on_equipment` aplicada. Prisma Client v7.8.0 regenerado.
+
+**Backend — PublicModule (Bloque 2)**
+- `GET /public/equipment/:qrCode` — endpoint público sin autenticación, accesible desde el portal QR.
+- Decorador `@Public()` aplicado al controlador completo — exento de `JwtAuthGuard` y `RolesGuard`.
+- Throttle override a nivel de controlador: 30 req/min por IP (vs. 100 req/min global del ERP).
+- `EquipmentPublicDto` — contrato explícito de 11 campos públicos. El mapper `toPublicDto()` es la única frontera entre el modelo interno y el exterior.
+- Fechas serializadas como `YYYY-MM-DD` (sin hora ni zona horaria).
+- Equipos dados de baja (`DECOMMISSIONED`) son visibles con datos mínimos de trazabilidad histórica.
+- CORS actualizado de origen único a función de validación multi-origen: ERP (`CORS_ORIGIN`, default `localhost:5173`) + portal QR (`PORTAL_ORIGIN`, default `localhost:5174`).
+
+### Decisiones de arquitectura
+
+- **DTO de salida explícito es no negociable** — el portal nunca recibe entidades Prisma completas. Cualquier campo futuro debe agregarse deliberadamente al DTO y justificarse.
+- **`qrCode` es el único identificador expuesto públicamente** — el `id` interno (cuid) jamás sale del backend.
+- **La información del portal corresponde exclusivamente a trazabilidad técnica del activo** — excluidos: datos financieros, notas internas, datos personales de contacto, identidad del cliente, información de técnicos.
+- **Equipos dados de baja visibles (D-2)** — la trazabilidad histórica persiste aunque el equipo haya sido retirado de servicio.
+- **CORS como función, no array** — rechaza orígenes no autorizados con mensaje explícito; configurable por ambiente vía variables de entorno.
+
+### Auditoría de seguridad del payload (Bloque 2)
+
+Campos verificados como excluidos del payload público: `id`, `branchId`, `criticality`, `notes`, `deletedAt`, `createdAt`, `updatedAt`, toda la cadena `WorkOrder` (incluidos datos financieros), `ServiceRecord` (evaluaciones técnicas internas), datos de `User` (técnicos), datos de `Client` (nombre legal, NIT, contacto), datos operativos de `Branch` (contacto, dirección, email).
+
+Pruebas realizadas:
+- `GET /public/equipment/:qrCode` con código inexistente → `404 Equipment not found` sin JWT.
+- `GET /public/equipment/:qrCode` con código válido → payload de 11 campos, sin datos sensibles.
+- `GET /clients/:id/branches/:id/equipment` (ruta ERP privada) → `401 Unauthorized` — el `@Public()` del `PublicModule` no afecta otros módulos.
+- `tsc --noEmit` → sin errores.
+
+---
+
 ## v1.2.0 — Hito 10-A: Evidencias en Órdenes de Trabajo y Actas Técnicas (2026-07-05)
 
 ### Correcciones de bugs

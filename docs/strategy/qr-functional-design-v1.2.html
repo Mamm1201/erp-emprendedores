@@ -1,0 +1,1132 @@
+<title>Ecosistema QR — Diseño Funcional y Arquitectónico · STECH NODES</title>
+<style>
+:root {
+  --bg:        #FAFAF9;
+  --surface:   #FFFFFF;
+  --text:      #1C1917;
+  --text-2:    #57534E;
+  --text-3:    #A8A29E;
+  --border:    #E7E5E4;
+  --border-2:  #D6D3D1;
+  --blue-dark: #042C53;
+  --blue-mid:  #185FA5;
+  --blue:      #378ADD;
+  --green:     #0F6E56;
+  --amber:     #92400E;
+  --amber-bg:  #FFFBEB;
+  --amber-bdr: #FCD34D;
+  --red:       #991B1B;
+  --red-bg:    #FEF2F2;
+  --red-bdr:   #FCA5A5;
+  --teal-bg:   #ECFDF5;
+  --teal-bdr:  #6EE7B7;
+  --teal:      #065F46;
+  --blue-bg:   #EFF6FF;
+  --blue-bdr:  #93C5FD;
+  --blue-text: #1E3A5F;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0F1923;
+    --surface:   #162232;
+    --text:      #F5F5F4;
+    --text-2:    #A8A29E;
+    --text-3:    #57534E;
+    --border:    #1E3045;
+    --border-2:  #2A4060;
+    --amber-bg:  #1C1200;
+    --amber-bdr: #92400E;
+    --amber:     #FCD34D;
+    --red-bg:    #1C0000;
+    --red-bdr:   #991B1B;
+    --red:       #FCA5A5;
+    --teal-bg:   #002A1A;
+    --teal-bdr:  #0F6E56;
+    --teal:      #6EE7B7;
+    --blue-bg:   #001833;
+    --blue-bdr:  #185FA5;
+    --blue-text: #93C5FD;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:        #0F1923;
+  --surface:   #162232;
+  --text:      #F5F5F4;
+  --text-2:    #A8A29E;
+  --text-3:    #57534E;
+  --border:    #1E3045;
+  --border-2:  #2A4060;
+  --amber-bg:  #1C1200;
+  --amber-bdr: #92400E;
+  --amber:     #FCD34D;
+  --red-bg:    #1C0000;
+  --red-bdr:   #991B1B;
+  --red:       #FCA5A5;
+  --teal-bg:   #002A1A;
+  --teal-bdr:  #0F6E56;
+  --teal:      #6EE7B7;
+  --blue-bg:   #001833;
+  --blue-bdr:  #185FA5;
+  --blue-text: #93C5FD;
+}
+:root[data-theme="light"] {
+  --bg:        #FAFAF9;
+  --surface:   #FFFFFF;
+  --text:      #1C1917;
+  --text-2:    #57534E;
+  --text-3:    #A8A29E;
+  --border:    #E7E5E4;
+  --border-2:  #D6D3D1;
+  --blue-dark: #042C53;
+  --blue-mid:  #185FA5;
+  --blue:      #378ADD;
+  --green:     #0F6E56;
+  --amber:     #92400E;
+  --amber-bg:  #FFFBEB;
+  --amber-bdr: #FCD34D;
+  --red:       #991B1B;
+  --red-bg:    #FEF2F2;
+  --red-bdr:   #FCA5A5;
+  --teal-bg:   #ECFDF5;
+  --teal-bdr:  #6EE7B7;
+  --teal:      #065F46;
+  --blue-bg:   #EFF6FF;
+  --blue-bdr:  #93C5FD;
+  --blue-text: #1E3A5F;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  padding: 48px 24px 80px;
+}
+.doc {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ── Cabecera del documento ─────────────────────────────── */
+.doc-header {
+  border-bottom: 1px solid var(--border-2);
+  padding-bottom: 28px;
+  margin-bottom: 40px;
+}
+.doc-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 10px;
+}
+.doc-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+.doc-meta {
+  font-size: 12px;
+  color: var(--text-3);
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.doc-meta span { display: flex; align-items: center; gap: 5px; }
+
+/* ── Secciones ──────────────────────────────────────────── */
+.section {
+  margin-bottom: 48px;
+}
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+  min-width: 24px;
+}
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+p { margin-bottom: 14px; color: var(--text-2); }
+p:last-child { margin-bottom: 0; }
+strong { color: var(--text); font-weight: 600; }
+
+/* ── Subsecciones ───────────────────────────────────────── */
+h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 24px 0 10px;
+}
+
+/* ── Callouts ───────────────────────────────────────────── */
+.callout {
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 18px 0;
+  border-left: 3px solid;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.callout-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.callout.risk {
+  background: var(--amber-bg);
+  border-color: var(--amber-bdr);
+}
+.callout.risk .callout-label { color: var(--amber); }
+.callout.risk p { color: var(--amber); }
+.callout.critical {
+  background: var(--red-bg);
+  border-color: var(--red-bdr);
+}
+.callout.critical .callout-label { color: var(--red); }
+.callout.critical p { color: var(--red); }
+.callout.opportunity {
+  background: var(--teal-bg);
+  border-color: var(--teal-bdr);
+}
+.callout.opportunity .callout-label { color: var(--teal); }
+.callout.opportunity p { color: var(--teal); }
+.callout.decision {
+  background: var(--blue-bg);
+  border-color: var(--blue-bdr);
+}
+.callout.decision .callout-label { color: var(--blue-text); }
+.callout.decision p { color: var(--blue-text); }
+
+/* ── Tablas ─────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin: 18px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th {
+  background: var(--surface);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-2);
+}
+td {
+  padding: 9px 12px;
+  border-bottom: 0.5px solid var(--border);
+  color: var(--text-2);
+  vertical-align: top;
+}
+td strong { color: var(--text); }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--surface); }
+
+/* ── Listas ─────────────────────────────────────────────── */
+ul, ol { padding-left: 20px; margin-bottom: 14px; }
+li { margin-bottom: 6px; color: var(--text-2); font-size: 14.5px; }
+li strong { color: var(--text); }
+
+/* ── Flujo / pasos ──────────────────────────────────────── */
+.flow {
+  border: 0.5px solid var(--border-2);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 18px 0;
+}
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 0.5px solid var(--border);
+}
+.flow-step:last-child { border-bottom: none; }
+.flow-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--blue-mid);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.flow-content { flex: 1; }
+.flow-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.flow-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+.flow-branch {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-2);
+  border: 0.5px solid var(--border);
+}
+.flow-branch span {
+  display: block;
+  padding: 2px 0;
+}
+
+/* ── Visibility grid ─────────────────────────────────────── */
+.vis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 18px 0;
+}
+.vis-card {
+  border: 0.5px solid var(--border-2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.vis-card-head {
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.vis-card-head.pub {
+  background: var(--teal-bg);
+  color: var(--teal);
+  border-bottom: 0.5px solid var(--teal-bdr);
+}
+.vis-card-head.priv {
+  background: var(--blue-bg);
+  color: var(--blue-text);
+  border-bottom: 0.5px solid var(--blue-bdr);
+}
+.vis-card-head.never {
+  background: var(--red-bg);
+  color: var(--red);
+  border-bottom: 0.5px solid var(--red-bdr);
+}
+.vis-card-body { padding: 12px 14px; }
+.vis-card-body li { font-size: 13px; margin-bottom: 5px; }
+
+/* ── Arch boxes ─────────────────────────────────────────── */
+.arch-layer {
+  border: 0.5px solid var(--border-2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+}
+.arch-layer-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.arch-layer-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.arch-layer-desc {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.arch-layer.highlight {
+  border-color: var(--blue);
+  background: var(--blue-bg);
+}
+.arch-layer.highlight .arch-layer-title { color: var(--blue-text); }
+.arch-layer.highlight .arch-layer-desc { color: var(--blue-text); }
+.arch-arrow {
+  text-align: center;
+  color: var(--text-3);
+  font-size: 16px;
+  margin: 4px 0;
+  line-height: 1;
+}
+
+/* ── MVP tiers ───────────────────────────────────────────── */
+.mvp-grid { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; }
+.mvp-tier {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 18px;
+  border: 0.5px solid var(--border-2);
+  border-radius: 8px;
+}
+.mvp-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.mvp-badge.p1 { background: var(--teal-bg); color: var(--teal); border: 0.5px solid var(--teal-bdr); }
+.mvp-badge.p2 { background: var(--blue-bg); color: var(--blue-text); border: 0.5px solid var(--blue-bdr); }
+.mvp-badge.p3 { background: var(--amber-bg); color: var(--amber); border: 0.5px solid var(--amber-bdr); }
+.mvp-content-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.mvp-content-desc { font-size: 13px; color: var(--text-2); }
+
+/* ── Decisions pending ──────────────────────────────────── */
+.decision-list { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
+.decision-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 0.5px solid var(--border-2);
+  border-radius: 6px;
+}
+.decision-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-bdr);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--amber);
+  font-weight: 700;
+}
+.decision-text { font-size: 13.5px; color: var(--text-2); }
+.decision-text strong { color: var(--text); }
+</style>
+
+<div class="doc">
+
+  <div class="doc-header">
+    <div class="doc-eyebrow">Documento de diseño · STECH NODES</div>
+    <div class="doc-title">Ecosistema QR — Diseño Funcional y Arquitectónico</div>
+    <div class="doc-meta">
+      <span>Versión 1.4 · Arquitectura funcional + contrato DTO Fase 1 ampliada + Precisión D-4.1 (fuente de datos corregida)</span>
+      <span>Fecha original: 8 de julio de 2026 · Addendum D-4: 8 de julio de 2026 · Precisión D-4.1: 8 de julio de 2026</span>
+      <span>Estado: <strong style="color:var(--teal)">CONGELADO</strong></span>
+    </div>
+  </div>
+
+  <!-- PRINCIPIOS FUNDACIONALES -->
+  <div style="background:var(--surface); border:1px solid var(--border-2); border-left:4px solid var(--blue); border-radius:8px; padding:20px 24px; margin-bottom:40px;">
+    <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--blue); margin-bottom:12px;">Principios arquitectónicos fundacionales — congelados</div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div>
+        <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px;">1 · El QR identifica un activo técnico mantenible</div>
+        <div style="font-size:13.5px; color:var(--text-2); line-height:1.6;">A nivel conceptual, el ecosistema QR identifica un <strong>activo técnico mantenible</strong>, no exclusivamente un equipo. Si el modelo <code>Equipment</code> ya representa ese concepto dentro del ERP, no se requiere ningún cambio arquitectónico — es una aclaración de alcance que protege la evolución futura del producto sin comprometer la estructura actual.</div>
+      </div>
+      <div style="border-top:0.5px solid var(--border); padding-top:14px;">
+        <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px;">2 · El QR es un identificador, nunca un repositorio</div>
+        <div style="font-size:13.5px; color:var(--text-2); line-height:1.6;">El código QR es únicamente un identificador seguro que da acceso controlado a información administrada por el ERP. Toda la lógica de negocio, la trazabilidad y los datos viven en el ERP como <strong>única fuente de verdad</strong>. El portal no almacena, procesa ni replica información — solo la presenta.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. OBJETIVO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Objetivo del ecosistema QR</span>
+    </div>
+    <p>El ecosistema QR convierte cada equipo en la cartera de STECH NODES en un <strong>punto de acceso físico a su historia digital</strong>. Una etiqueta adherida al equipo — impermeable, resistente — contiene un código QR que, al escanearse, abre el expediente público del equipo en cualquier dispositivo.</p>
+    <p>El objetivo no es solo mostrar datos. Es crear un canal de comunicación permanente entre STECH NODES, el equipo físico y el personal del cliente que lo opera o supervisa — sin que ese canal dependa de llamadas, correos ni del ERP interno.</p>
+    <p>En términos estratégicos: el QR materializa la propuesta de valor de STECH NODES en algo tangible que el cliente puede mostrar a su dirección, a una auditoría regulatoria o a un organismo de acreditación. Es la diferencia entre "tenemos contrato de mantenimiento" y "aquí está el historial verificable del equipo".</p>
+
+    <div class="callout opportunity">
+      <div class="callout-label">Posicionamiento estratégico</div>
+      <p>El ecosistema QR no es una funcionalidad del ERP. Es un <strong>activo estratégico de STECH NODES</strong> que opera en la intersección de la operación técnica y la relación comercial con el cliente. Fortalece la confianza, aporta trazabilidad verificable y constituye un diferenciador dentro de la estrategia comercial B2B. Su desarrollo debe tratarse con ese nivel de prioridad — independientemente del estado del ERP o del sitio web corporativo.</p>
+    </div>
+  </div>
+
+  <!-- 2. PROBLEMA -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Problema que resuelve</span>
+    </div>
+
+    <h3>Para el cliente (hospital / clínica)</h3>
+    <ul>
+      <li>No tienen visibilidad inmediata del estado de un equipo sin contactar a STECH NODES.</li>
+      <li>El historial de mantenimientos vive en correos o carpetas físicas, no en un lugar consultable.</li>
+      <li>En una auditoría (INVIMA, ICONTEC, acreditación JCI) no pueden demostrar trazabilidad rápidamente.</li>
+      <li>El personal biomédico cambia; el conocimiento del equipo se pierde con la persona.</li>
+      <li>No saben cuándo es la próxima visita programada sin preguntar.</li>
+    </ul>
+
+    <h3>Para STECH NODES</h3>
+    <ul>
+      <li>Cada llamada de soporte del tipo "¿cuándo fue el último mantenimiento?" consume tiempo del equipo técnico.</li>
+      <li>En renovaciones de contrato, demostrar el valor entregado depende de documentos que el cliente debe buscar.</li>
+      <li>No hay diferenciador tangible frente a competidores que ofrecen el mismo servicio con los mismos precios.</li>
+      <li>La relación con el cliente se gestiona por correo, lo que crea fricciones y pérdida de contexto.</li>
+    </ul>
+
+    <div class="callout opportunity">
+      <div class="callout-label">Oportunidad central</div>
+      <p>El QR elimina la asimetría de información entre el prestador del servicio y el cliente. No es un feature — es un cambio de modelo de relación.</p>
+    </div>
+  </div>
+
+  <!-- 3. ACTORES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Actores involucrados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Actor</th><th>Relación con el QR</th><th>Nivel de acceso</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Contacto del cliente</strong><br><span style="font-size:12px">Jefe biomédica, ing. hospitalario, coordinador de mantenimiento</span></td>
+            <td>Escanea para consultar historial y documentos de sus equipos</td>
+            <td>Autenticado — ve todo lo de su cliente</td>
+          </tr>
+          <tr>
+            <td><strong>Técnico de STECH NODES</strong><br><span style="font-size:12px">Ingeniero de campo que visita el equipo</span></td>
+            <td>Escanea al llegar — accede a la OT activa o crea un reporte rápido</td>
+            <td>Autenticado — usa credenciales del ERP</td>
+          </tr>
+          <tr>
+            <td><strong>Administrador STECH NODES</strong></td>
+            <td>Genera y gestiona QR desde el ERP; crea cuentas de contacto</td>
+            <td>ERP interno</td>
+          </tr>
+          <tr>
+            <td><strong>Auditor / inspector</strong><br><span style="font-size:12px">INVIMA, Secretaría de Salud, acreditadora</span></td>
+            <td>Escanea para verificar mantenimientos recientes</td>
+            <td>Público — solo información básica verificable</td>
+          </tr>
+          <tr>
+            <td><strong>Personal operativo del hospital</strong><br><span style="font-size:12px">Enfermera, técnico de turno</span></td>
+            <td>Escanea para saber el estado del equipo o reportar una falla</td>
+            <td>Público — info básica, formulario de reporte (Fase 2)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. REGLAS DE NEGOCIO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Reglas de negocio</span>
+    </div>
+
+    <h3>QR y equipos</h3>
+    <ul>
+      <li>La relación QR ↔ equipo es <strong>1:1 e inmutable</strong>. El código generado nunca cambia aunque el equipo cambie de sede o de estado.</li>
+      <li>El QR se genera automáticamente cuando el equipo es registrado en el ERP y se activa cuando tiene al menos un mantenimiento registrado.</li>
+      <li>Si el equipo tiene <code>deletedAt</code> (dado de baja), el portal muestra "equipo fuera de servicio" sin exponer datos históricos.</li>
+      <li>Un equipo sin historial en el ERP muestra el portal en estado "Sin registros disponibles aún". Nunca muestra una página de error.</li>
+    </ul>
+
+    <h3>Acceso y privacidad</h3>
+    <ul>
+      <li>La URL del QR codifica un identificador <strong>no secuencial y no predecible</strong> (UUID v4 o hash). Nunca el ID interno del equipo.</li>
+      <li>Un contacto del cliente solo puede ver equipos de su propio cliente, aunque tenga físicamente el QR de un equipo de otro cliente.</li>
+      <li>La información financiera (valores de contratos, montos de cotizaciones, cuentas de cobro) <strong>nunca es visible en el portal</strong> bajo ninguna circunstancia.</li>
+      <li>Los documentos descargables (actas técnicas) solo están disponibles para contactos autenticados, no para el público general.</li>
+    </ul>
+
+    <h3>Modelo de acceso — decisión diferida a Fase 2</h3>
+    <p style="font-size:14px; margin-bottom:8px;">La arquitectura de autenticación del portal es consecuencia del modelo de negocio, no una decisión técnica anticipada. Las preguntas relevantes — quiénes son los usuarios del portal, si reutilizan identidades del ERP, qué perfiles existirán — deben responderse con base en la experiencia de la Fase 1 y en necesidades funcionales claramente identificadas. Ninguna tabla de usuarios del portal será creada antes de ese análisis.</p>
+
+    <h3>Ciclo de vida del QR físico</h3>
+    <ul>
+      <li>Si una etiqueta QR se daña, el admin puede generar un nuevo PDF de la etiqueta — la URL del QR no cambia.</li>
+      <li>El equipo puede cambiar de sede sin afectar el QR. El portal siempre refleja la sede actual.</li>
+    </ul>
+
+    <div class="callout risk">
+      <div class="callout-label">Riesgo de negocio</div>
+      <p>La regla "equipo dado de baja oculta el historial" necesita validarse con el área legal/comercial. En contextos de auditoría regulatoria, un cliente puede necesitar el historial incluso de equipos retirados. Hay que decidir si "dado de baja en el ERP" implica "invisible en el portal" o solo "marcado como retirado pero con historial accesible".</p>
+    </div>
+  </div>
+
+  <!-- 5. FLUJO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Flujo completo desde el escaneo</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <div class="flow-label">Escaneo del QR físico</div>
+          <div class="flow-desc">El usuario apunta la cámara del celular a la etiqueta adherida al equipo. No requiere app instalada.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <div class="flow-label">Resolución de URL</div>
+          <div class="flow-desc">El sistema operativo abre la URL del portal en el navegador — por ejemplo <code>stechnodes.com/e/{código}</code> o un subdominio dedicado. El destino exacto es una decisión de despliegue independiente del sitio web corporativo. El código es un identificador opaco no predecible (ej: <code>eq_k7m2p9x1</code>).</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <div class="flow-label">Vista pública del equipo</div>
+          <div class="flow-desc">Carga inmediata, sin login. El usuario ve la ficha pública del equipo.</div>
+          <div class="flow-branch">
+            <span>• Nombre del equipo, fabricante, modelo, número de serie</span>
+            <span>• Estado: ACTIVO · EN MANTENIMIENTO · FUERA DE SERVICIO</span>
+            <span>• Fecha del último mantenimiento completado</span>
+            <span>• Próxima visita programada (si existe)</span>
+            <span>• Identificación del contrato vigente (sin valores económicos)</span>
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-content">
+          <div class="flow-label">Experiencia Fase 1 — plenamente pública</div>
+          <div class="flow-desc">En la Fase 1, la ficha pública es la experiencia completa del portal. No hay bifurcación por rol. Todos los actores ven la misma información sin necesidad de autenticarse.</div>
+          <div class="flow-branch">
+            <span><strong>Fase 1 (todos los actores):</strong> Ficha pública completa con datos del equipo, estado, última visita y próxima visita programada.</span>
+            <span><strong>Fase 2+ (modelo de acceso pendiente):</strong> La bifurcación por rol — contacto del cliente, técnico, auditor con acceso extendido — se diseñará cuando el modelo de negocio del acceso autenticado esté definido.</span>
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-content">
+          <div class="flow-label">Acción post-consulta</div>
+          <div class="flow-desc">El usuario puede descargar documentos, copiar información de contacto del área de soporte, o (Fase 2) reportar un incidente directamente desde el portal.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. VISIBILIDAD -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Información pública vs. autenticada</span>
+    </div>
+
+    <div class="vis-grid">
+      <div class="vis-card">
+        <div class="vis-card-head pub">Público — sin login</div>
+        <div class="vis-card-body">
+          <ul>
+            <li>Nombre y descripción del equipo</li>
+            <li>Fabricante, modelo, N.° de serie</li>
+            <li>Estado operativo actual</li>
+            <li>Fecha del último mantenimiento</li>
+            <li>Próxima visita programada (fecha, sin detalles)</li>
+            <li>Vigencia del contrato de mantenimiento (activo / vencido)</li>
+            <li>Datos de contacto de soporte STECH NODES</li>
+          </ul>
+        </div>
+      </div>
+      <div class="vis-card">
+        <div class="vis-card-head priv">Fase 2+ — modelo de acceso por definir</div>
+        <div class="vis-card-body">
+          <ul>
+            <li>Todo lo anterior</li>
+            <li>Historial completo de OTs (fecha, tipo, técnico)</li>
+            <li>Actas técnicas descargables (PDF)</li>
+            <li>Checklist de inspección de cada visita</li>
+            <li>Hallazgos y recomendaciones abiertas</li>
+            <li>Todas las visitas programadas futuras</li>
+            <li>Garantía vigente del equipo</li>
+          </ul>
+          <p style="font-size:11px; color:var(--text-3); margin-top:8px; margin-bottom:0;">El modelo de acceso (quiénes, cómo se autentican, qué perfiles) se definirá antes de iniciar la Fase 2.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="vis-grid" style="grid-template-columns: 1fr;">
+      <div class="vis-card">
+        <div class="vis-card-head never">Nunca visible en el portal — bajo ninguna circunstancia</div>
+        <div class="vis-card-body">
+          <ul style="columns: 2; gap: 20px;">
+            <li>Valores de cotizaciones o contratos</li>
+            <li>Cuentas de cobro o montos de pago</li>
+            <li>Datos de otros clientes</li>
+            <li>Credenciales o datos internos del ERP</li>
+            <li>Costos de materiales o mano de obra</li>
+            <li>Información de otros equipos del mismo cliente (solo el equipo escaneado)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CASOS DE USO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Casos de uso y escenarios excepcionales</span>
+    </div>
+
+    <h3>Casos de uso principales</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Caso de uso</th><th>Actor</th><th>Resultado esperado</th></tr></thead>
+        <tbody>
+          <tr><td><strong>CU-01</strong></td><td>Consultar estado del equipo</td><td>Cualquier actor</td><td>Vista pública con estado y última visita</td></tr>
+          <tr><td><strong>CU-02</strong></td><td>Verificar trazabilidad para auditoría</td><td>Inspector / auditor</td><td>Certificado descargable con fecha del último mantenimiento y firma digital</td></tr>
+          <tr><td><strong>CU-03</strong></td><td>Consultar historial completo</td><td>Contacto del cliente</td><td>Lista de OTs con filtro por fecha y tipo; descarga de actas — <em>Fase 2+</em></td></tr>
+          <tr><td><strong>CU-04</strong></td><td>Acceder a OT activa en campo</td><td>Técnico STECH NODES</td><td>Redirección directa a la OT activa en el ERP — <em>Fase 2+</em></td></tr>
+          <tr><td><strong>CU-05</strong></td><td>Descargar acta técnica de una visita</td><td>Contacto autenticado</td><td>PDF del acta generado on-demand — <em>Fase 2+</em></td></tr>
+          <tr><td><strong>CU-06</strong></td><td>Ver recomendaciones abiertas</td><td>Contacto autenticado</td><td>Lista de hallazgos sin resolver con fecha de creación — <em>Fase 2+</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Escenarios excepcionales</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Escenario</th><th>Comportamiento esperado</th></tr></thead>
+        <tbody>
+          <tr><td>QR de un equipo sin historial en el ERP</td><td>Portal muestra ficha del equipo con estado "Sin registros disponibles aún". Nunca página de error 404.</td></tr>
+          <tr><td>QR de un equipo dado de baja</td><td>Portal muestra "Equipo fuera de servicio — contacte a soporte". No expone historial. (Decisión pendiente — ver §04.)</td></tr>
+          <tr><td>QR dañado / ilegible físicamente</td><td>El admin imprime una nueva etiqueta desde el ERP. La URL no cambia.</td></tr>
+          <tr><td>Contacto intenta ver equipo de otro cliente</td><td>El portal devuelve una vista genérica pública, como si no estuviera autenticado. No revela que el equipo existe en otro cliente.</td></tr>
+          <tr><td>QR escaneado sin conexión a internet</td><td>El teléfono no puede cargar la URL. No hay versión offline del portal. Considerar añadir la info básica como texto en la etiqueta física.</td></tr>
+          <tr><td>Acta técnica generada mientras el técnico está en ruta</td><td>El portal refleja el cambio en tiempo real al recargar. No hay estado en caché.</td></tr>
+          <tr><td>Equipo transferido a otra sede del mismo cliente</td><td>El portal muestra la sede actual. El historial previo en la sede anterior permanece visible.</td></tr>
+          <tr><td>Contrato vencido, no renovado</td><td>El portal muestra "Contrato vencido — sin visitas programadas". El historial histórico permanece accesible para el cliente autenticado.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 8. INTEGRACIÓN ERP -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">Integración con el ERP existente</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Entidad ERP</th><th>Datos expuestos en el portal QR</th><th>Restricción</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Equipment</strong></td><td>Nombre, fabricante, modelo, N.° de serie, estado, criticidad, garantía</td><td>Solo del equipo escaneado</td></tr>
+          <tr><td><strong>WorkOrder</strong></td><td>Tipo (CORRECTIVE/PREVENTIVE), fecha, estado, nombre del técnico, sede</td><td>Sin costos ni datos financieros</td></tr>
+          <tr><td><strong>ServiceRecord</strong></td><td>Hallazgos, actividades, recomendaciones, checklist de inspección</td><td>Solo para autenticados</td></tr>
+          <tr><td><strong>MaintenanceContract</strong></td><td>Estado del contrato (activo/vencido), tipo de servicio incluido, fechas de vigencia</td><td>Sin valores económicos</td></tr>
+          <tr><td><strong>MaintenanceVisit</strong></td><td>Próxima visita programada (fecha y tipo)</td><td>Solo para autenticados</td></tr>
+          <tr><td><strong>FileAttachment</strong></td><td>Actas técnicas generadas en PDF</td><td>Solo para autenticados</td></tr>
+          <tr><td><strong>Branch</strong></td><td>Sede actual del equipo (nombre, ciudad)</td><td>Público</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>El portal QR consume estos datos <strong>exclusivamente a través de la API del backend</strong>. No tiene acceso directo a la base de datos. Toda la lógica de visibilidad y autorización reside en el backend.</p>
+
+    <div class="callout decision">
+      <div class="callout-label">Decisión de diseño</div>
+      <p>El backend necesita un nuevo grupo de endpoints con prefijo <code>/public/</code> que implementan reglas de autorización específicas para el portal. Los endpoints existentes del ERP no se modifican — los dos sistemas son aislados por diseño. Esto protege el ERP de cualquier cambio en el portal.</p>
+    </div>
+  </div>
+
+  <!-- 9. ARQUITECTURA -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <span class="section-title">Arquitectura propuesta</span>
+    </div>
+
+    <h3>Decisión arquitectónica crítica: ¿dónde vive el portal QR?</h3>
+    <p>Esta es la decisión más importante del ecosistema y la que más impacto tendrá en la escalabilidad futura. Hay tres opciones:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Opción</th><th>Descripción</th><th>Ventaja</th><th>Riesgo</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>A</strong></td>
+            <td>Rutas públicas dentro del mismo frontend del ERP (React + Vite)</td>
+            <td>Implementación rápida, un solo repositorio</td>
+            <td>El portal público comparte código con el ERP privado — cualquier bug del portal puede afectar el ERP. El bundle del ERP crece innecesariamente.</td>
+          </tr>
+          <tr>
+            <td><strong>B ✓</strong></td>
+            <td>Portal QR como aplicación separada, misma API backend</td>
+            <td>Aislamiento total entre ERP y portal. El portal puede desplegarse en CDN o subdirectorio del sitio web corporativo. El ERP no se ve afectado.</td>
+            <td>Dos repositorios frontend que mantener. Tipos compartidos deben sincronizarse.</td>
+          </tr>
+          <tr>
+            <td><strong>C</strong></td>
+            <td>Backend y frontend completamente separados (microservicio)</td>
+            <td>Escalabilidad máxima</td>
+            <td>Complejidad operacional innecesaria en este estadio. Dos bases de datos, sincronización de datos, doble infraestructura.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout decision">
+      <div class="callout-label">Decisión arquitectónica congelada</div>
+      <p><strong>Opción B.</strong> Portal QR como aplicación React independiente, con un destino estable bajo el dominio STECH NODES — la estructura exacta de la URL (<code>/e/{código}</code>, subdominio dedicado u otra ruta) es una decisión de despliegue que se toma independientemente del sitio web corporativo. El portal y el sitio institucional pueden evolucionar en paralelo. Consume los mismos endpoints del backend NestJS existente a través de un nuevo módulo <code>PublicModule</code> con guards separados. El ERP queda completamente aislado.</p>
+    </div>
+
+    <h3>Estructura técnica propuesta</h3>
+
+    <div class="arch-arrow">▼ escaneo</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Capa física</div>
+      <div class="arch-layer-title">Etiqueta QR adherida al equipo</div>
+      <div class="arch-layer-desc">Impresa desde el ERP. URL: <code>{dominio-stech-nodes}/e/{código-opaco}</code> — la estructura exacta se define en la fase de despliegue. El código es un identificador corto no predecible (ej: <code>eq_k7m2p9x1</code>), generado al crear el equipo.</div>
+    </div>
+    <div class="arch-arrow">▼</div>
+    <div class="arch-layer highlight">
+      <div class="arch-layer-label">Capa presentación — NUEVO</div>
+      <div class="arch-layer-title">Portal QR (React app independiente)</div>
+      <div class="arch-layer-desc">App React mínima (<code>qr-portal/</code>). Sin estado complejo, sin routing profundo. Desplegada en el sitio web corporativo bajo <code>/q/</code>. Solo consume la API pública.</div>
+    </div>
+    <div class="arch-arrow">▼ fetch</div>
+    <div class="arch-layer highlight">
+      <div class="arch-layer-label">Capa API — NUEVO (dentro del backend existente)</div>
+      <div class="arch-layer-title">PublicModule · NestJS</div>
+      <div class="arch-layer-desc">Nuevo módulo con endpoints <code>GET /public/equipment/:code</code> y <code>GET /public/equipment/:code/history</code>. Guard propio (<code>PortalAuthGuard</code>). Rate limiting estricto. Sin acceso a entidades sensibles. Comparte la base de datos y los servicios existentes.</div>
+    </div>
+    <div class="arch-arrow">▼</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Capa de datos — SIN CAMBIOS</div>
+      <div class="arch-layer-title">PostgreSQL · Prisma · Entidades existentes</div>
+      <div class="arch-layer-desc">El PublicModule lee la misma base de datos pero con proyecciones restrictivas definidas en sus propios selectores. En la Fase 1 solo añade el campo <code>qrCode String @unique</code> en <code>Equipment</code>. No se añaden tablas de usuarios del portal hasta que el modelo de acceso esté definido.</div>
+    </div>
+    <div class="arch-arrow">▼</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">ERP — SIN CAMBIOS</div>
+      <div class="arch-layer-title">ERP privado (React + Vite) · API privada</div>
+      <div class="arch-layer-desc">El ERP no se modifica. El admin ve un botón "Generar / descargar etiqueta QR" en la ficha del equipo. El resto del ERP es ajeno al portal.</div>
+    </div>
+
+    <h3>Cambios de schema — Fase 1</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Entidad</th><th>Cambio</th><th>Impacto</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Equipment</strong></td><td>+ <code>qrCode String @unique</code> — generado automáticamente al crear el equipo (slug corto + hash)</td><td>Migración simple, no rompe nada</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13px; color:var(--text-2);">Los cambios de schema asociados al acceso autenticado (usuarios del portal, perfiles, sesiones) se diseñarán como parte del modelo de acceso en la Fase 2, no antes.</p>
+
+    <h3>Fases de implementación (MVP progresivo)</h3>
+    <div class="mvp-grid">
+      <div class="mvp-tier">
+        <div class="mvp-badge p1">Fase 1 · Congelada</div>
+        <div>
+          <div class="mvp-content-title">Portal público sin autenticación</div>
+          <div class="mvp-content-desc">Ficha pública del equipo. Sin login. Objetivo: maximizar la experiencia del cliente y establecer el QR como diferenciador tangible del servicio desde el primer contrato. Un solo cambio de schema (<code>qrCode</code> en Equipment). Implementación mínima y verificable.</div>
+        </div>
+      </div>
+      <div class="mvp-tier">
+        <div class="mvp-badge p2">Fase 2 · Modelo de acceso pendiente</div>
+        <div>
+          <div class="mvp-content-title">Acceso autenticado — diseño previo requerido</div>
+          <div class="mvp-content-desc">Antes de implementar esta fase, se debe definir: quiénes son los usuarios del portal, qué perfiles existen, si reutilizan identidades del ERP o constituyen un sistema independiente, y qué mecanismo de autenticación se ajusta mejor al modelo de negocio. La arquitectura técnica (PortalUser, magic link, OAuth, etc.) es consecuencia de esas decisiones.</div>
+        </div>
+      </div>
+      <div class="mvp-tier">
+        <div class="mvp-badge p3">Fase 3</div>
+        <div>
+          <div class="mvp-content-title">Funciones activas</div>
+          <div class="mvp-content-desc">Reporte de incidentes desde el portal (genera OT en el ERP), notificaciones automáticas al contacto (visita completada, próxima visita), integración con el sitio web corporativo como demostración interactiva.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. RIESGOS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <span class="section-title">Riesgos</span>
+    </div>
+
+    <h3>Riesgos técnicos</h3>
+
+    <div class="callout risk">
+      <div class="callout-label">Riesgo T-01 · Medio</div>
+      <p><strong>Endpoints públicos sin rate limiting adecuado.</strong> Un endpoint que devuelve datos de equipo sin autenticación puede ser abusado para scraping masivo del catálogo de equipos o ataques de enumeración si el código es predecible. Mitigación: código opaco (hash), rate limiting por IP (10 req/min por IP), no paginar ni exponer listas de equipos.</p>
+    </div>
+
+    <div class="callout decision">
+      <div class="callout-label">Nota T-02 · Diferida</div>
+      <p><strong>La complejidad de gestión de usuarios del portal está diferida explícitamente.</strong> El diseño del modelo de acceso para la Fase 2 resolverá este riesgo antes de escribir código. No aplica a la Fase 1.</p>
+    </div>
+
+    <div class="callout risk">
+      <div class="callout-label">Riesgo T-03 · Bajo-Medio</div>
+      <p><strong>Sincronización de datos entre portal y ERP.</strong> El portal debe reflejar el estado actual. Si un técnico cierra una OT, el portal debe actualizarlo en tiempo real (o al recargar). Sin caché agresiva, esto es simple. Con caché (para mejorar rendimiento) hay que gestionar invalidación. Recomendación para MVP: sin caché — leer siempre de la DB.</p>
+    </div>
+
+    <h3>Riesgos funcionales</h3>
+
+    <div class="callout risk">
+      <div class="callout-label">Riesgo F-01 · Alto</div>
+      <p><strong>Historial vacío al inicio.</strong> Los equipos registrados antes del sistema QR no tienen historial en el ERP. El portal les mostrará "Sin registros". Esto puede ser percibido como un error por el cliente. Hay que comunicar proactivamente que el historial digital parte de una fecha específica y las visitas anteriores se pueden ingresar manualmente si es necesario.</p>
+    </div>
+
+    <div class="callout risk">
+      <div class="callout-label">Riesgo F-02 · Medio</div>
+      <p><strong>Adopción baja del cliente.</strong> Si el contacto del cliente no escanea activamente el QR, el portal es invisible. El QR tiene valor solo si el cliente lo usa. Estrategia de activación: incluir el QR en las actas técnicas impresas, mencionarlo en cada informe de visita, enviar email con el link al contacto después de cada mantenimiento.</p>
+    </div>
+
+    <div class="callout risk">
+      <div class="callout-label">Riesgo F-03 · Bajo</div>
+      <p><strong>Etiqueta física dañada.</strong> En entornos hospitalarios, las etiquetas se exponen a limpieza con desinfectantes, humedad y roce constante. Una etiqueta ilegible rompe el flujo. Mitigación: etiquetas de poliéster o policarbonato (no papel), laminadas, con fondo de alto contraste. Siempre incluir la URL también en texto bajo el QR.</p>
+    </div>
+
+    <h3>Riesgos comerciales</h3>
+
+    <div class="callout critical">
+      <div class="callout-label">Riesgo C-01 · Crítico</div>
+      <p><strong>Prometer el portal antes de que esté construido.</strong> El QR como diferenciador comercial es poderoso — pero solo si funciona cuando el cliente lo escanea. Si STECH NODES empieza a venderlo en propuestas y licitaciones antes de que la Fase 1 esté deployada y estable, cualquier fallo durante una demostración o visita de auditoría destruye la credibilidad que el portal debía construir. Recomendación: no mencionar el portal en documentos comerciales hasta que la Fase 1 esté en producción con al menos 30 días de estabilidad.</p>
+    </div>
+
+    <div class="callout risk">
+      <div class="callout-label">Riesgo C-02 · Medio</div>
+      <p><strong>Expectativa de portal completo vs. MVP.</strong> Al mostrar el QR al cliente, la expectativa natural será "quiero ver todo". Si el MVP solo tiene la ficha pública, hay que comunicar el roadmap con claridad. Un portal incompleto que el cliente siente como incompleto es peor que no tener portal.</p>
+    </div>
+  </div>
+
+  <!-- 11. DIFERENCIACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <span class="section-title">Oportunidades de diferenciación</span>
+    </div>
+
+    <div class="callout opportunity">
+      <div class="callout-label">Diferenciador principal</div>
+      <p><strong>El pasaporte digital del equipo.</strong> En la práctica institucional, el historial técnico de un activo biomédico rara vez está disponible de forma inmediata y verificable para quien lo necesita. El QR convierte esa disponibilidad en un elemento constitutivo del servicio — tangible, accesible sin gestión intermedia y auditable en el momento en que se necesita, ya sea por el cliente, por un auditor regulatorio o por un organismo de acreditación.</p>
+    </div>
+
+    <h3>Oportunidades específicas</h3>
+    <ul>
+      <li><strong>Argumento regulatorio:</strong> Las resoluciones del Ministerio de Salud colombiano exigen trazabilidad de mantenimientos de equipos biomédicos. El QR convierte esta obligación del cliente en un beneficio del contrato con STECH NODES.</li>
+      <li><strong>Loop QR en documentos:</strong> Las actas técnicas impresas pueden incluir el QR del equipo. El cliente escanea el QR en el acta y llega al historial digital — un loop que refuerza el valor del servicio en cada interacción.</li>
+      <li><strong>Dashboard para el jefe de biomédica:</strong> La Fase 2 puede incluir una vista de todos los equipos del cliente, no solo del escaneado. Esto convierte el portal en una herramienta de gestión de activos para el cliente — gratuita, integrada con el contrato.</li>
+      <li><strong>Firma digital desde el portal:</strong> En la Fase 3, el contacto del cliente puede firmar digitalmente el acta técnica escaneando el QR del equipo al finalizar la visita. Elimina el papel completamente.</li>
+      <li><strong>Reporte de incidentes:</strong> Si el personal operativo puede reportar una falla escaneando el QR, STECH NODES recibe el reporte directamente como una OT nueva — sin correos, sin llamadas, con la geolocalización del equipo incluida.</li>
+      <li><strong>Prueba de servicio en tiempo real:</strong> Durante una visita de renovación de contrato, el cliente puede escanear el QR de un equipo y mostrar al gerente todo el historial de mantenimientos. Es más efectivo que cualquier informe en PowerPoint.</li>
+    </ul>
+  </div>
+
+  <!-- 12. IMPACTO SITIO WEB Y B2B -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <span class="section-title">Impacto en sitio web corporativo y estrategia B2B</span>
+    </div>
+
+    <h3>Sitio web corporativo</h3>
+    <p>El portal QR y el sitio web institucional de STECH NODES son iniciativas paralelas e independientes. El portal no requiere que el sitio corporativo exista previamente — solo necesita un <strong>destino estable bajo el dominio STECH NODES</strong>: una ruta como <code>/e/{código}</code>, un subdominio dedicado (<code>portal.stechnodes.com</code>) u otra estructura que pueda mantenerse sin cambios una vez impresas las etiquetas físicas.</p>
+    <ul>
+      <li>La decisión de URL es de despliegue, no de dependencia: se toma antes de imprimir la primera etiqueta y luego no se modifica.</li>
+      <li>Cuando el sitio corporativo exista, el portal QR puede integrarse como <strong>demostración interactiva</strong> — un equipo de ejemplo con datos ficticios que un visitante puede explorar antes de contratar.</li>
+      <li>Un cliente prospecto que puede "tocar" el portal antes de firmar tiene un argumento de cierre más concreto que cualquier PDF o presentación.</li>
+    </ul>
+
+    <h3>Estrategia comercial B2B</h3>
+    <ul>
+      <li><strong>En propuestas y cotizaciones:</strong> Incluir el QR como "portal de trazabilidad incluido en el contrato". No como feature adicional — como parte del servicio estándar. Esto posiciona el QR como expectativa mínima, no como lujo.</li>
+      <li><strong>En licitaciones hospitalarias:</strong> Las licitaciones del sector salud frecuentemente evalúan "sistemas de gestión y trazabilidad". El portal QR es documentación tangible de esa capacidad.</li>
+      <li><strong>Retención de contratos:</strong> Un cliente que usa activamente el portal tiene más fricción para cambiarse de proveedor — su historial de equipos está en el portal de STECH NODES. Este lock-in ético (el cliente siente que el historial es suyo, pero la plataforma es de STECH NODES) es un mecanismo de retención poderoso.</li>
+      <li><strong>Upsell:</strong> Un cliente que usa el portal básico (gratuito) es más receptivo a contratar el plan de mantenimiento preventivo cuando ve, en tiempo real, que lleva X meses sin mantenimiento preventivo y su próxima visita no está programada.</li>
+    </ul>
+
+    <div class="callout risk">
+      <div class="callout-label">Consideración crítica</div>
+      <p>Si el portal QR se convierte en el repositorio del historial del cliente, STECH NODES adquiere una responsabilidad de continuidad del servicio que va más allá del mantenimiento de equipos. Si el portal cae o se descontinúa, el cliente pierde acceso a su historial. Hay que tener una política de exportación de datos del cliente (PDF o Excel) disponible en todo momento.</p>
+    </div>
+  </div>
+
+  <!-- 14. ADDENDUM D-4 — CONTRATO DTO FASE 1 AMPLIADA -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">14</span>
+      <span class="section-title">Addendum D-4 · Contrato DTO — historial mínimo en portal (2026-07-08) · Precisión D-4.1 (2026-07-08)</span>
+    </div>
+
+    <div class="callout decision">
+      <div class="callout-label">Origen de este addendum</div>
+      <p>La Auditoría QR Fase 1 (2026-07-08) identificó que el portal implementado en los Bloques 1–5 no muestra historial de mantenimiento, lo que hace que la promesa estratégica "el historial viaja con el equipo" no sea demostrable. Este addendum registra la decisión D-4 y el contrato exacto del campo <code>lastMaintenance</code> en el <code>EquipmentPublicDto</code>, aprobado antes de iniciar el Bloque 6.</p>
+      <p style="margin-top:10px;">La <strong>Precisión D-4.1 (2026-07-08)</strong> corrige la fuente del dato de fecha y la ruta de consulta backend, resultado de la validación del modelo de datos realizada antes de la implementación del Bloque 6. El contrato público del DTO no se modifica — únicamente se precisa la fuente interna de los datos.</p>
+    </div>
+
+    <h3>Decisión D-4 — congelada</h3>
+    <p>El <code>EquipmentPublicDto</code> se extiende con un campo opcional <strong><code>lastMaintenance</code></strong> que representa la última orden de trabajo de mantenimiento completada asociada al equipo. Es el mínimo de historial que hace demostrable la promesa de trazabilidad sin comprometer privacidad operativa.</p>
+
+    <h3>Contrato exacto del nuevo campo</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campo DTO</th><th>Tipo</th><th>Origen en BD</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>lastMaintenance</strong></td>
+            <td><code>object | null</code></td>
+            <td>—</td>
+            <td>Null si no existe ninguna WorkOrder con status COMPLETED vinculada al equipo</td>
+          </tr>
+          <tr>
+            <td><strong>lastMaintenance.date</strong></td>
+            <td><code>string (YYYY-MM-DD)</code></td>
+            <td><code>WorkOrder.completedAt</code> <span style="color:var(--teal);font-weight:700;font-size:11px;">· D-4.1</span></td>
+            <td>Fecha efectiva de finalización de la última OT completada. <code>completedAt</code> se escribe de forma garantizada cuando la OT transiciona a <code>COMPLETED</code> — nunca es null para ese estado.</td>
+          </tr>
+          <tr>
+            <td><strong>lastMaintenance.type</strong></td>
+            <td><code>'PREVENTIVE' | 'CORRECTIVE'</code></td>
+            <td><code>WorkOrder.type</code></td>
+            <td>Tipo de la OT más reciente completada. Cubre tanto intervenciones preventivas (generadas desde un plan) como correctivas (creadas directamente). <code>INSPECTION</code> se excluye explícitamente de la consulta.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Ruta de datos en el backend <span style="color:var(--teal);font-weight:700;font-size:12px;font-family:sans-serif;">· Precisión D-4.1</span></h3>
+
+    <div style="background:var(--amber-bg);border:1px solid var(--amber-bdr);border-left:3px solid var(--amber);border-radius:6px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--amber);line-height:1.6;">
+      <strong>Precisión D-4.1 (2026-07-08) — Fuente de datos corregida antes del Bloque 6.</strong>
+      La validación del modelo de datos pre-implementación identificó dos problemas en la ruta original:
+      <ol style="margin:8px 0 0 18px;line-height:1.8;">
+        <li><strong>Cobertura incompleta:</strong> la ruta original (vía <code>MaintenanceVisit</code>) excluye las OTs correctivas, que no tienen <code>MaintenanceVisit</code> asociada. El campo <code>type: 'CORRECTIVE'</code> era inalcanzable.</li>
+        <li><strong>Semántica de fecha incorrecta:</strong> <code>MaintenanceVisit.scheduledDate</code> es la fecha planeada de la visita, no la fecha efectiva de ejecución. La fecha real de finalización es <code>WorkOrder.completedAt</code>, que el sistema escribe de forma garantizada en la transición <code>IN_PROGRESS → COMPLETED</code>.</li>
+      </ol>
+      <p style="margin-top:8px;"><strong>Esta precisión no modifica el contrato público del DTO.</strong> La estructura <code>{ date: string, type: 'PREVENTIVE' | 'CORRECTIVE' } | null</code> permanece intacta. Solo cambia la fuente interna de los datos y la ruta de la consulta Prisma.</p>
+    </div>
+
+    <p>El <code>PublicService</code> consulta directamente sobre <code>WorkOrder</code> para obtener la última OT completada vinculada al equipo:</p>
+    <div style="background:var(--surface); border:0.5px solid var(--border-2); border-radius:6px; padding:14px 18px; font-size:13px; color:var(--text-2); font-family:monospace; margin:12px 0; line-height:1.8;">
+      Equipment (donde qrCode = :qrCode, deletedAt = null)<br>
+      &nbsp;&nbsp;→ WorkOrders (donde equipmentId = Equipment.id,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status = COMPLETED,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type IN [PREVENTIVE, CORRECTIVE],<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;deletedAt = null)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;→ ordenar por completedAt DESC, tomar 1<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;→ date ← WorkOrder.completedAt (formateado YYYY-MM-DD)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;→ type ← WorkOrder.type
+    </div>
+    <p style="font-size:13px;color:var(--text-2);">No se traversa <code>MaintenanceVisit</code>. La consulta cubre todas las intervenciones completas del equipo independientemente de su origen (plan de mantenimiento o OT directa).</p>
+
+    <h3>Lo que incluye este campo</h3>
+    <ul>
+      <li>Fecha de la última visita de mantenimiento completada</li>
+      <li>Tipo de intervención: PREVENTIVE o CORRECTIVE</li>
+    </ul>
+
+    <h3>Lo que este campo excluye permanentemente</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Información</th><th>Razón de exclusión</th></tr></thead>
+        <tbody>
+          <tr><td>Nombre o datos del técnico</td><td>Datos personales — nunca públicos</td></tr>
+          <tr><td>Costo de la visita</td><td>Información financiera — nunca pública</td></tr>
+          <tr><td>Hallazgos técnicos internos</td><td>Información operativa privada del cliente</td></tr>
+          <tr><td>Recomendaciones técnicas</td><td>Información operativa privada del cliente</td></tr>
+          <tr><td>Notas internas del servicio</td><td>Información operativa privada del cliente</td></tr>
+          <tr><td>ID interno de WorkOrder o MaintenanceVisit</td><td>Identificadores internos — nunca públicos</td></tr>
+          <tr><td>Historial completo (todas las visitas)</td><td>Diferido a Fase 2 — requiere análisis adicional</td></tr>
+          <tr><td>Próxima visita programada</td><td>Diferido a Fase 2 — exposición de fechas futuras requiere análisis de privacidad</td></tr>
+          <tr><td>Estado de la WorkOrder</td><td>Dato operativo interno — no relevante para el portal público</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Relación con la promesa estratégica</h3>
+    <div class="callout opportunity">
+      <div class="callout-label">Nota estratégica — Primera capa verificable de continuidad documental</div>
+      <p>La primera versión pública del historial (<code>lastMaintenance</code>) <strong>no representa el historial técnico completo del activo</strong>. Representa la <strong>primera capa verificable de continuidad documental</strong>: la prueba de que el servicio existe, que está registrado sistemáticamente y que el registro viaja con el equipo.</p>
+      <p style="margin-top:10px;">Esta primera capa es suficiente para demostrar la promesa "el historial viaja con el equipo" ante clientes, evaluadores de Fondo Emprender y organismos de acreditación. El desarrollo futuro podrá ampliar esta capa mediante decisiones adicionales de privacidad y acceso — sin modificar los principios establecidos aquí.</p>
+    </div>
+
+    <h3>Comportamiento cuando no hay historial</h3>
+    <p>Si <code>lastMaintenance</code> es <code>null</code> (ninguna <code>WorkOrder</code> con <code>status = COMPLETED</code> y <code>type IN [PREVENTIVE, CORRECTIVE]</code> existe para el equipo), el portal muestra un mensaje neutro: "Sin registros de mantenimiento disponibles." Nunca un error, nunca un campo vacío sin contexto. Esto alinea con la regla de negocio §04: "Un equipo sin historial en el ERP muestra el portal en estado 'Sin registros disponibles aún'. Nunca muestra una página de error."</p>
+
+    <h3>Impacto en la tabla de integración ERP (§08)</h3>
+    <p>La fecha efectiva de la última OT completada y el tipo de intervención pasan a ser <strong>públicos</strong> en Fase 1 (ya no solo para autenticados). La fuente es <code>WorkOrder.completedAt</code> y <code>WorkOrder.type</code> respectivamente. La próxima visita programada permanece diferida a Fase 2+.</p>
+
+    <div class="callout decision">
+      <div class="callout-label">Estado de la decisión</div>
+      <p><strong>D-4 — CONGELADA. Precisión D-4.1 incorporada (2026-07-08).</strong> El contrato público del campo <code>lastMaintenance</code> con estructura <code>{ date: string, type: 'PREVENTIVE' | 'CORRECTIVE' } | null</code> permanece intacto. La fuente de <code>date</code> es <code>WorkOrder.completedAt</code> (fecha efectiva de finalización). La ruta de consulta es directamente sobre <code>WorkOrder</code> filtrando por <code>equipmentId</code>, <code>status = COMPLETED</code> y <code>type IN [PREVENTIVE, CORRECTIVE]</code>. No se añadirán campos adicionales al DTO público sin actualizar primero este documento.</p>
+    </div>
+  </div>
+
+  <!-- 13. DECISIONES PENDIENTES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">13</span>
+      <span class="section-title">Decisiones antes de iniciar desarrollo</span>
+    </div>
+
+    <p>La Fase 1 está congelada. Las siguientes son las decisiones operativas y de despliegue que deben tomarse antes de escribir código.</p>
+
+    <div class="decision-list">
+      <div class="decision-item">
+        <div class="decision-icon">?</div>
+        <div class="decision-text"><strong>Estructura de la URL:</strong> ¿La URL del portal vive en una ruta del dominio principal (<code>stechnodes.com/e/{código}</code>), en un subdominio dedicado (<code>portal.stechnodes.com/e/{código}</code>) u otra estructura? Esta decisión debe tomarse antes de imprimir la primera etiqueta — no puede cambiar una vez que las etiquetas estén físicamente en los equipos.</div>
+      </div>
+      <div class="decision-item">
+        <div class="decision-icon">?</div>
+        <div class="decision-text"><strong>Equipos dados de baja:</strong> ¿El historial de un equipo retirado es accesible públicamente, visible solo para autenticados (Fase 2+) o se oculta completamente? Tiene implicaciones para contextos de auditoría regulatoria.</div>
+      </div>
+      <div class="decision-item">
+        <div class="decision-icon">?</div>
+        <div class="decision-text"><strong>Logística física de etiquetas:</strong> ¿Quién imprime y coloca las etiquetas? ¿Se despliegan en todos los equipos del portafolio actual o solo en nuevos contratos? El QR como diferenciador solo opera si la etiqueta está físicamente en el equipo.</div>
+      </div>
+      <div class="decision-item">
+        <div class="decision-icon">?</div>
+        <div class="decision-text"><strong>Certificado de trazabilidad para auditorías:</strong> ¿La Fase 1 incluye un PDF descargable del último mantenimiento que un inspector pueda obtener sin autenticarse? ¿Con qué mecanismo de verificación de autenticidad (firma digital, sello de tiempo)?</div>
+      </div>
+    </div>
+
+    <div class="callout opportunity">
+      <div class="callout-label">Estado del diseño</div>
+      <p>La arquitectura funcional del ecosistema QR queda <strong>congelada en esta versión</strong>. La Fase 1 está completamente definida y puede iniciarse una vez resueltas las decisiones de despliegue anteriores. El modelo de acceso para la Fase 2 se diseñará cuando haya una necesidad funcional claramente identificada — no antes.</p>
+    </div>
+  </div>
+
+</div>

@@ -94,6 +94,9 @@ export class WorkOrdersService {
   async create(dto: CreateWorkOrderDto, userId: string) {
     await this.ensureActiveClient(dto.clientId);
     await this.resolveBranch(dto.clientId, dto.branchId);
+    if (dto.equipmentId) {
+      await this.resolveEquipment(dto.equipmentId, dto.branchId);
+    }
 
     const { items, totals } = this.buildItemsPayload(dto.items ?? []);
 
@@ -121,6 +124,7 @@ export class WorkOrdersService {
           title: dto.title,
           description: dto.description ?? null,
           scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
+          equipmentId: dto.equipmentId ?? null,
           assignedToId: dto.assignedToId ?? null,
           createdById: userId,
           subtotal: totals.subtotal,
@@ -340,6 +344,25 @@ export class WorkOrdersService {
     }
 
     return branch;
+  }
+
+  private async resolveEquipment(equipmentId: string, branchId?: string) {
+    const equipment = await this.prisma.equipment.findFirst({
+      where: { id: equipmentId, deletedAt: null },
+      select: { id: true, branchId: true },
+    });
+
+    if (!equipment) {
+      throw new BadRequestException(`Equipment "${equipmentId}" not found`);
+    }
+
+    if (branchId && equipment.branchId !== branchId) {
+      throw new BadRequestException(
+        `Equipment "${equipmentId}" does not belong to the selected branch`,
+      );
+    }
+
+    return equipment;
   }
 
   private async findEditableWorkOrder(id: string) {

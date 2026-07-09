@@ -11,6 +11,7 @@ export const EQUIPMENT_SELECT = {
   location: true,
   notes: true,
   status: true,
+  qrCode: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.EquipmentSelect;

@@ -16,6 +16,7 @@ import {
 } from '@/hooks/use-work-orders';
 import { useClients } from '@/hooks/use-clients';
 import { useBranches } from '@/hooks/use-branches';
+import { useEquipment } from '@/hooks/use-equipment';
 import { useTechnicians } from '@/hooks/use-users';
 import type { WorkOrder, WorkOrderStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -73,6 +74,7 @@ const STATUS_FILTERS: { value: WorkOrderStatus | ''; label: string }[] = [
 const workOrderSchema = z.object({
   clientId: z.string().min(1, 'Selecciona un cliente'),
   branchId: z.string().optional(),
+  equipmentId: z.string().optional(),
   title: z.string().min(1, 'El título es obligatorio').max(300),
   description: z.string().max(2000).optional().or(z.literal('')),
   scheduledAt: z.string().optional().or(z.literal('')),
@@ -107,16 +109,23 @@ function WorkOrderFormModal({
   });
 
   const selectedClientId = watch('clientId');
+  const selectedBranchId = watch('branchId');
   const { data: branches } = useBranches(selectedClientId || null);
+  const { data: equipmentData } = useEquipment(
+    selectedClientId || null,
+    selectedBranchId || null,
+  );
+  const equipmentList = equipmentData?.data ?? [];
 
   useEffect(() => {
-    if (open) reset({ clientId: '', branchId: '', title: '', description: '', scheduledAt: '', assignedToId: '' });
+    if (open) reset({ clientId: '', branchId: '', equipmentId: '', title: '', description: '', scheduledAt: '', assignedToId: '' });
   }, [open, reset]);
 
   async function onSubmit(values: WorkOrderSchema) {
     const dto: WorkOrderFormData = {
       clientId: values.clientId,
       branchId: values.branchId || undefined,
+      equipmentId: values.equipmentId || undefined,
       title: values.title,
       description: values.description || undefined,
       scheduledAt: values.scheduledAt || undefined,
@@ -159,6 +168,7 @@ function WorkOrderFormModal({
             errors={errors}
             branches={branches ?? []}
             branchesDisabled={!selectedClientId || !branches?.length}
+            equipment={selectedBranchId ? equipmentList : undefined}
             technicians={technicians}
           />
 

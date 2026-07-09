@@ -23,6 +23,10 @@ export class CreateWorkOrderDto {
   @IsString()
   quotationId?: string;
 
+  @IsOptional()
+  @IsString()
+  equipmentId?: string;
+
   @IsString()
   @IsNotEmpty()
   @MaxLength(300)

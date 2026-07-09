@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -74,9 +75,39 @@ export class EquipmentService {
         installDate: dto.installDate ? new Date(dto.installDate) : null,
         location: dto.location ?? null,
         notes: dto.notes ?? null,
+        qrCode: this.generateQrCode(),
       },
       select: EQUIPMENT_SELECT,
     });
+  }
+
+  async assignQrCode(clientId: string, branchId: string, id: string) {
+    const equipment = await this.prisma.equipment.findFirst({
+      where: { id, branchId, deletedAt: null },
+      select: { id: true, qrCode: true },
+    });
+
+    if (!equipment) {
+      throw new NotFoundException(
+        `Equipment with id "${id}" not found for this branch`,
+      );
+    }
+
+    if (equipment.qrCode !== null) {
+      throw new ConflictException(
+        'Equipment already has a QR code assigned. Regeneration is not permitted in Phase 1.',
+      );
+    }
+
+    return this.prisma.equipment.update({
+      where: { id },
+      data: { qrCode: this.generateQrCode() },
+      select: EQUIPMENT_SELECT,
+    });
+  }
+
+  private generateQrCode(): string {
+    return randomBytes(9).toString('base64url');
   }
 
   async update(
