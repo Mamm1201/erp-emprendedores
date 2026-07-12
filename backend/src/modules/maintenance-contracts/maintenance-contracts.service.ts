@@ -15,7 +15,26 @@ import {
 import { CreateMaintenanceContractDto } from './dto/create-maintenance-contract.dto';
 import { UpdateMaintenanceContractDto } from './dto/update-maintenance-contract.dto';
 import { QueryMaintenanceContractsDto } from './dto/query-maintenance-contracts.dto';
+import { AttachContractEquipmentDto } from './dto/attach-contract-equipment.dto';
 import { nextDocumentNumber } from '../quotations/quotations-document.service';
+
+const CONTRACT_EQUIPMENT_SELECT = {
+  equipmentId: true,
+  addedAt: true,
+  equipment: {
+    select: {
+      id: true,
+      type: true,
+      brand: true,
+      model: true,
+      serialNumber: true,
+      location: true,
+      status: true,
+      branchId: true,
+      branch: { select: { id: true, name: true } },
+    },
+  },
+} satisfies Prisma.ContractEquipmentSelect;
 
 @Injectable()
 export class MaintenanceContractsService {
@@ -179,6 +198,61 @@ export class MaintenanceContractsService {
       data: { deletedAt: new Date() },
       select: { id: true, number: true, deletedAt: true },
     });
+  }
+
+  async findEquipment(contractId: string) {
+    await this.findOne(contractId);
+
+    return this.prisma.contractEquipment.findMany({
+      where: { contractId },
+      select: CONTRACT_EQUIPMENT_SELECT,
+      orderBy: { addedAt: 'asc' },
+    });
+  }
+
+  async attachEquipment(contractId: string, dto: AttachContractEquipmentDto) {
+    const contract = await this.findOne(contractId);
+
+    await this.resolveEquipmentForClient(dto.equipmentId, contract.client.id);
+
+    return this.prisma.contractEquipment.create({
+      data: { contractId, equipmentId: dto.equipmentId },
+      select: CONTRACT_EQUIPMENT_SELECT,
+    });
+  }
+
+  async detachEquipment(contractId: string, equipmentId: string) {
+    await this.findOne(contractId);
+
+    const link = await this.prisma.contractEquipment.findUnique({
+      where: { contractId_equipmentId: { contractId, equipmentId } },
+      select: { id: true },
+    });
+
+    if (!link) {
+      throw new NotFoundException(
+        `Equipo "${equipmentId}" no está asociado a este contrato`,
+      );
+    }
+
+    await this.prisma.contractEquipment.delete({ where: { id: link.id } });
+
+    return { contractId, equipmentId, removed: true };
+  }
+
+  private async resolveEquipmentForClient(equipmentId: string, clientId: string) {
+    const equipment = await this.prisma.equipment.findFirst({
+      where: { id: equipmentId, deletedAt: null, branch: { clientId } },
+      select: { id: true },
+    });
+
+    if (!equipment) {
+      throw new BadRequestException(
+        `Equipment "${equipmentId}" not found for this client`,
+      );
+    }
+
+    return equipment;
   }
 
   private buildWhere(

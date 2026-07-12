@@ -7,9 +7,9 @@
 
 ## Estado actual
 
-**Versión:** `v2.3.0` (Bloque 6 completo — lastMaintenance en portal QR, query D-4.1, 6 tests E2E)
+**Versión:** `v2.4.0` (DT-06-B Etapa 1 — asociación Equipos↔Contratos↔Planes)
 **Rama activa:** `develop`
-**Última sesión:** 2026-07-08
+**Última sesión:** 2026-07-12
 
 ### Hitos completados
 
@@ -47,10 +47,12 @@
 | v2.2.0 | QR Fase 1 — Bloque 5 | `qr-portal/`: app React independiente, ruta `/e/:qrCode`, 5 estados (A/C/D/E/F), design tokens STECH NODES, mobile first, sin autenticación | ✅ Cerrado y auditado |
 | v2.2.2 | QR Fase 1 — Auditoría | Auditoría completa (5 áreas). Corrección SEC-C1: soft-delete filtrado en endpoint público. Documento de decisión Bloque 6 creado. | ✅ Cerrado |
 | v2.3.0 | QR Fase 1 — Bloque 6 | `lastMaintenance` en portal QR: query D-4.1 (WorkOrder.completedAt, tipo PREVENTIVE/CORRECTIVE), sección visual en móvil y desktop, null state, 6 tests E2E PASS | ✅ Cerrado |
+| v2.3.1 | QR Fase 1 — Bloque 7 (código) | Timeout E2E (`AbortController` 10s) en `qr-portal` + validación de formato `qrCode` en `PublicService` (SEC-I3) | ✅ Cerrado (validación física pendiente, ver detalle en § Ecosistema QR) |
+| v2.4.0 | DT-06-B — Etapa 1 | CRUD de asociación `ContractEquipment` / `MaintenancePlanEquipment` — endpoints, hooks y UI en contrato y plan | ✅ Cerrado y verificado |
 
-**Versión:** `v2.3.0` (Bloque 6 completo — `lastMaintenance` en portal QR implementado y verificado)
+**Versión:** `v2.4.0` (DT-06-B Etapa 1 — asociación Equipos↔Contratos↔Planes)
 
-**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
+**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos, Bloque 7 con desarrollo y validaciones técnicas completas (validación física pendiente, diferida a necesidad real de negocio) · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
 
 ---
 
@@ -63,7 +65,7 @@
 | DT-03 | Refresh token no rota en cada uso de `POST /auth/refresh` | Baja | Hito 4 |
 | DT-04 | `JwtPayload.role` tipado como `string` en lugar de `UserRole` | Baja | Hito 4 |
 | DT-05 | `clearRefreshCookie` es método público en `AuthService` | Baja | Hito 4 |
-| DT-06-B | `generateWorkOrder()` no asigna `equipmentId` en planes con N > 1 equipos. La OT preventiva queda sin activo vinculado. Solución futura (Ruta A1): cambiar la granularidad de `MaintenanceVisit` de visita-al-plan a visita-al-equipo, generando N OTs por visita. | Media | Bloque 6.1 |
+| DT-06-B — Etapa 2 | `generateWorkOrder()` sigue sin asignar `equipmentId` cuando el plan tiene N ≠ 1 equipos asociados. Causa raíz real (Etapa 1, ✅ resuelta): no existía forma de asociar equipos a contrato/plan — ver § Asociación Equipos↔Contratos↔Planes. Con Etapa 1 cerrada, se reevaluará si `generateWorkOrder()` necesita cambios (asignación manual, Ruta A1, u otra alternativa) — pendiente de análisis, no de implementación directa. | Media | Bloque 6.1 |
 
 ---
 
@@ -118,8 +120,8 @@
 | `payments` | Crear + anular pagos |
 | `expenses` | CRUD + política de edición por estado OT |
 | `equipment` | CRUD + soft delete |
-| `maintenance-plans` | Depende de `contractId` (no clientId/branchId) |
-| `maintenance-contracts` | CRUD + soft delete + numeración `CMTO-YYYY-NNNNN` |
+| `maintenance-plans` | Depende de `contractId` (no clientId/branchId). Sub-recurso `/equipment` (attach/detach, subconjunto del equipo del contrato) |
+| `maintenance-contracts` | CRUD + soft delete + numeración `CMTO-YYYY-NNNNN`. Sub-recurso `/equipment` (attach/detach, validado contra `clientId`) |
 | `maintenance-visits` | Programación + cancelación + generación OT (transacción atómica) |
 | `users` | CRUD + deactivate + changePassword |
 | `dashboard` | KPIs mantenimiento: activeContracts, activePlans, overdueVisits |
@@ -318,6 +320,31 @@ Los campos opcionales se muestran solo cuando tienen contenido (`null` los omite
 - `ensureQuotationAvailable` acepta solo estado `APPROVED` (CONVERTED = ya consumida)
 - `useGenerateWorkOrder` invalida cache `['dashboard']` en `onSuccess`
 
+### Asociación Equipos↔Contratos↔Planes — DT-06-B Etapa 1 (2026-07-12)
+
+**Estado:** ✅ Cerrado y verificado.
+
+**Causa raíz identificada:** `ContractEquipment` y `MaintenancePlanEquipment` estaban completamente modeladas en el schema desde Hito 13-A, pero sin ningún CRUD de aplicación — cero endpoints, cero UI, cero seed. `generateWorkOrder()` (Bloque 6.1) consultaba `plan.planEquipment`, que siempre estaba vacío en la práctica; DT-06-B, tal como estaba documentada ("no asigna `equipmentId` en planes con N > 1 equipos"), subestimaba el alcance real del problema.
+
+**Decisiones congeladas (sesión 2026-07-12):**
+- **Un `MaintenancePlan` solo puede asociar equipos ya vinculados a su `MaintenanceContract` padre.** No existe FK que lo obligue en el schema — se aplica en `MaintenancePlansService.attachEquipment()` verificando membresía en `ContractEquipment` antes de crear el vínculo.
+- **La validación de pertenencia equipo↔cliente vive en un único lugar:** `MaintenanceContractsService.resolveEquipmentForClient()` (privado). `MaintenancePlansService` no la duplica — solo verifica membresía en `ContractEquipment`, una consulta distinta y más simple que no necesita repetir la lógica de pertenencia al cliente, porque esta ya quedó garantizada cuando el equipo se asoció al contrato.
+- **No se modificó el schema, las entidades ni `generateWorkOrder()`.** Etapa 1 usa exclusivamente las tablas M:N ya existentes.
+
+**Endpoints nuevos** (patrón REST verificado contra precedentes existentes — `branches` bajo `clients`, `expenses`/`payments` bajo `work-orders`/`invoices`, `equipment` bajo `branches`):
+- `GET/POST /maintenance-contracts/:id/equipment`, `DELETE /maintenance-contracts/:id/equipment/:equipmentId`
+- `GET/POST /maintenance-plans/:id/equipment`, `DELETE /maintenance-plans/:id/equipment/:equipmentId`
+- Duplicados (`@@unique` de Prisma) y desasociaciones inexistentes ya se manejan con el `PrismaExceptionFilter` global y `NotFoundException` respectivamente — sin código de manejo de errores adicional.
+
+**Frontend:** `EquipmentAssociationPanel` (`frontend/src/components/maintenance/`) — componente reutilizable para contrato y plan; el nivel de contrato agrega un selector de sede (`useBranches` + `useEquipment`, ya que el listado de equipos sigue siendo por sede) y el nivel de plan filtra directamente contra los equipos del contrato. La UI solo lista equipos aún no asociados; el backend valida de forma independiente en ambos niveles.
+
+**Verificación realizada:**
+- `tsc --noEmit`: 0 errores en `backend` y `frontend`
+- Backend real: asociar, listar, duplicado (409), equipo de otro cliente (400), equipo no perteneciente al contrato intentando entrar a un plan (400), desasociar en ambos niveles, desasociar inexistente (404) — todos verificados contra datos reales
+- Frontend real (navegador): flujo completo en `MaintenanceContractsPage` (selector de sede → equipo → agregar → quitar) y en `MaintenancePlanDetailPage` (agregar desde el pool del contrato → quitar) — verificado end-to-end
+
+**Próximo paso (Etapa 2, no iniciada):** con la asociación ya disponible, reevaluar `generateWorkOrder()` — determinar si de verdad requiere cambios (asignación automática cuando N=1 ya funciona; para N>1 sigue sin resolver) antes de decidir una solución. No implementar sin análisis previo.
+
 ---
 
 ## Ecosistema QR Fase 1 — estado de implementación
@@ -340,9 +367,30 @@ Los campos opcionales se muestran solo cuando tienen contenido (`null` los omite
 | **Bloque 3** | Generación y asignación de `qrCode` desde el ERP (backend + frontend) | ✅ Cerrado |
 | **Bloque 4** | Generación y descarga de imagen QR desde el ERP | ✅ Cerrado |
 | **Bloque 5** | Inicialización de `qr-portal/` — app React independiente | ✅ Cerrado |
-| **Bloque 6** | Página del activo en el portal (6 estados, componentes UX/UI) | ⬜ Pendiente |
-| **Bloque 7** | Integración E2E — flujo completo QR físico → portal | ⬜ Pendiente |
-| **Bloque 8** | Auditoría de seguridad final y cierre de Fase 1 | ⬜ Pendiente |
+| **Bloque 6** | Página del activo en el portal (6 estados, componentes UX/UI) | ✅ Cerrado |
+| **Bloque 7** | Integración E2E — flujo completo QR físico → portal | 🔶 Desarrollo completado · validaciones técnicas completadas · **validación física pendiente** (ver detalle abajo) |
+| **Bloque 8** | Auditoría de seguridad final y cierre de Fase 1 | ⬜ Pendiente — bloqueado hasta que se ejecute la validación física de Bloque 7 |
+
+### Bloque 7 — Integración E2E (2026-07-12)
+
+**Estado:** Desarrollo completado. Validaciones técnicas completadas. **Validación física E2E pendiente** — queda como prueba de aceptación diferida hasta que exista una necesidad real (piloto, demo comercial, primer cliente). No se cierra el bloque prematuramente.
+
+**D-7.1 — Alcance del bloque (CONGELADA):** El objetivo no es desplegar a producción, sino validar el flujo completo QR físico → teléfono real → Portal → Backend. Este bloque no toma decisiones de hosting, dominio ni infraestructura permanente.
+
+**D-7.2 — Principio de validación física (CONGELADO):** La validación E2E se realizará mediante un mecanismo temporal que permita exponer el entorno local por HTTPS sin constituir una decisión de infraestructura permanente. Cloudflare Tunnel es la herramienta propuesta para ejecutar la prueba cuando se realice — no es una decisión arquitectónica definitiva ni compromete la elección de hosting futuro.
+
+**D-7.3 — Alcance de deuda técnica resuelta (CONGELADA):** Solo se resolvieron E2E-I2 y SEC-I3, por ser las únicas deudas asociadas explícitamente a Bloque 7 en la auditoría QR Fase 1 (§ Auditoría QR Fase 1 abajo). No se agregaron capas, patrones ni componentes adicionales.
+
+**Cambios de código:**
+- `qr-portal/src/api/client.ts` — `AbortController` con timeout de 10s (`FETCH_TIMEOUT_MS`) en `fetchEquipment()`. El `AbortError` cae en el mismo `catch` genérico existente → mismo `NetworkError`. No se diferenció mensaje de timeout vs. fallo de conexión: `NotFoundPage` no renderiza el texto del error, solo el tipo (`isNetworkError`), así que un mensaje distinto habría sido código muerto.
+- `backend/src/modules/public/public.service.ts` — constante `QR_CODE_PATTERN = /^[A-Za-z0-9_-]{12}$/`, anclada al formato real de `EquipmentService.generateQrCode()` (`randomBytes(9).toString('base64url')`, `equipment.service.ts:110`). `findEquipmentByQrCode()` rechaza formato inválido con el mismo `NotFoundException('Equipment not found')` que ya usa para "no encontrado" — respuesta idéntica en ambos casos. Validación ubicada en el service (no en el controller ni como regex de ruta) para preservar la opacidad de respuesta: un regex de ruta habría hecho que Express devolviera un 404 genérico distinto (`"Cannot GET ..."`) para formato inválido, filtrando información que el diseño del portal busca ocultar. Consistente con `toPublicDto()` como única frontera ya documentada del módulo.
+
+**Verificación realizada (2026-07-12):**
+- `tsc --noEmit`: 0 errores en `backend` y `qr-portal`
+- Backend real con Postgres activo — `GET /public/equipment/:qrCode` probado con 3 casos: formato corto, formato con caracteres inválidos, formato válido pero inexistente → los tres devuelven el mismo cuerpo `{"message":"Equipment not found","error":"Not Found","statusCode":404}`
+- Camino feliz confirmado contra equipo real existente (`qrCode: d1Fiqw8QJzBS`) → `200` con DTO completo, sin regresión
+
+**Pendiente para cerrar el bloque:** validación física con teléfono real vía túnel HTTPS temporal (D-7.2). Bloque 8 queda bloqueado hasta entonces.
 
 ### Portal QR — arquitectura interna (`qr-portal/`)
 
@@ -436,9 +484,9 @@ Auditoría realizada antes del Bloque 6. Cubrió 5 áreas: seguridad, privacidad
 | **SEC-I1** | 4 variables de entorno de producción sin documentar: `CORS_ORIGIN`, `PORTAL_ORIGIN`, `VITE_PORTAL_URL`, `VITE_API_URL` | Documentadas en `.env.production.example` |
 | **UX-I1** | Teléfono de contacto ficticio `+57 (601) 000-0000` hardcodeado en `company.ts` y en portal | Pendiente — requiere datos reales de STECH NODES |
 | **E2E-I1** | QR generados con URL de localhost si `VITE_PORTAL_URL` no está configurada en producción | Documentado en checklist de producción |
-| **E2E-I2** | `fetch` sin timeout en portal — puede colgar indefinidamente en red lenta | Diferido a Bloque 7 |
+| **E2E-I2** | `fetch` sin timeout en portal — puede colgar indefinidamente en red lenta | ✅ Resuelto — Bloque 7, `AbortController` 10s en `client.ts` |
 | **SEC-I2** | Throttle por IP, no global — vulnerable a ataques distribuidos | Aceptado para Fase 1 |
-| **SEC-I3** | Sin validación de longitud en parámetro `qrCode` | Diferido a Bloque 7 |
+| **SEC-I3** | Sin validación de longitud en parámetro `qrCode` | ✅ Resuelto — Bloque 7, regex en `public.service.ts`, mismo 404 que "no encontrado" |
 | **PRV-I1** | `location` revela layout físico interno del cliente | Aceptado — misma información que etiqueta física |
 | **PRV-I2** | `branch.name` revela relación comercial STECH NODES ↔ cliente | Aceptado — incluir en contrato de servicio |
 | **UX-I2** | `buildEquipmentName` sin model muestra brand en lugar de vacío | Aceptado — comportamiento razonable |
@@ -457,7 +505,7 @@ Auditoría realizada antes del Bloque 6. Cubrió 5 áreas: seguridad, privacidad
 
 ### Próximo paso
 
-Bloque 6: implementar historial mínimo en portal. Documento rector: `docs/strategy/qr-phase2-history-decision-v1.0.html`.
+Bloque 6 cerrado. Bloque 7 con código cerrado y validaciones técnicas completas — la validación física queda diferida a necesidad real de negocio (D-7.1/D-7.2). Bloque 8 (auditoría de seguridad final) queda bloqueado hasta que se ejecute esa validación física. El siguiente bloque de trabajo activo del proyecto se determina en la sección de roadmap general, no dentro del ecosistema QR.
 
 ---
 
@@ -474,7 +522,7 @@ Lista de verificación obligatoria antes de cualquier presentación a clientes, 
 | `VITE_PORTAL_URL` configurado con URL real antes de generar QR | ⏳ Pendiente | Ver `frontend/.env.production.example` |
 | Al menos un QR físico impreso y escaneado con éxito | ⏳ Pendiente | Prueba en teléfono real, no simulador |
 | Portal sirve en HTTPS en el dominio de producción | ⏳ Pendiente | — |
-| Historial mínimo visible (Bloque 6) completado | ⏳ Pendiente | Requerido para demostrar promesa comercial |
+| Historial mínimo visible (Bloque 6) completado | ✅ Listo | Implementado y verificado (v2.3.0) |
 
 ### Para Fondo Emprender / PITCH VERDE 2026
 
@@ -558,4 +606,4 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 
 ---
 
-*Actualizado: 2026-07-08 — v2.1.0 — Ecosistema QR Fase 1, Bloques 1 y 2 cerrados: schema `qrCode` en Equipment + `PublicModule` con endpoint público, DTO explícito, CORS multi-origen, throttle. Próximo: Bloque 3 — generación y asignación del `qrCode` desde el ERP.*
+*Actualizado: 2026-07-12 — v2.4.0 — DT-06-B Etapa 1 cerrada: CRUD de asociación `ContractEquipment`/`MaintenancePlanEquipment` (endpoints, hooks, UI en contrato y plan), con la decisión congelada de que un plan solo puede cubrir equipos ya asociados a su contrato. Verificado end-to-end en backend real y en navegador. Próximo: Etapa 2 — reevaluar `generateWorkOrder()` con la asociación ya disponible (análisis previo, sin implementación directa).*

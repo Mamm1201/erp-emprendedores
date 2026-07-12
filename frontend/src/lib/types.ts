@@ -461,6 +461,22 @@ export interface Equipment {
   updatedAt: string;
 }
 
+export interface AssociatedEquipment {
+  equipmentId: string;
+  addedAt: string;
+  equipment: {
+    id: string;
+    type: EquipmentType;
+    brand: string | null;
+    model: string | null;
+    serialNumber: string | null;
+    location: string | null;
+    status: EquipmentStatus;
+    branchId: string;
+    branch: { id: string; name: string };
+  };
+}
+
 export type FileEntityType =
   | 'EQUIPMENT'
   | 'WORK_ORDER'

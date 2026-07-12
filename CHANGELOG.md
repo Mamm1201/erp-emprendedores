@@ -4,6 +4,64 @@
 
 ---
 
+## v2.4.0 — DT-06-B Etapa 1: asociación Equipos↔Contratos↔Planes (2026-07-12)
+
+### Backend — `maintenance-contracts`
+- Nuevo `AttachContractEquipmentDto` (`equipmentId: string`)
+- `MaintenanceContractsService`: `findEquipment()`, `attachEquipment()`, `detachEquipment()`, `resolveEquipmentForClient()` (privado — única implementación de la validación de pertenencia equipo↔cliente)
+- Endpoints: `GET/POST /maintenance-contracts/:id/equipment`, `DELETE /maintenance-contracts/:id/equipment/:equipmentId`
+
+### Backend — `maintenance-plans`
+- Nuevo `AttachPlanEquipmentDto`
+- `MaintenancePlansService`: `findEquipment()`, `attachEquipment()`, `detachEquipment()` — valida membresía en `ContractEquipment` del contrato padre (decisión congelada: un plan solo cubre equipos ya asociados al contrato)
+- Endpoints: `GET/POST /maintenance-plans/:id/equipment`, `DELETE /maintenance-plans/:id/equipment/:equipmentId`
+
+### Frontend
+- `frontend/src/hooks/use-contract-equipment.ts`, `frontend/src/hooks/use-plan-equipment.ts` (nuevos)
+- `frontend/src/components/maintenance/EquipmentAssociationPanel.tsx` (nuevo, reutilizable) — lista solo equipos disponibles para asociar; backend valida de forma independiente
+- `MaintenanceContractsPage.tsx`: panel de equipos en `ContractFormModal` (solo en edición), con selector de sede (equipo sigue siendo listado por sede)
+- `MaintenancePlanDetailPage.tsx`: panel de equipos filtrado contra el pool del contrato padre
+- `frontend/src/lib/types.ts`: nuevo tipo `AssociatedEquipment`
+
+### Verificación
+- `tsc --noEmit`: 0 errores en `backend` y `frontend`
+- Backend real: asociar, listar, duplicado (409 vía filtro global), equipo de otro cliente (400), equipo no perteneciente al contrato hacia un plan (400), desasociar en ambos niveles, desasociar inexistente (404)
+- Navegador real: flujo completo verificado en ambas páginas — contrato (sede → equipo → agregar → quitar) y plan (agregar desde pool del contrato → quitar)
+
+### Estado del bloque
+Cerrado y verificado. No se modificó el schema ni `generateWorkOrder()`. Próximo: Etapa 2 — reevaluar `generateWorkOrder()` con la asociación ya disponible.
+
+### TypeScript
+- Backend: 0 errores
+- Frontend: 0 errores
+
+---
+
+## v2.3.1 — Bloque 7 (código): timeout E2E + validación de formato qrCode (2026-07-12)
+
+### QR Portal — `qr-portal/src/api/client.ts`
+- Añadido `AbortController` con timeout de 10s (`FETCH_TIMEOUT_MS`) en `fetchEquipment()`
+- `AbortError` cae en el mismo `catch` genérico → mismo `NetworkError` ya existente (sin mensaje diferenciado: `NotFoundPage` no renderiza el mensaje del error, solo el tipo)
+
+### Backend — `backend/src/modules/public/public.service.ts`
+- Añadida constante `QR_CODE_PATTERN = /^[A-Za-z0-9_-]{12}$/`, anclada al formato real de `EquipmentService.generateQrCode()` (`randomBytes(9).toString('base64url')`)
+- `findEquipmentByQrCode()` rechaza formato inválido con el mismo `NotFoundException('Equipment not found')` que ya usa para "no encontrado" — respuesta idéntica en ambos casos (SEC-I3)
+- Validación ubicada en el service, no en el controller/ruta: preserva la opacidad de respuesta y es coherente con `toPublicDto()` como única frontera del módulo
+
+### Verificación
+- `tsc --noEmit`: 0 errores en `backend` y `qr-portal`
+- Backend real + Postgres: 3 casos probados contra `GET /public/equipment/:qrCode` — código corto, código con caracteres inválidos, y código con formato válido pero inexistente → los tres devuelven el mismo cuerpo 404
+- Camino feliz confirmado contra equipo real (`qrCode` existente) → 200 con DTO completo, sin regresión
+
+### Estado del bloque
+Desarrollo completado. Validaciones técnicas completadas. **Validación física E2E (QR impreso → teléfono real → portal) queda pendiente**, diferida hasta que exista una necesidad real (piloto, demo, primer cliente) — ver D-7.1/D-7.2 en `DEVELOPMENT_CONTEXT.md`.
+
+### TypeScript
+- Backend: 0 errores
+- QR Portal: 0 errores
+
+---
+
 ## v2.3.0 — QR Bloque 6: lastMaintenance en portal (2026-07-08)
 
 ### Backend — `public.service.ts` + DTO

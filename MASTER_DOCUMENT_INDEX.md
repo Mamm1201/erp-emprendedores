@@ -23,7 +23,7 @@
 | **6** | Strategic Review — Fondo Emprender | Análisis estructurado de los 5 documentos fuente con nivel de confianza por afirmación. Vacíos documentales para PITCH VERDE 2026. | Referencia | Vigente | v1.0 | `docs/strategy/strategic-review-fondo-emprender-v1.0.html` · PDF |
 | **7** | QR Strategy Audit | Auditoría crítica de la hipótesis "el QR es el diferenciador". Análisis de imitabilidad, objeciones por actor, reformulación del diferenciador real. | Referencia | Vigente | v1.0 | `docs/strategy/qr-strategy-audit-v1.0.html` |
 | **8** | Strategic Positioning 10Y | Posicionamiento en tres horizontes temporales (1–3, 3–6, 6–10 años). Tesis del volante estratégico, 4 capas de moat competitivo. | Referencia | Vigente | v1.0 | `docs/strategy/strategic-positioning-10y-v1.0.html` |
-| — | DEVELOPMENT_CONTEXT.md | Estado actual de implementación. Hitos, deuda técnica, decisiones arquitectónicas activas, estado de la rama. | Operativo | Activo | v2.2.4 | `DEVELOPMENT_CONTEXT.md` |
+| — | DEVELOPMENT_CONTEXT.md | Estado actual de implementación. Hitos, deuda técnica, decisiones arquitectónicas activas, estado de la rama. | Operativo | Activo | v2.4.0 | `DEVELOPMENT_CONTEXT.md` |
 | — | CHANGELOG.md | Historial cronológico de cambios funcionales, correcciones y documentación. | Operativo | Activo | — | `CHANGELOG.md` |
 | — | MASTER_DOCUMENT_INDEX.md | Este archivo. Índice y reglas de precedencia. | Operativo | Activo | v1.0 | `MASTER_DOCUMENT_INDEX.md` |
 

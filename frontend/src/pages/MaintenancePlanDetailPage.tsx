@@ -24,6 +24,17 @@ import {
   useDeleteVisit,
   type VisitFormData,
 } from '@/hooks/use-maintenance-visits';
+import {
+  useContractEquipment,
+  useAttachContractEquipment,
+  useDetachContractEquipment,
+} from '@/hooks/use-contract-equipment';
+import {
+  usePlanEquipment,
+  useAttachPlanEquipment,
+  useDetachPlanEquipment,
+} from '@/hooks/use-plan-equipment';
+import { EquipmentAssociationPanel } from '@/components/maintenance/EquipmentAssociationPanel';
 import type { MaintenanceVisit, MaintenanceVisitStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -151,6 +162,19 @@ export default function MaintenancePlanDetailPage() {
   const cancelVisit = useCancelVisit(planId ?? '');
   const deleteVisit = useDeleteVisit(planId ?? '');
 
+  const contractId = plan?.contract.id ?? null;
+  const { data: contractEquipment = [], isLoading: isLoadingContractEquipment } =
+    useContractEquipment(contractId);
+  const { data: planEquipment = [], isLoading: isLoadingPlanEquipment } =
+    usePlanEquipment(planId ?? null);
+  const attachPlanEquipment = useAttachPlanEquipment(planId ?? '');
+  const detachPlanEquipment = useDetachPlanEquipment(planId ?? '');
+
+  const planEquipmentIds = new Set(planEquipment.map((e) => e.equipmentId));
+  const availablePlanEquipment = contractEquipment
+    .filter((e) => !planEquipmentIds.has(e.equipmentId))
+    .map((e) => e.equipment);
+
   async function handleGenerate(visit: MaintenanceVisit) {
     const result = await generateWO.mutateAsync(visit.id);
     if (result.workOrder) {
@@ -213,6 +237,21 @@ export default function MaintenancePlanDetailPage() {
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Equipos del plan */}
+      <div className="rounded-md border p-4">
+        <EquipmentAssociationPanel
+          title="Equipos cubiertos por este plan"
+          associated={planEquipment}
+          availableEquipment={availablePlanEquipment}
+          isLoading={isLoadingPlanEquipment || isLoadingContractEquipment}
+          isAttaching={attachPlanEquipment.isPending}
+          isDetaching={detachPlanEquipment.isPending}
+          onAttach={(equipmentId) => attachPlanEquipment.mutate(equipmentId)}
+          onDetach={(equipmentId) => detachPlanEquipment.mutate(equipmentId)}
+          emptyAvailableMessage="No hay equipos del contrato disponibles — asócialos primero al contrato"
+        />
       </div>
 
       {/* Visits table */}

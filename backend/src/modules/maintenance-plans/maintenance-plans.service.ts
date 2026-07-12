@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -9,6 +9,25 @@ import {
 import { CreateMaintenancePlanDto } from './dto/create-maintenance-plan.dto';
 import { QueryMaintenancePlansDto } from './dto/query-maintenance-plans.dto';
 import { UpdateMaintenancePlanDto } from './dto/update-maintenance-plan.dto';
+import { AttachPlanEquipmentDto } from './dto/attach-plan-equipment.dto';
+
+const PLAN_EQUIPMENT_SELECT = {
+  equipmentId: true,
+  addedAt: true,
+  equipment: {
+    select: {
+      id: true,
+      type: true,
+      brand: true,
+      model: true,
+      serialNumber: true,
+      location: true,
+      status: true,
+      branchId: true,
+      branch: { select: { id: true, name: true } },
+    },
+  },
+} satisfies Prisma.MaintenancePlanEquipmentSelect;
 
 @Injectable()
 export class MaintenancePlansService {
@@ -128,6 +147,62 @@ export class MaintenancePlansService {
       },
       select: MAINTENANCE_PLAN_SELECT,
     });
+  }
+
+  async findEquipment(planId: string) {
+    await this.findOne(planId);
+
+    return this.prisma.maintenancePlanEquipment.findMany({
+      where: { planId },
+      select: PLAN_EQUIPMENT_SELECT,
+      orderBy: { addedAt: 'asc' },
+    });
+  }
+
+  async attachEquipment(planId: string, dto: AttachPlanEquipmentDto) {
+    const plan = await this.findOne(planId);
+
+    // El equipo debe pertenecer ya al contrato padre (decisión congelada,
+    // sesión 2026-07-12): un plan no puede cubrir equipos fuera del alcance
+    // del contrato. Esto evita duplicar la validación de pertenencia al
+    // cliente que ya vive en MaintenanceContractsService — aquí solo se
+    // verifica membresía en ContractEquipment.
+    const link = await this.prisma.contractEquipment.findUnique({
+      where: {
+        contractId_equipmentId: { contractId: plan.contractId, equipmentId: dto.equipmentId },
+      },
+      select: { id: true },
+    });
+
+    if (!link) {
+      throw new BadRequestException(
+        `Equipment "${dto.equipmentId}" must be associated with the contract before it can be added to a plan`,
+      );
+    }
+
+    return this.prisma.maintenancePlanEquipment.create({
+      data: { planId, equipmentId: dto.equipmentId },
+      select: PLAN_EQUIPMENT_SELECT,
+    });
+  }
+
+  async detachEquipment(planId: string, equipmentId: string) {
+    await this.findOne(planId);
+
+    const link = await this.prisma.maintenancePlanEquipment.findUnique({
+      where: { planId_equipmentId: { planId, equipmentId } },
+      select: { id: true },
+    });
+
+    if (!link) {
+      throw new NotFoundException(
+        `Equipo "${equipmentId}" no está asociado a este plan`,
+      );
+    }
+
+    await this.prisma.maintenancePlanEquipment.delete({ where: { id: link.id } });
+
+    return { planId, equipmentId, removed: true };
   }
 
   private buildListWhere(query: QueryMaintenancePlansDto): Prisma.MaintenancePlanWhereInput {

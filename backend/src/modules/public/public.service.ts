@@ -26,11 +26,20 @@ interface EquipmentPublicRow {
   workOrders: LastWorkOrderRow[];
 }
 
+const QR_CODE_PATTERN = /^[A-Za-z0-9_-]{12}$/;
+
 @Injectable()
 export class PublicService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findEquipmentByQrCode(qrCode: string): Promise<EquipmentPublicDto> {
+    // SEC-I3: formato inválido responde igual que "no encontrado" — misma
+    // excepción, mismo cuerpo de respuesta. El portal nunca revela si el
+    // motivo fue formato incorrecto o inexistencia real del activo.
+    if (!QR_CODE_PATTERN.test(qrCode)) {
+      throw new NotFoundException('Equipment not found');
+    }
+
     // deletedAt: null rejects soft-deleted records; DECOMMISSIONED (status field)
     // remains visible by design — it's an operational state, not a deletion.
     const equipment = await this.prisma.equipment.findUnique({

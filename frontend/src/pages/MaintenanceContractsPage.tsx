@@ -16,6 +16,14 @@ import {
   type ContractUpdateData,
 } from '@/hooks/use-maintenance-contracts';
 import { useClients } from '@/hooks/use-clients';
+import { useBranches } from '@/hooks/use-branches';
+import { useEquipment } from '@/hooks/use-equipment';
+import {
+  useContractEquipment,
+  useAttachContractEquipment,
+  useDetachContractEquipment,
+} from '@/hooks/use-contract-equipment';
+import { EquipmentAssociationPanel } from '@/components/maintenance/EquipmentAssociationPanel';
 import type { MaintenanceContract, ContractStatus, BillingCycle, ServiceHoursLevel } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -171,6 +179,24 @@ function ContractFormModal({ open, onClose, editing }: ContractFormModalProps) {
   const createContract = useCreateMaintenanceContract();
   const updateContract = useUpdateMaintenanceContract();
 
+  const isEdit = !!editing;
+
+  const [equipmentBranchId, setEquipmentBranchId] = useState('');
+  const { data: branches = [] } = useBranches(editing?.client.id ?? null);
+  const { data: branchEquipmentData } = useEquipment(
+    editing?.client.id ?? null,
+    equipmentBranchId || null,
+  );
+  const { data: contractEquipment = [], isLoading: isLoadingContractEquipment } =
+    useContractEquipment(editing?.id ?? null);
+  const attachEquipment = useAttachContractEquipment(editing?.id ?? '');
+  const detachEquipment = useDetachContractEquipment(editing?.id ?? '');
+
+  const associatedEquipmentIds = new Set(contractEquipment.map((e) => e.equipmentId));
+  const availableContractEquipment = (branchEquipmentData?.data ?? []).filter(
+    (e) => !associatedEquipmentIds.has(e.id),
+  );
+
   const {
     register,
     handleSubmit,
@@ -181,8 +207,6 @@ function ContractFormModal({ open, onClose, editing }: ContractFormModalProps) {
     resolver: zodResolver(contractSchema),
     defaultValues: buildDefaults(editing),
   });
-
-  const isEdit = !!editing;
 
   function handleClose() {
     reset(buildDefaults(editing));
@@ -367,6 +391,41 @@ function ContractFormModal({ open, onClose, editing }: ContractFormModalProps) {
             <Label htmlFor="notes">Notas</Label>
             <Textarea id="notes" rows={3} placeholder="Observaciones del contrato…" {...register('notes')} />
           </div>
+
+          {/* Equipos del contrato — solo disponible con el contrato ya creado */}
+          {isEdit && (
+            <div className="rounded-md border p-4">
+              <EquipmentAssociationPanel
+                title="Equipos cubiertos por este contrato"
+                associated={contractEquipment}
+                availableEquipment={availableContractEquipment}
+                isLoading={isLoadingContractEquipment}
+                isAttaching={attachEquipment.isPending}
+                isDetaching={detachEquipment.isPending}
+                onAttach={(equipmentId) => attachEquipment.mutate(equipmentId)}
+                onDetach={(equipmentId) => detachEquipment.mutate(equipmentId)}
+                emptyAvailableMessage={
+                  equipmentBranchId ? 'No hay equipos disponibles en esta sede' : 'Selecciona una sede'
+                }
+                extraControls={
+                  <div className="space-y-1">
+                    <Label htmlFor="equipmentBranchId">Sede</Label>
+                    <select
+                      id="equipmentBranchId"
+                      className="flex h-9 w-full rounded-md border border-[hsl(var(--input))] bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
+                      value={equipmentBranchId}
+                      onChange={(e) => setEquipmentBranchId(e.target.value)}
+                    >
+                      <option value="">Seleccionar sede…</option>
+                      {branches.map((b) => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                }
+              />
+            </div>
+          )}
 
           <DialogFooter>
             <DialogClose asChild>
