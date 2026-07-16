@@ -23,7 +23,8 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "bootstrap:admin": "tsx prisma/bootstrap-admin.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
