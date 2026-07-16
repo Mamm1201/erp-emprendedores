@@ -41,16 +41,30 @@ async function main(): Promise<void> {
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-  const admin = await prisma.user.upsert({
+  // Idempotente y sin duplicados: se busca por email (único) y se crea o actualiza.
+  const existing = await prisma.user.findUnique({
     where: { email },
-    update: { name, role: UserRole.ADMIN, isActive: true, passwordHash },
-    create: { email, name, role: UserRole.ADMIN, isActive: true, passwordHash },
+    select: { role: true },
   });
+
+  const admin = existing
+    ? await prisma.user.update({
+        where: { email },
+        data: { name, role: UserRole.ADMIN, isActive: true, passwordHash },
+      })
+    : await prisma.user.create({
+        data: { email, name, role: UserRole.ADMIN, isActive: true, passwordHash },
+      });
+
+  const action = existing ? 'actualizado' : 'creado';
 
   // Deja un único administrador: elimina cualquier otro usuario.
   const removed = await prisma.user.deleteMany({ where: { email: { not: email } } });
 
-  console.log(`✓ Admin definitivo listo: ${admin.email} (rol ${admin.role})`);
+  console.log(`✓ Administrador ${action}: ${admin.email} (rol ${admin.role})`);
+  if (existing && existing.role !== UserRole.ADMIN) {
+    console.log(`  ↳ rol elevado de ${existing.role} a ADMIN`);
+  }
   console.log(`✓ Otros usuarios eliminados: ${removed.count}`);
   console.log('→ Ingresa con esa contraseña temporal y cámbiala en Usuarios → Cambiar contraseña.');
 }
