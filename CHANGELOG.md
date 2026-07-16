@@ -4,6 +4,27 @@
 
 ---
 
+## v2.5.1 — Modelo de Dominio v1.1: Acta Técnica congelada (2026-07-15)
+
+### `docs/domain/domain-model-v1.0.md` (contenido actualizado a v1.1)
+- **Acta Técnica — nueva definición documental oficial congelada (§5.3):** documenta de forma estructurada la evidencia técnica generada durante una intervención. No narra una historia ni certifica frente al cliente — esa es una función derivada, no su responsabilidad de dominio. Contiene "toda la evidencia técnica que el tipo de servicio produzca" sin enumerar tipos, para no atar la definición a la implementación actual.
+- **Principio 8 agregado** (§2): "La Historia Documental del Equipo es relacional, no unitaria" — se construye a partir de la relación cronológica entre documentos generados durante el ciclo de vida del Equipo, con la OT como punto de anclaje de cada intervención y el Acta como fuente principal de evidencia técnica.
+- **Corrección de lenguaje en Orden de Trabajo (§5.2, ya congelada):** "esos son procesos documentales posteriores que la OT habilita" → "derivados de la ejecución registrada por la OT" — elimina la relación de "permiso" entre OT y Acta, sustituida por una relación de derivación documental.
+- **Línea de cierre armonizada** entre OT y Acta: "La Orden de Trabajo documenta que la intervención ocurrió; el Acta Técnica documenta la evidencia técnica generada durante esa intervención." — idéntica en ambas definiciones.
+- Tabla de estado (§3.3, §6) actualizada: Acta Técnica pasa de pendiente a congelada; Cuenta de Cobro es la próxima definición pendiente.
+
+### `MASTER_DOCUMENT_INDEX.md`
+- Versión del documento de dominio actualizada a v1.1, con nota de versión canónica (mismo patrón que `qr-functional-design-v1.2.html` → v1.4).
+- Nueva entrada en el historial de versiones del propio índice.
+
+### `DEVELOPMENT_CONTEXT.md`
+- Estado de "Modelo de Dominio del ERP" actualizado: Cotización, OT y Acta Técnica congeladas; Cuenta de Cobro es el próximo pendiente.
+
+### Estado del commit
+Exclusivamente documental — sin cambios de código, sin migraciones. Próximo: definición documental de la Cuenta de Cobro.
+
+---
+
 ## v2.5.0 — Modelo de Dominio v1.0: Cotización y Orden de Trabajo congeladas (2026-07-15)
 
 ### Nuevo — `docs/domain/domain-model-v1.0.md`
