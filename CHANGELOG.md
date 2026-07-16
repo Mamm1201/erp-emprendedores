@@ -4,6 +4,22 @@
 
 ---
 
+## v2.5.2 — Modelo de Dominio v1.2: Cuenta de Cobro congelada (2026-07-15)
+
+### `docs/domain/domain-model-v1.0.md` (contenido actualizado a v1.2)
+- **Cuenta de Cobro — nueva definición documental oficial congelada (§5.4).** Concepto descubierto por método (hecho de negocio → responsabilidad → concepto → nombre, en ese orden). Responsabilidad: "comunicar formalmente al cliente el resultado económico derivado de un servicio, contrato u otra relación comercial, dejando constancia documental para su gestión administrativa, financiera y tributaria."
+- **Nombre conservado en el lenguaje del negocio.** El documento se llama Cuenta de Cobro — el término real usado con clientes, contador y dentro del ERP. La forma tributaria de emisión es un asunto de implementación; si el negocio cambia de forma jurídica (p. ej. SAS con Factura Electrónica), el modelo se evolucionará en ese momento. No se introduce una abstracción anticipada.
+- **Caso $0 subsumido sin excepción.** El resultado económico puede ser valor a pagar, parcial, cero o totalmente cubierto por contrato — todos válidos, mismo documento. La responsabilidad es comunicar un "resultado económico", no una "obligación/deuda".
+- Tablas de estado (§3.3, §6) actualizadas: Cuenta de Cobro congelada; Historia Documental del Equipo es el último concepto de dominio pendiente.
+
+### `MASTER_DOCUMENT_INDEX.md` y `DEVELOPMENT_CONTEXT.md`
+- Versión del documento de dominio a v1.2; estado y trailer actualizados.
+
+### Estado del commit
+Exclusivamente documental — sin cambios de código, sin migraciones. Con esto, las cuatro definiciones documentales del proceso (Cotización, OT, Acta Técnica, Cuenta de Cobro) quedan congeladas. Próximo: definición de la Historia Documental del Equipo.
+
+---
+
 ## v2.5.1 — Modelo de Dominio v1.1: Acta Técnica congelada (2026-07-15)
 
 ### `docs/domain/domain-model-v1.0.md` (contenido actualizado a v1.1)

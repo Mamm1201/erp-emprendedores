@@ -7,7 +7,7 @@
 
 ## Estado actual
 
-**Versión:** `v2.5.1` (Modelo de Dominio v1.1 — Acta Técnica congelada)
+**Versión:** `v2.5.2` (Modelo de Dominio v1.2 — Cuenta de Cobro congelada)
 **Rama activa:** `develop`
 **Última sesión:** 2026-07-15
 
@@ -51,10 +51,11 @@
 | v2.4.0 | DT-06-B — Etapa 1 | CRUD de asociación `ContractEquipment` / `MaintenancePlanEquipment` — endpoints, hooks y UI en contrato y plan | ✅ Cerrado y verificado |
 | v2.5.0 | Modelo de Dominio v1.0 | Descubrimiento y congelación de dominio: lenguaje ubicuo (Sistema/Equipo/Componente/Periférico/Repuesto/Consumible), principios rectores, D-07 a D-11, definiciones documentales oficiales de Cotización y Orden de Trabajo. Sin cambios de código. | ✅ Cerrado — documentación consolidada en `docs/domain/domain-model-v1.0.md` |
 | v2.5.1 | Modelo de Dominio v1.1 | Acta Técnica congelada (documenta de forma estructurada la evidencia técnica, no narra ni certifica). Principio 8 agregado (Historia Documental relacional). Corrección de lenguaje en OT (§5.2: "habilita" → "derivado de"). Sin cambios de código. | ✅ Cerrado — `docs/domain/domain-model-v1.0.md` actualizado a v1.1 |
+| v2.5.2 | Modelo de Dominio v1.2 | Cuenta de Cobro congelada — "comunicar formalmente al cliente el resultado económico derivado de un servicio, contrato u otra relación comercial". Caso $0/cubierto subsumido ("resultado económico", no "obligación"). Nombre conservado en el lenguaje del negocio; la forma tributaria de emisión es asunto de implementación, a evolucionar si el negocio cambia de forma jurídica. Sin cambios de código. | ✅ Cerrado — `docs/domain/domain-model-v1.0.md` actualizado a v1.2 |
 
-**Versión:** `v2.5.1` (Modelo de Dominio v1.1 — Acta Técnica congelada)
+**Versión:** `v2.5.2` (Modelo de Dominio v1.2 — Cuenta de Cobro congelada)
 
-**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos, Bloque 7 con desarrollo y validaciones técnicas completas (validación física pendiente, diferida a necesidad real de negocio) · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Modelo de Dominio v1.1 congelado para Cotización, OT y Acta Técnica — Cuenta de Cobro en definición · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
+**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos, Bloque 7 con desarrollo y validaciones técnicas completas (validación física pendiente, diferida a necesidad real de negocio) · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Modelo de Dominio v1.2: las cuatro definiciones documentales (Cotización, OT, Acta Técnica, Cuenta de Cobro) congeladas — solo resta la Historia Documental del Equipo · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
 
 ---
 
@@ -246,8 +247,8 @@ Pista de gobierno separada de `docs/strategy/` (identidad, posicionamiento, QR).
 - Cotización — ✅ definición documental oficial congelada.
 - Orden de Trabajo — ✅ definición documental oficial congelada.
 - Acta Técnica — ✅ definición documental oficial congelada.
-- Cuenta de Cobro — ⏳ próxima definición pendiente.
-- Historia Documental del Equipo — ⏳ pendiente, se diseña al cierre de Cuenta de Cobro.
+- Cuenta de Cobro — ✅ definición documental oficial congelada.
+- Historia Documental del Equipo — ⏳ próxima definición pendiente (último concepto de dominio antes de pasar a diseño).
 
 **Backlog derivado de la auditoría (no implementado):** RFC-1 a RFC-4, más los hallazgos de deuda técnica y mejora de UX registrados en `docs/domain/domain-model-v1.0.md §7`. Ninguno se implementa hasta que se decida explícitamente retomarlo — este commit es exclusivamente de consolidación documental.
 
@@ -628,4 +629,4 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 
 ---
 
-*Actualizado: 2026-07-15 — v2.5.1 — Modelo de Dominio v1.1: Acta Técnica congelada (documenta de forma estructurada la evidencia técnica generada durante la intervención — no narra ni certifica frente al cliente). Principio 8 agregado (la Historia Documental del Equipo es relacional, no unitaria). Corrección de lenguaje en la definición de OT ya congelada (§5.2: "la OT habilita" → "derivados de la ejecución registrada por la OT"), y línea de cierre armonizada entre ambos documentos. Commit exclusivamente documental — sin cambios de código. Próximo: definición documental de la Cuenta de Cobro, siguiendo la misma metodología.*
+*Actualizado: 2026-07-15 — v2.5.2 — Modelo de Dominio v1.2: Cuenta de Cobro congelada. Concepto descubierto por método (hecho → responsabilidad → concepto → nombre): "comunicar formalmente al cliente el resultado económico derivado de un servicio, contrato u otra relación comercial". El caso $0/cubierto queda subsumido ("resultado económico", no "obligación"). Nombre conservado en el lenguaje real del negocio (Cuenta de Cobro) — la forma tributaria de emisión es asunto de implementación, a evolucionar solo si el negocio cambia de forma jurídica; no se anticipa una abstracción ahora. Con esto, las cuatro definiciones documentales del proceso están congeladas. Commit exclusivamente documental — sin cambios de código. Próximo: Historia Documental del Equipo, último concepto de dominio antes de pasar a diseño técnico.*

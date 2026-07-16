@@ -1,12 +1,12 @@
-# Modelo de Dominio STECH NODES — v1.1 †
+# Modelo de Dominio STECH NODES — v1.2 †
 
 > **Tipo:** Normativo (técnico/arquitectura de dominio — no corporativo).
 > **Estado:** Congelado parcialmente. Ver §6 para el detalle de qué está cerrado y qué sigue en descubrimiento.
-> **Fecha de creación:** 2026-07-15 · **Última actualización:** 2026-07-15 — Acta Técnica congelada, Principio 8 agregado, corrección de lenguaje en Orden de Trabajo (§5.2).
+> **Fecha de creación:** 2026-07-15 · **Última actualización:** 2026-07-15 — Cuenta de Cobro congelada (§5.4). Las cuatro definiciones documentales del proceso (Cotización, OT, Acta Técnica, Cuenta de Cobro) quedan cerradas; solo resta la Historia Documental del Equipo.
 > **Precedencia:** Este documento gobierna el modelo conceptual del ERP (entidades de dominio, lenguaje ubicuo, definiciones documentales de los artefactos del proceso de mantenimiento). No gobierna posicionamiento ni comunicación externa — eso corresponde a `docs/strategy/positioning-brief-v1.3.html` y `docs/strategy/business-rector-v1.0.html`, que tienen prioridad sobre cualquier término de este documento si llegaran a tocar el mismo tema.
 > **Regla de actualización:** cambios a las secciones marcadas como congeladas requieren una decisión de dominio formal, con fecha y motivo, igual que las decisiones de `docs/strategy/`. Las secciones marcadas como pendientes se pueden completar sin reabrir lo ya congelado.
 >
-> † El archivo se llama `domain-model-v1.0.md` pero su contenido fue actualizado a v1.1 (Acta Técnica congelada). El número de versión canónico es v1.1.
+> † El archivo se llama `domain-model-v1.0.md` pero su contenido fue actualizado a v1.2. El número de versión canónico es v1.2. (v1.1: Acta Técnica congelada. v1.2: Cuenta de Cobro congelada.)
 
 ---
 
@@ -17,8 +17,8 @@ Este documento consolida el modelo conceptual de negocio de STECH NODES descubie
 - El lenguaje ubicuo del dominio de mantenimiento técnico (activos, actividades, documentos del proceso).
 - Los principios rectores que gobiernan el ERP como sistema de trazabilidad documental.
 - Las decisiones operativas congeladas D-07 a D-11.
-- Las definiciones documentales oficiales de **Cotización**, **Orden de Trabajo** y **Acta Técnica**.
-- El estado de lo que aún está pendiente de definir (Cuenta de Cobro, Historia Documental del Equipo).
+- Las definiciones documentales oficiales de **Cotización**, **Orden de Trabajo**, **Acta Técnica** y **Cuenta de Cobro**.
+- El estado de lo que aún está pendiente de definir (Historia Documental del Equipo).
 - El backlog de mejoras de arquitectura/implementación derivado de la auditoría del ERP contra este modelo, explícitamente **no implementado** en esta etapa.
 
 ---
@@ -67,8 +67,8 @@ Este documento consolida el modelo conceptual de negocio de STECH NODES descubie
 | **Cotización** | Respaldo comercial de un Servicio Ofertado. | ✅ Definición oficial congelada — §5.1 |
 | **Orden de Trabajo (OT)** | Soporte documental obligatorio de la ejecución. Documento raíz de la ejecución operativa. | ✅ Definición oficial congelada — §5.2 |
 | **Acta Técnica** | Documenta de forma estructurada la evidencia técnica generada durante la intervención. Opcional según tipo de servicio. | ✅ Definición oficial congelada — §5.3 |
-| **Cuenta de Cobro** | Documento financiero, independiente de la OT. | ⏳ Pendiente de definición formal |
-| **Historia Documental del Equipo** | El producto real del ERP — ensamblado a partir de todos los documentos anteriores asociados a las OTs de un Equipo, no una propiedad de ninguno de ellos individualmente. | ⏳ Pendiente de diseño (posterior a que Acta y Cuenta de Cobro queden definidas) |
+| **Cuenta de Cobro** | Documento financiero que comunica formalmente al cliente el resultado económico de un servicio, contrato u otra relación comercial. Independiente de la OT. | ✅ Definición oficial congelada — §5.4 |
+| **Historia Documental del Equipo** | El producto real del ERP — ensamblado a partir de todos los documentos anteriores asociados a las OTs de un Equipo, no una propiedad de ninguno de ellos individualmente. | ⏳ Próxima definición pendiente (último concepto de dominio antes del diseño) |
 
 ---
 
@@ -163,6 +163,35 @@ La Acta Técnica deriva de una Orden de Trabajo y documenta técnicamente la eje
 
 > **La Orden de Trabajo documenta que la intervención ocurrió; el Acta Técnica documenta la evidencia técnica generada durante esa intervención.**
 
+### 5.4 Cuenta de Cobro — CONGELADA
+
+> **Nota sobre forma de emisión (no reabre el dominio).** "Cuenta de Cobro" es el nombre del documento en el lenguaje del negocio hoy — el que se usa con clientes, con el contador y dentro del ERP. Es el lenguaje ubicuo del dominio actual. Los requisitos tributarios de su emisión (hoy como Cuenta de Cobro de persona natural con establecimiento) son un asunto de implementación. Si en el futuro STECH NODES cambia de forma jurídica (p. ej. SAS) y debe emitir Factura Electrónica, el modelo se evolucionará en ese momento según la nueva realidad del negocio — no se anticipa un concepto abstracto ahora.
+
+**Propósito.** Comunicar formalmente al cliente el resultado económico derivado de un servicio, contrato u otra relación comercial, dejando constancia documental para su gestión administrativa, financiera y tributaria.
+
+**Qué representa realmente.** Es el documento que comunica formalmente el resultado económico que corresponde al cliente por un servicio, contrato u otra relación comercial. Ese resultado puede ser un valor a pagar, un valor parcial, un valor cero o un valor totalmente cubierto por contrato — todos son resultados económicos válidos, formalizados por el mismo documento. No decide ese resultado (se determinó antes, durante o después, en la gestión comercial u operativa), no es evidencia técnica, y no es el registro de que el servicio se ejecutó.
+
+**Qué le corresponde documentar:**
+- El resultado económico que corresponde al cliente y su origen (el servicio, contrato o relación comercial que lo genera).
+- El valor de ese resultado, en los términos ya determinados por la gestión comercial u operativa.
+- La constancia formal de emisión: a quién se comunica y con qué referencia de origen.
+
+**Qué NO le corresponde documentar:**
+- La decisión de qué se cobra ni la interpretación de la cobertura contractual — ocurren antes, en la gestión del servicio. El documento refleja el resultado, no lo produce.
+- La evidencia técnica de la intervención — pertenece al Acta.
+- El hecho de que el servicio se ejecutó, sus fechas y su estado — pertenece a la OT.
+- El registro del pago recibido — es un evento posterior que opera sobre este documento.
+
+**Qué aporta a la Historia Documental del Equipo.** Aporta el cierre económico de una intervención cuando el resultado deriva de un servicio ejecutado sobre un Equipo específico. Cuando deriva de un vencimiento contractual o de una relación comercial no atribuible a un activo concreto, no aporta a la historia de ningún Equipo individual — es un hecho de la relación comercial completa. Su aporte a la Historia del Equipo es condicional al origen.
+
+**Relación con los demás documentos.**
+- **Cotización / Servicio aprobado**: puede derivar de un servicio cotizado y aprobado, como su consecuencia económica.
+- **Orden de Trabajo**: cuando el resultado nace de una ejecución puntual, deriva de la OT que la registró — pero no siempre hay una OT detrás (el cobro por vencimiento contractual no nace de una ejecución). Relación posible, no obligatoria — a diferencia del Acta, que siempre cuelga de una OT.
+- **Acta Técnica**: sin relación de dependencia; ambas pueden derivar de la misma OT de forma independiente.
+- **Pago**: evento posterior que opera sobre este documento para saldarlo. El documento no gobierna el pago; lo hace posible al dejar el resultado establecido y trazable.
+
+**Inicio y fin de su responsabilidad.** Comienza cuando existe un resultado económico ya determinado que corresponde comunicar formalmente al cliente, sin importar en qué momento se determinó. Termina cuando ese resultado queda formalizado y disponible para su gestión posterior (conciliación, pago, contabilización). No se extiende a esa gestión: la habilita, no la ejecuta.
+
 ---
 
 ## 6. Estado de la fase de descubrimiento
@@ -174,8 +203,8 @@ La Acta Técnica deriva de una Orden de Trabajo y documenta técnicamente la eje
 | Cotización | ✅ Definición documental oficial congelada |
 | Orden de Trabajo | ✅ Definición documental oficial congelada |
 | Acta Técnica | ✅ Definición documental oficial congelada |
-| Cuenta de Cobro | ⏳ Próxima definición pendiente |
-| Historia Documental del Equipo | ⏳ Pendiente — se diseñará al cierre de las definiciones anteriores |
+| Cuenta de Cobro | ✅ Definición documental oficial congelada |
+| Historia Documental del Equipo | ⏳ Próxima definición pendiente — último concepto de dominio antes del diseño |
 
 ---
 
