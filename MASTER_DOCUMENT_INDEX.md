@@ -31,6 +31,16 @@
 
 ---
 
+## Documentos técnicos de dominio (ERP)
+
+Pista de gobierno separada de la tabla anterior: los documentos de arriba (prioridad 1–8) gobiernan identidad corporativa, posicionamiento y el ecosistema QR. Los documentos de esta sección gobiernan el **modelo conceptual del ERP** (entidades de dominio, lenguaje ubicuo, definiciones documentales del proceso de mantenimiento) — un dominio distinto, sin relación de precedencia cruzada salvo coincidencia explícita de tema.
+
+| Documento | Propósito | Tipo | Estado | Versión | Archivo |
+|-----------|-----------|:----:|:------:|:-------:|---------|
+| Modelo de Dominio STECH NODES | Lenguaje ubicuo, principios rectores, decisiones D-07 a D-11, y definiciones documentales oficiales de Cotización y Orden de Trabajo. | Normativo | Congelado (parcial) | v1.0 | `docs/domain/domain-model-v1.0.md` |
+
+---
+
 ## Tipos de documento
 
 | Tipo | Definición | ¿Prescribe? | ¿Puede ser contradicho? |
@@ -150,3 +160,4 @@ Crear primero el documento nuevo y después "armonizarlo" con P1/P2 viola la jer
 |---------|-------|--------|
 | v1.0 | 2026-07-08 | Creación inicial. 8 documentos estratégicos registrados + 3 operativos. Reglas de precedencia definidas. |
 | v1.1 | 2026-07-08 | QR Functional Design actualizado a v1.4 (Precisión D-4.1). |
+| v1.2 | 2026-07-15 | Nueva sección "Documentos técnicos de dominio (ERP)" — registrado `domain-model-v1.0.md`, pista de gobierno separada de la estrategia corporativa/QR. |

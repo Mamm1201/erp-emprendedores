@@ -7,9 +7,9 @@
 
 ## Estado actual
 
-**Versión:** `v2.4.0` (DT-06-B Etapa 1 — asociación Equipos↔Contratos↔Planes)
+**Versión:** `v2.5.0` (Modelo de Dominio v1.0 — Cotización y Orden de Trabajo congeladas)
 **Rama activa:** `develop`
-**Última sesión:** 2026-07-12
+**Última sesión:** 2026-07-15
 
 ### Hitos completados
 
@@ -49,10 +49,11 @@
 | v2.3.0 | QR Fase 1 — Bloque 6 | `lastMaintenance` en portal QR: query D-4.1 (WorkOrder.completedAt, tipo PREVENTIVE/CORRECTIVE), sección visual en móvil y desktop, null state, 6 tests E2E PASS | ✅ Cerrado |
 | v2.3.1 | QR Fase 1 — Bloque 7 (código) | Timeout E2E (`AbortController` 10s) en `qr-portal` + validación de formato `qrCode` en `PublicService` (SEC-I3) | ✅ Cerrado (validación física pendiente, ver detalle en § Ecosistema QR) |
 | v2.4.0 | DT-06-B — Etapa 1 | CRUD de asociación `ContractEquipment` / `MaintenancePlanEquipment` — endpoints, hooks y UI en contrato y plan | ✅ Cerrado y verificado |
+| v2.5.0 | Modelo de Dominio v1.0 | Descubrimiento y congelación de dominio: lenguaje ubicuo (Sistema/Equipo/Componente/Periférico/Repuesto/Consumible), principios rectores, D-07 a D-11, definiciones documentales oficiales de Cotización y Orden de Trabajo. Sin cambios de código. | ✅ Cerrado — documentación consolidada en `docs/domain/domain-model-v1.0.md` |
 
-**Versión:** `v2.4.0` (DT-06-B Etapa 1 — asociación Equipos↔Contratos↔Planes)
+**Versión:** `v2.5.0` (Modelo de Dominio v1.0 — Cotización y Orden de Trabajo congeladas)
 
-**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos, Bloque 7 con desarrollo y validaciones técnicas completas (validación física pendiente, diferida a necesidad real de negocio) · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
+**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos, Bloque 7 con desarrollo y validaciones técnicas completas (validación física pendiente, diferida a necesidad real de negocio) · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Modelo de Dominio v1.0 congelado para Cotización y OT, Acta Técnica en definición · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
 
 ---
 
@@ -65,7 +66,7 @@
 | DT-03 | Refresh token no rota en cada uso de `POST /auth/refresh` | Baja | Hito 4 |
 | DT-04 | `JwtPayload.role` tipado como `string` en lugar de `UserRole` | Baja | Hito 4 |
 | DT-05 | `clearRefreshCookie` es método público en `AuthService` | Baja | Hito 4 |
-| DT-06-B — Etapa 2 | `generateWorkOrder()` sigue sin asignar `equipmentId` cuando el plan tiene N ≠ 1 equipos asociados. Causa raíz real (Etapa 1, ✅ resuelta): no existía forma de asociar equipos a contrato/plan — ver § Asociación Equipos↔Contratos↔Planes. Con Etapa 1 cerrada, se reevaluará si `generateWorkOrder()` necesita cambios (asignación manual, Ruta A1, u otra alternativa) — pendiente de análisis, no de implementación directa. | Media | Bloque 6.1 |
+| DT-06-B — Etapa 2 | `generateWorkOrder()` sigue sin asignar `equipmentId` cuando el plan tiene N ≠ 1 equipos asociados. Causa raíz real (Etapa 1, ✅ resuelta): no existía forma de asociar equipos a contrato/plan — ver § Asociación Equipos↔Contratos↔Planes. Con Etapa 1 cerrada, se reevaluará si `generateWorkOrder()` necesita cambios (asignación manual, Ruta A1, u otra alternativa) — pendiente de análisis, no de implementación directa. Bajo el Modelo de Dominio v1.0 (§7 del documento de dominio), esto es además una causa directa de historial incompleto en la futura Historia Documental del Equipo. | Media | Bloque 6.1 |
 
 ---
 
@@ -230,6 +231,25 @@ Resultado: **los documentos son coherentes en todos los puntos sustantivos**. Se
 
 **Tensión menor registrada (no bloquea el desarrollo):**
 `qr-functional-design-v1.2.html` contiene la afirmación: *"Ninguna empresa de mantenimiento de equipos hospitalarios en Colombia ofrece actualmente un sistema de trazabilidad por QR con historial verificable."* Esta afirmación absoluta sobre el mercado fue deliberadamente eliminada del `positioning-brief-v1.3.html` por no ser verificable objetivamente. Como el functional design es un documento de arquitectura interna (no de comunicación externa), la tensión es aceptable. Sin embargo: esta afirmación **no debe reproducirse** en materiales de comunicación externa (web, portafolio, presentaciones).
+
+---
+
+## Modelo de Dominio del ERP — `docs/domain/`
+
+Pista de gobierno separada de `docs/strategy/` (identidad, posicionamiento, QR). `docs/domain/domain-model-v1.0.md` es la fuente de verdad del modelo conceptual del ERP: lenguaje ubicuo, principios rectores, decisiones D-07 a D-11, y las definiciones documentales oficiales de los artefactos del proceso de mantenimiento (Cotización, Orden de Trabajo, y las que sigan).
+
+**Estado (2026-07-15):**
+- Lenguaje ubicuo (Sistema, Equipo, Componente, Periférico, Repuesto, Consumible, Intervención Técnica, Visita, Hallazgo, Corrección) — ✅ congelado.
+- D-07 a D-11 — ✅ congeladas.
+- Cotización — ✅ definición documental oficial congelada.
+- Orden de Trabajo — ✅ definición documental oficial congelada.
+- Acta Técnica — ⏳ próxima definición pendiente.
+- Cuenta de Cobro — ⏳ pendiente.
+- Historia Documental del Equipo — ⏳ pendiente, se diseña al cierre de las anteriores.
+
+**Backlog derivado de la auditoría (no implementado):** RFC-1 a RFC-4, más los hallazgos de deuda técnica y mejora de UX registrados en `docs/domain/domain-model-v1.0.md §7`. Ninguno se implementa hasta que se decida explícitamente retomarlo — este commit es exclusivamente de consolidación documental.
+
+**Regla:** cualquier cambio de código relacionado con OT, Cotización, Acta Técnica o Cuenta de Cobro debe ser compatible con `docs/domain/domain-model-v1.0.md`. Si una necesidad real contradice algo ya congelado ahí, se actualiza primero el documento de dominio, luego este archivo, y solo después el código — mismo orden invariable que ya rige para `docs/strategy/`.
 
 ---
 
@@ -606,4 +626,4 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 
 ---
 
-*Actualizado: 2026-07-12 — v2.4.0 — DT-06-B Etapa 1 cerrada: CRUD de asociación `ContractEquipment`/`MaintenancePlanEquipment` (endpoints, hooks, UI en contrato y plan), con la decisión congelada de que un plan solo puede cubrir equipos ya asociados a su contrato. Verificado end-to-end en backend real y en navegador. Próximo: Etapa 2 — reevaluar `generateWorkOrder()` con la asociación ya disponible (análisis previo, sin implementación directa).*
+*Actualizado: 2026-07-15 — v2.5.0 — Modelo de Dominio v1.0 congelado (parcial): lenguaje ubicuo, principios rectores, D-07 a D-11, y definiciones documentales oficiales de Cotización y Orden de Trabajo, consolidadas en `docs/domain/domain-model-v1.0.md`. Commit exclusivamente documental — sin cambios de código. Backlog derivado (RFC-1 a RFC-4, deuda técnica, mejoras de UX) registrado pero no implementado. Próximo: definición documental del Acta Técnica, siguiendo la misma metodología.*

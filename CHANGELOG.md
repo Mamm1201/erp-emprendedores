@@ -4,6 +4,29 @@
 
 ---
 
+## v2.5.0 — Modelo de Dominio v1.0: Cotización y Orden de Trabajo congeladas (2026-07-15)
+
+### Nuevo — `docs/domain/domain-model-v1.0.md`
+- Lenguaje ubicuo congelado: Sistema, Equipo (redefinido como unidad técnica mantenible, no dispositivo físico), Componente, Periférico, Repuesto, Consumible, Visita Técnica, Intervención Técnica, Hallazgo, Corrección (Ajuste/Reemplazo), Servicio Ofertado.
+- Principios rectores congelados: toda ejecución nace de un servicio autorizado; el respaldo comercial es política de empresa, no regla universal; el Contrato no es el centro del modelo; el objetivo del ERP es la trazabilidad documental del Equipo, no administrar contratos ni OTs.
+- Decisiones operativas D-07 a D-11 consolidadas con sus ejemplos.
+- Definición documental oficial de **Cotización** — congelada.
+- Definición documental oficial de **Orden de Trabajo** — congelada.
+- Backlog derivado registrado (RFC-1 a RFC-4, deuda técnica, mejoras de UX) — explícitamente no implementado en este commit.
+
+### `MASTER_DOCUMENT_INDEX.md`
+- Nueva sección "Documentos técnicos de dominio (ERP)", pista de gobierno separada de `docs/strategy/` (corporativo/QR).
+- Corregida versión desactualizada de `DEVELOPMENT_CONTEXT.md` en el índice.
+
+### `DEVELOPMENT_CONTEXT.md`
+- Nueva sección "Modelo de Dominio del ERP" con estado de cada documento (congelado/pendiente) y regla de orden de actualización (dominio → DEVELOPMENT_CONTEXT.md → código).
+- DT-06-B Etapa 2 anotada con su implicación bajo el nuevo modelo de dominio (causa de historial incompleto).
+
+### Estado del commit
+Exclusivamente documental — sin cambios de código, sin migraciones, sin RFC implementadas. Próximo: definición documental del Acta Técnica.
+
+---
+
 ## v2.4.0 — DT-06-B Etapa 1: asociación Equipos↔Contratos↔Planes (2026-07-12)
 
 ### Backend — `maintenance-contracts`
