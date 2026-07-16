@@ -81,10 +81,10 @@
 | Cotización | 🟡 Validado con pendientes | Flujo funcional OK (crear · estados · PDF · totales · snapshot comercial). Pendientes al backlog: COT-1/COT-2/COT-3/COT-4. Falta recorrido visual |
 | Orden de Trabajo | 🟡 Validado con pendientes | Flujo funcional OK (crear · estados · vínculo a equipo · reflejo en QR). Pendientes: OT-1/OT-2/OT-3 backlog; **OT-4 bloqueante de migración**. Falta recorrido visual |
 | Acta Técnica | 🟡 Validado con pendientes | El mejor alineado. Flujo OK (crear · checklist · firma retrofechable · PDF · findByEquipment). Único pendiente: ACT-1 (evidencias en PDF). Falta recorrido visual |
-| Cuenta de Cobro | ⏳ Pendiente | Auditoría previa: A-1 (refleja vs decide), cobertura RFC-4 |
-| Contratos / Planes / Visitas | ⏳ Pendiente | DT-06-B Etapa 2 vive aquí |
-| Dashboard | ⏳ Pendiente | — |
-| Hoja de Vida | ⏳ Pendiente | Implementación aún no iniciada (expediente compuesto, §5.5 del dominio) |
+| Cuenta de Cobro | 🟡 Validado con pendientes | Ciclo económico OK (crear desde OT/contrato · emitir · pago parcial/total con reconciliación · PDF · caso $0). Pendientes: CC-1 (RFC-4), CC-2 (retrofecha). Falta recorrido visual |
+| Contratos / Planes / Visitas | 🟡 Validado con pendientes | Flujo OK (contrato · asociación equipos · plan · visita · OT preventiva en transacción). **MNT-1 (= DT-06-B) confirmado con evidencia N=1/N=2** — alta prioridad. Falta recorrido visual |
+| Dashboard | 🟡 Validado (API), sin hallazgos | KPIs coherentes (comercial · ejecución · cobranza · mantenimiento). Solo reporting de lectura. Falta recorrido visual |
+| Hoja de Vida | ⬜ No implementada | No hay validación funcional posible — la implementación no ha iniciado (expediente compuesto de solo lectura, §5.5 del dominio). Es un ítem de construcción, no de validación |
 
 **Meta de la fase:** todos los módulos en 🟢 → el ERP se declara listo para migración de datos reales y fase comercial.
 
@@ -151,20 +151,46 @@ Validación funcional por ejecución real: crear Acta (hallazgos + actividades +
 
 **Correcciones realizadas:** ninguna. **Veredicto:** 🟡 Validado con pendientes (el más limpio; único pendiente ACT-1 + recorrido visual).
 
+### Hallazgos de auditoría — módulo Cuenta de Cobro (2026-07-16)
+
+Validación funcional por ejecución real: crear desde OT (copia ítems) → emitir → pago parcial → pago total (reconciliación) → PDF → caso $0. **Ciclo económico completo funcional; independiente de la OT (también crea desde contrato).**
+
+> A partir de este módulo, cada hallazgo se clasifica en **3 dimensiones**: Categoría · Impacto · Prioridad. (Los hallazgos previos se consolidan con este esquema en el ERP Validation Report v1.0 de cierre.)
+
+| ID | Categoría | Impacto | Prioridad | Estado | Descripción |
+|----|-----------|---------|-----------|--------|-------------|
+| CC-1 | Implementación incorrecta | Operación | Alta | ⏳ Backlog | La Cuenta de Cobro copia todos los ítems de la OT por defecto (`copyItemsFromWorkOrder`). Dominio §5.4: refleja una decisión de cobertura previa, no la decide. Riesgo operativo real de **facturar de más** líneas cubiertas por contrato si no se excluyen a mano. El $0 funciona, pero no se puede expresar "cubierto por contrato" (el ítem se omite, no se marca). Raíz RFC-4. |
+| CC-2 | Implementación incompleta | Migración | Baja | ⏳ Backlog | `issueDate` no capturable (fijo en `now()`). Familia retrofecha (OT-4/COT-4). Baja prioridad: los documentos financieros históricos rara vez se migran. |
+
+**Correcciones realizadas:** ninguna (RFC-4 arquitectónico; retrofecha requiere diseño propio). **Veredicto:** 🟡 Validado con pendientes.
+
+### Hallazgos de auditoría — módulo Contratos / Planes / Visitas (2026-07-16)
+
+Validación funcional por ejecución real: contrato → asociar 2 equipos → 2 planes (N=1 y N=2 equipos) → visitas → generar OT preventiva en transacción. **Flujo completo funcional.** Positivo: la OT generada nace `PREVENTIVE` (OT-2 solo afecta creación manual); la asociación equipo↔plan valida contra el contrato padre.
+
+| ID | Categoría | Impacto | Prioridad | Estado | Descripción |
+|----|-----------|---------|-----------|--------|-------------|
+| MNT-1 (= DT-06-B Etapa 2) | Implementación incorrecta | Comercial + Operación (+ Migración) | Alta | ⏳ Backlog | Confirmado con evidencia: plan N=1 → OT con `equipmentId`; plan **N>1 → OT preventiva SIN `equipmentId`**. Esa OT no aparece en la Hoja de Vida ni en `lastMaintenance` del QR, aunque el mantenimiento ocurrió. Como los contratos reales agrupan varios equipos, **rompe la trazabilidad por activo en el preventivo recurrente** — el escenario comercial central. No es quick-win (requiere diseño: granularidad visita-al-equipo / N OTs). Comparte peso con OT-4 como bloqueante de la propuesta de valor. |
+
+**Correcciones realizadas:** ninguna (requiere ronda de diseño, diferida hasta terminar el barrido). **Veredicto:** 🟡 Validado con pendientes.
+
 ---
 
 ## Resumen ejecutivo del backlog — por impacto (referencia de priorización)
 
-> Se actualiza al cierre de cada módulo. Ordena todos los hallazgos abiertos según su impacto en los objetivos del proyecto (migración histórica → salida comercial → UX → mejora futura), no por módulo. Cobertura actual: Clientes/Sedes/Equipos, Portal QR, Cotización, Orden de Trabajo, Acta Técnica. *(Pendiente: Cuenta de Cobro, Contratos/Planes/Visitas, Dashboard, Hoja de Vida.)*
+> Se actualiza al cierre de cada módulo. Ordena todos los hallazgos abiertos según su impacto en los objetivos del proyecto (migración histórica → salida comercial → UX → mejora futura), no por módulo. Cobertura actual: Clientes/Sedes/Equipos, Portal QR, Cotización, Orden de Trabajo, Acta Técnica, Cuenta de Cobro, Contratos/Planes/Visitas. *(Pendiente: Dashboard, Hoja de Vida.)*
 
 ### 🔴 Bloquea migración histórica
 - **OT-4** — `completedAt` no retrofechable → toda intervención migrada queda con fecha de hoy y rompe la Hoja de Vida. **Prerequisito del piloto histórico.** Requiere diseño (modo migración o exponer `completedAt` en el cierre).
+- **MNT-1 (DT-06-B)** — OT preventiva de plan multi-equipo sin `equipmentId` → si se migran/generan preventivos por plan, no se vinculan al activo. (También Comercial/Operación.)
 
-### 🔴 Bloquea salida comercial (demo a IPS)
+### 🔴 Bloquea salida comercial (demo a IPS / propuesta de valor)
+- **MNT-1 (DT-06-B)** — el preventivo recurrente de contratos multi-equipo no aparece en el QR/Hoja de Vida del activo → **rompe la promesa "el historial viaja con el equipo" en el escenario comercial central.** Alta prioridad, junto con OT-4.
 - **QR — datos** — teléfono ficticio (`+57 (601) 000-0000`) + equipo demo vacío (sin marca/modelo/serial) → el portal subvende la propuesta de valor. Corrección barata (datos/copy).
 - **QR — prueba física** — validación con teléfono real pendiente (Bloque 7).
 
-### 🟡 Afecta experiencia de usuario / calidad de datos
+### 🟡 Afecta operación / experiencia de usuario / calidad de datos
+- **CC-1** — la Cuenta de Cobro copia todos los ítems de la OT → riesgo de **facturar de más** líneas cubiertas por contrato. Impacto Operación, prioridad Alta.
 - **OT-2** — `type` no capturable (todo CORRECTIVE) → OTs mal etiquetadas. Quick-win disponible.
 - **CE-3** — cliente sin dirección fiscal / representante legal → afecta Cuenta de Cobro y completitud de migración.
 - **COT-3** — condiciones comerciales (forma de pago, garantía) no capturables (slots PDF muertos).
@@ -172,13 +198,21 @@ Validación funcional por ejecución real: crear Acta (hallazgos + actividades +
 - **CE-5** — `serialNumber` no único → riesgo de duplicados al migrar.
 
 ### 🟢 Mejora futura (arquitectura / evolución)
-- **OT-1 (RFC-4)** — separar registro de ejecución de la facturación (precios fuera de la OT). Raíz de varios pendientes.
+- **OT-1 / CC-1 (RFC-4)** — separar registro de ejecución de la facturación (precios fuera de la OT; cobertura por línea). Raíz compartida de OT-1 y CC-1; la cara operativa de CC-1 está en el bloque 🟡.
 - **COT-1 / COT-2** — "Servicio Ofertado" como unidad + cardinalidad cotización→OT (1:N).
 - **OT-3 (RFC-3)** — origen comercial explícito en la OT.
 - **CE-4** — características técnicas por tipo de equipo (con descubrimiento acotado).
 - **CE-6** — carga masiva para la migración (hoy uno por uno).
+- **CC-2** — retrofecha de `issueDate` en Cuenta de Cobro (Migración, prioridad Baja).
 
-*(CE-1 y CE-2 ya corregidos — fuera del backlog. COT-4 = OT-4, unificado aquí.)*
+*(CE-1 y CE-2 ya corregidos — fuera del backlog. COT-4 = OT-4, unificado.)*
+
+---
+
+## Deliverable de cierre de la fase — ERP Validation Report v1.0
+
+Al terminar la validación del último módulo se generará **`docs/validation/erp-validation-report-v1.0.md`** (o HTML), que cerrará oficialmente esta fase y abrirá la de estabilización/producción. Contenido acordado:
+1. Resumen ejecutivo. 2. Estado de todos los módulos (🟢🟡🔴). 3. Hallazgos clasificados (Categoría · Impacto · Prioridad). 4. Hallazgos agrupados por impacto (Migración / Comercial / Operación / UX). 5. Correcciones implementadas durante la validación. 6. Backlog priorizado. 7. Riesgos para salir a producción. 8. Checklist de migración de datos reales. 9. Checklist de reorganización del sitio web. 10. Checklist para iniciar el envío de propuestas comerciales.
 
 ---
 
@@ -755,4 +789,4 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 
 ---
 
-*Actualizado: 2026-07-16 — v2.7.0 — Inicio de la **fase de validación de producto** (ver § Fase de validación de producto y su Tablero). Auditoría funcional de Clientes/Sedes/Equipos por ejecución real → hallazgos CE-1 a CE-6. Corregidos CE-1 (`warrantyExpiresAt` incapturable pese a que el QR lo usa) y CE-2 (`criticality` clavada en MEDIUM): campos ya existentes en el modelo, expuestos en las 5 capas; re-probados por API (201/200). Quedan 🟡 pendientes de validación visual (fricción del arnés de login, no defecto). CE-3 a CE-6 al backlog, a reevaluar tras la primera migración piloto. Cotización 🟡, Orden de Trabajo 🟡 y Acta Técnica 🟡 validadas (Acta = la mejor alineada). Resumen ejecutivo del backlog por impacto vigente (OT-4 = bloqueante de migración). Próximo: validación del módulo Cuenta de Cobro.*
+*Actualizado: 2026-07-16 — v2.7.0 — Inicio de la **fase de validación de producto** (ver § Fase de validación de producto y su Tablero). Auditoría funcional de Clientes/Sedes/Equipos por ejecución real → hallazgos CE-1 a CE-6. Corregidos CE-1 (`warrantyExpiresAt` incapturable pese a que el QR lo usa) y CE-2 (`criticality` clavada en MEDIUM): campos ya existentes en el modelo, expuestos en las 5 capas; re-probados por API (201/200). Quedan 🟡 pendientes de validación visual (fricción del arnés de login, no defecto). CE-3 a CE-6 al backlog, a reevaluar tras la primera migración piloto. Barrido de validación COMPLETO sobre todos los módulos implementados: Clientes 🟡, Sedes 🟢, Equipos 🟡, QR 🟡, Cotización 🟡, OT 🟡, Acta 🟡, Cuenta de Cobro 🟡, Contratos/Planes/Visitas 🟡, Dashboard 🟡. Hoja de Vida ⬜ no implementada (ítem de construcción). Blockers de propuesta de valor: OT-4 y MNT-1. Próximo: generar el **ERP Validation Report v1.0** de cierre de fase.*
