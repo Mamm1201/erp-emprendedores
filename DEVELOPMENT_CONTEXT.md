@@ -7,7 +7,7 @@
 
 ## Estado actual
 
-**Versión:** `v2.7.0` (Fase de validación de producto iniciada — módulo Equipos: CE-1/CE-2 corregidos)
+**Versión:** `v2.8.0` (Fase de validación funcional CERRADA — ERP Validation Report v1.0)
 **Rama activa:** `develop`
 **Última sesión:** 2026-07-16
 
@@ -789,4 +789,4 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 
 ---
 
-*Actualizado: 2026-07-16 — v2.7.0 — Inicio de la **fase de validación de producto** (ver § Fase de validación de producto y su Tablero). Auditoría funcional de Clientes/Sedes/Equipos por ejecución real → hallazgos CE-1 a CE-6. Corregidos CE-1 (`warrantyExpiresAt` incapturable pese a que el QR lo usa) y CE-2 (`criticality` clavada en MEDIUM): campos ya existentes en el modelo, expuestos en las 5 capas; re-probados por API (201/200). Quedan 🟡 pendientes de validación visual (fricción del arnés de login, no defecto). CE-3 a CE-6 al backlog, a reevaluar tras la primera migración piloto. Barrido de validación COMPLETO sobre todos los módulos implementados: Clientes 🟡, Sedes 🟢, Equipos 🟡, QR 🟡, Cotización 🟡, OT 🟡, Acta 🟡, Cuenta de Cobro 🟡, Contratos/Planes/Visitas 🟡, Dashboard 🟡. Hoja de Vida ⬜ no implementada (ítem de construcción). Blockers de propuesta de valor: OT-4 y MNT-1. Próximo: generar el **ERP Validation Report v1.0** de cierre de fase.*
+*Actualizado: 2026-07-16 — v2.7.0 — Inicio de la **fase de validación de producto** (ver § Fase de validación de producto y su Tablero). Auditoría funcional de Clientes/Sedes/Equipos por ejecución real → hallazgos CE-1 a CE-6. Corregidos CE-1 (`warrantyExpiresAt` incapturable pese a que el QR lo usa) y CE-2 (`criticality` clavada en MEDIUM): campos ya existentes en el modelo, expuestos en las 5 capas; re-probados por API (201/200). Quedan 🟡 pendientes de validación visual (fricción del arnés de login, no defecto). CE-3 a CE-6 al backlog, a reevaluar tras la primera migración piloto. Barrido de validación COMPLETO sobre todos los módulos implementados (todos 🟡 salvo Sedes 🟢; Hoja de Vida ⬜ no implementada). **Fase de validación funcional CERRADA con el `docs/validation/erp-validation-report-v1.0.md`** (estado de módulos, hallazgos clasificados, backlog priorizado, riesgos y checklists de migración/web/comercial). Blockers de la propuesta de valor: OT-4 y MNT-1. **Próximo: fase de estabilización — abrir la ronda de diseño de OT-4 y MNT-1, luego construir la Hoja de Vida.** La validación visual (UI) por módulo queda pendiente de forma transversal.*

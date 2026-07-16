@@ -38,6 +38,7 @@ Pista de gobierno separada de la tabla anterior: los documentos de arriba (prior
 | Documento | Propósito | Tipo | Estado | Versión | Archivo |
 |-----------|-----------|:----:|:------:|:-------:|---------|
 | Modelo de Dominio STECH NODES | Lenguaje ubicuo, principios rectores (incluyendo Principio 8 — Hoja de Vida del Equipo relacional), decisiones D-07 a D-11, y definiciones documentales oficiales de Cotización, Orden de Trabajo, Acta Técnica, Cuenta de Cobro y Hoja de Vida del Equipo (registro técnico integral). | Normativo | Congelado | v1.4 †† | `docs/domain/domain-model-v1.0.md` |
+| ERP Validation Report | Cierre de la fase de validación funcional. Estado de los 10 módulos, hallazgos clasificados (Categoría/Impacto/Prioridad), backlog priorizado, riesgos de producción y checklists (migración, web, propuestas comerciales). | Operativo | Vigente | v1.0 | `docs/validation/erp-validation-report-v1.0.md` |
 
 †† El archivo se llama `domain-model-v1.0.md` pero su contenido fue actualizado a v1.4. El número de versión canónico es v1.4. (v1.1: Acta Técnica. v1.2: Cuenta de Cobro. v1.3: renombre "Historia Documental del Equipo" → "Hoja de Vida del Equipo" + descubrimiento en curso. v1.4: Hoja de Vida congelada como registro técnico integral del activo; hitos del ciclo de vida diferidos como hipótesis no validada.)
 
