@@ -7,7 +7,7 @@
 
 ## Estado actual
 
-**Versión:** `v2.5.2` (Modelo de Dominio v1.2 — Cuenta de Cobro congelada)
+**Versión:** `v2.5.3` (Checkpoint de descubrimiento — Hoja de Vida del Equipo en curso, no congelada)
 **Rama activa:** `develop`
 **Última sesión:** 2026-07-15
 
@@ -52,10 +52,11 @@
 | v2.5.0 | Modelo de Dominio v1.0 | Descubrimiento y congelación de dominio: lenguaje ubicuo (Sistema/Equipo/Componente/Periférico/Repuesto/Consumible), principios rectores, D-07 a D-11, definiciones documentales oficiales de Cotización y Orden de Trabajo. Sin cambios de código. | ✅ Cerrado — documentación consolidada en `docs/domain/domain-model-v1.0.md` |
 | v2.5.1 | Modelo de Dominio v1.1 | Acta Técnica congelada (documenta de forma estructurada la evidencia técnica, no narra ni certifica). Principio 8 agregado (Historia Documental relacional). Corrección de lenguaje en OT (§5.2: "habilita" → "derivado de"). Sin cambios de código. | ✅ Cerrado — `docs/domain/domain-model-v1.0.md` actualizado a v1.1 |
 | v2.5.2 | Modelo de Dominio v1.2 | Cuenta de Cobro congelada — "comunicar formalmente al cliente el resultado económico derivado de un servicio, contrato u otra relación comercial". Caso $0/cubierto subsumido ("resultado económico", no "obligación"). Nombre conservado en el lenguaje del negocio; la forma tributaria de emisión es asunto de implementación, a evolucionar si el negocio cambia de forma jurídica. Sin cambios de código. | ✅ Cerrado — `docs/domain/domain-model-v1.0.md` actualizado a v1.2 |
+| v2.5.3 | Checkpoint descubrimiento | Hoja de Vida del Equipo — descubrimiento iniciado, **no congelada**. Nombre validado (renombre de "Historia Documental del Equipo"). Confirmado: `Equipment` es ficha del activo, no historial; Portal QR y Hoja de Vida son conceptos relacionados pero distintos; identificada la necesidad de un concepto de eventos del ciclo de vida (alcance pendiente). 4 preguntas abiertas para la próxima sesión. Sin cambios de código, sin entidades nuevas. | 🔍 En curso — ver `docs/domain/domain-model-v1.0.md` §5.5 (v1.3) |
 
-**Versión:** `v2.5.2` (Modelo de Dominio v1.2 — Cuenta de Cobro congelada)
+**Versión:** `v2.5.3` (Checkpoint de descubrimiento — Hoja de Vida del Equipo en curso, no congelada)
 
-**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos, Bloque 7 con desarrollo y validaciones técnicas completas (validación física pendiente, diferida a necesidad real de negocio) · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Modelo de Dominio v1.2: las cuatro definiciones documentales (Cotización, OT, Acta Técnica, Cuenta de Cobro) congeladas — solo resta la Historia Documental del Equipo · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
+**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos, Bloque 7 con desarrollo y validaciones técnicas completas (validación física pendiente, diferida a necesidad real de negocio) · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Modelo de Dominio v1.3: las cuatro definiciones documentales (Cotización, OT, Acta Técnica, Cuenta de Cobro) congeladas · **Hoja de Vida del Equipo en descubrimiento (no congelada)** · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
 
 ---
 
@@ -68,7 +69,7 @@
 | DT-03 | Refresh token no rota en cada uso de `POST /auth/refresh` | Baja | Hito 4 |
 | DT-04 | `JwtPayload.role` tipado como `string` en lugar de `UserRole` | Baja | Hito 4 |
 | DT-05 | `clearRefreshCookie` es método público en `AuthService` | Baja | Hito 4 |
-| DT-06-B — Etapa 2 | `generateWorkOrder()` sigue sin asignar `equipmentId` cuando el plan tiene N ≠ 1 equipos asociados. Causa raíz real (Etapa 1, ✅ resuelta): no existía forma de asociar equipos a contrato/plan — ver § Asociación Equipos↔Contratos↔Planes. Con Etapa 1 cerrada, se reevaluará si `generateWorkOrder()` necesita cambios (asignación manual, Ruta A1, u otra alternativa) — pendiente de análisis, no de implementación directa. Bajo el Modelo de Dominio v1.0 (§7 del documento de dominio), esto es además una causa directa de historial incompleto en la futura Historia Documental del Equipo. | Media | Bloque 6.1 |
+| DT-06-B — Etapa 2 | `generateWorkOrder()` sigue sin asignar `equipmentId` cuando el plan tiene N ≠ 1 equipos asociados. Causa raíz real (Etapa 1, ✅ resuelta): no existía forma de asociar equipos a contrato/plan — ver § Asociación Equipos↔Contratos↔Planes. Con Etapa 1 cerrada, se reevaluará si `generateWorkOrder()` necesita cambios (asignación manual, Ruta A1, u otra alternativa) — pendiente de análisis, no de implementación directa. Bajo el Modelo de Dominio (§7 del documento de dominio), esto es además una causa directa de historial incompleto en la futura Hoja de Vida del Equipo. | Media | Bloque 6.1 |
 
 ---
 
@@ -242,17 +243,21 @@ Pista de gobierno separada de `docs/strategy/` (identidad, posicionamiento, QR).
 
 **Estado (2026-07-15):**
 - Lenguaje ubicuo (Sistema, Equipo, Componente, Periférico, Repuesto, Consumible, Intervención Técnica, Visita, Hallazgo, Corrección) — ✅ congelado.
-- Principios rectores 1 a 8 (incluyendo Principio 8 — Historia Documental relacional) — ✅ congelados.
+- Principios rectores 1 a 8 (incluyendo Principio 8 — Hoja de Vida del Equipo relacional) — ✅ congelados.
 - D-07 a D-11 — ✅ congeladas.
 - Cotización — ✅ definición documental oficial congelada.
 - Orden de Trabajo — ✅ definición documental oficial congelada.
 - Acta Técnica — ✅ definición documental oficial congelada.
 - Cuenta de Cobro — ✅ definición documental oficial congelada.
-- Historia Documental del Equipo — ⏳ próxima definición pendiente (último concepto de dominio antes de pasar a diseño).
+- **Hoja de Vida del Equipo — 🔍 EN DESCUBRIMIENTO (no congelada).** Nombre validado (renombre de "Historia Documental del Equipo", que era un rótulo interno). Ver `docs/domain/domain-model-v1.0.md §5.5`. Puntos confirmados: es una vista derivada de solo lectura (no se almacena); centrada solo en el activo específico; excluye lo económico del contenido principal; incluye documentos de intervención + hitos del ciclo de vida; `Equipment` es hoy ficha del activo, no historial; Portal QR (proyección pública mínima) y Hoja de Vida (representación interna completa) son distintos; se identificó la necesidad de un concepto de eventos/novedades del ciclo de vida (alcance pendiente).
+  - **Preguntas abiertas para la próxima sesión:** (1) responsabilidad exacta de la Hoja de Vida; (2) qué eventos del ciclo de vida tienen significado de negocio y deben persistirse (sin audit-log genérico); (3) cómo se relacionan esos eventos con OT/Acta/evidencias; (4) qué puede alimentar futuras evoluciones del Portal QR sin mezclar conceptos.
+  - **Regla del checkpoint:** NO crear modelos Prisma, entidades nuevas ni cambios de arquitectura hasta cerrar este descubrimiento.
 
 **Backlog derivado de la auditoría (no implementado):** RFC-1 a RFC-4, más los hallazgos de deuda técnica y mejora de UX registrados en `docs/domain/domain-model-v1.0.md §7`. Ninguno se implementa hasta que se decida explícitamente retomarlo — este commit es exclusivamente de consolidación documental.
 
 **Regla:** cualquier cambio de código relacionado con OT, Cotización, Acta Técnica o Cuenta de Cobro debe ser compatible con `docs/domain/domain-model-v1.0.md`. Si una necesidad real contradice algo ya congelado ahí, se actualiza primero el documento de dominio, luego este archivo, y solo después el código — mismo orden invariable que ya rige para `docs/strategy/`.
+
+**Próxima sesión (retomar aquí):** cerrar el descubrimiento de la **Hoja de Vida del Equipo** respondiendo las 4 preguntas abiertas (arriba y en §5.5 del documento de dominio), decidir el alcance del concepto de eventos del ciclo de vida del activo, y solo entonces redactar/congelar su definición documental. Después de eso: fin de la fase de dominio y paso a diseño técnico (backlog RFC-1 a RFC-4 + DT-06-B Etapa 2).
 
 ---
 
@@ -629,4 +634,4 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 
 ---
 
-*Actualizado: 2026-07-15 — v2.5.2 — Modelo de Dominio v1.2: Cuenta de Cobro congelada. Concepto descubierto por método (hecho → responsabilidad → concepto → nombre): "comunicar formalmente al cliente el resultado económico derivado de un servicio, contrato u otra relación comercial". El caso $0/cubierto queda subsumido ("resultado económico", no "obligación"). Nombre conservado en el lenguaje real del negocio (Cuenta de Cobro) — la forma tributaria de emisión es asunto de implementación, a evolucionar solo si el negocio cambia de forma jurídica; no se anticipa una abstracción ahora. Con esto, las cuatro definiciones documentales del proceso están congeladas. Commit exclusivamente documental — sin cambios de código. Próximo: Historia Documental del Equipo, último concepto de dominio antes de pasar a diseño técnico.*
+*Actualizado: 2026-07-15 — v2.5.3 — Checkpoint de descubrimiento (sin congelación). Se inició el descubrimiento de la **Hoja de Vida del Equipo** y se registró en `docs/domain/domain-model-v1.0.md §5.5`. Nombre validado como lenguaje real del negocio (renombre de "Historia Documental del Equipo", rótulo interno de exploración). Confirmado: `Equipment` es ficha del activo (no historial); Portal QR y Hoja de Vida son conceptos relacionados pero distintos; se identificó la necesidad de un concepto de eventos del ciclo de vida del activo (alcance pendiente). Quedan 4 preguntas abiertas para la próxima sesión. NO se crearon entidades ni modelos Prisma. Commit exclusivamente documental. Próximo: cerrar el descubrimiento de la Hoja de Vida y luego pasar a diseño técnico.*

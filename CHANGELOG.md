@@ -4,6 +4,29 @@
 
 ---
 
+## v2.5.3 — Checkpoint de descubrimiento: Hoja de Vida del Equipo (2026-07-15)
+
+Checkpoint documental de descubrimiento en curso — **no congela ninguna definición**, no crea entidades ni modelos Prisma.
+
+### `docs/domain/domain-model-v1.0.md` (contenido actualizado a v1.3)
+- **Renombre validado:** el concepto antes rotulado "Historia Documental del Equipo" (nombre interno de exploración) pasa a **Hoja de Vida del Equipo** — lenguaje real del negocio, ya presente en `schema.prisma:477`, `CLAUDE.md` y la UI (`EquipmentPage.tsx:468`). Migración de término en todo el documento, incluidas las definiciones ya congeladas (sin cambio de sustancia).
+- **Nueva sección §5.5 "Hoja de Vida del Equipo — EN DESCUBRIMIENTO (no congelada)"** con lo confirmado hasta ahora:
+  - Naturaleza: vista derivada de solo lectura, no un documento emitido; no se almacena (coherente con Principio 8).
+  - Problemática que guía el diseño: continuidad de la información técnica del activo, no la gestión documental como fin.
+  - Alcance: solo el activo específico; lo económico no es contenido principal; incluye documentos de intervención + hitos del ciclo de vida.
+  - Hallazgo: `Equipment` es ficha del activo (estado actual), no historial — falta un concepto de eventos/novedades del ciclo de vida (instalación, estado, ubicación, baja...).
+  - Portal QR vs. Hoja de Vida: relacionados pero distintos (proyección pública mínima vs. representación interna completa). El portal apunta directo al Equipo, no consume una Hoja de Vida.
+  - Riesgo conocido: DT-06-B Etapa 2 deja OTs preventivas multi-equipo sin `equipmentId` → hueco directo en la Hoja de Vida.
+  - 4 preguntas abiertas registradas para la próxima sesión.
+
+### `MASTER_DOCUMENT_INDEX.md` y `DEVELOPMENT_CONTEXT.md`
+- Documento de dominio a v1.3; renombre reflejado; estado de la Hoja de Vida como "en descubrimiento"; regla del checkpoint (no crear entidades hasta cerrar) y punto de retomo para la próxima sesión.
+
+### Estado del commit
+Exclusivamente documental — sin cambios de código, sin migraciones, sin entidades nuevas.
+
+---
+
 ## v2.5.2 — Modelo de Dominio v1.2: Cuenta de Cobro congelada (2026-07-15)
 
 ### `docs/domain/domain-model-v1.0.md` (contenido actualizado a v1.2)

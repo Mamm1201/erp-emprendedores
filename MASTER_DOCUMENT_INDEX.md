@@ -37,9 +37,9 @@ Pista de gobierno separada de la tabla anterior: los documentos de arriba (prior
 
 | Documento | Propósito | Tipo | Estado | Versión | Archivo |
 |-----------|-----------|:----:|:------:|:-------:|---------|
-| Modelo de Dominio STECH NODES | Lenguaje ubicuo, principios rectores (incluyendo Principio 8 — Historia Documental relacional), decisiones D-07 a D-11, y definiciones documentales oficiales de Cotización, Orden de Trabajo, Acta Técnica y Cuenta de Cobro. | Normativo | Congelado (parcial) | v1.2 †† | `docs/domain/domain-model-v1.0.md` |
+| Modelo de Dominio STECH NODES | Lenguaje ubicuo, principios rectores (incluyendo Principio 8 — Hoja de Vida del Equipo relacional), decisiones D-07 a D-11, y definiciones documentales oficiales de Cotización, Orden de Trabajo, Acta Técnica y Cuenta de Cobro. Hoja de Vida del Equipo en descubrimiento (§5.5, no congelada). | Normativo | Congelado (parcial) | v1.3 †† | `docs/domain/domain-model-v1.0.md` |
 
-†† El archivo se llama `domain-model-v1.0.md` pero su contenido fue actualizado a v1.2. El número de versión canónico es v1.2. (v1.1: Acta Técnica congelada, Principio 8 agregado. v1.2: Cuenta de Cobro congelada.)
+†† El archivo se llama `domain-model-v1.0.md` pero su contenido fue actualizado a v1.3. El número de versión canónico es v1.3. (v1.1: Acta Técnica congelada, Principio 8 agregado. v1.2: Cuenta de Cobro congelada. v1.3: renombre "Historia Documental del Equipo" → "Hoja de Vida del Equipo" (lenguaje real del negocio) + descubrimiento de la Hoja de Vida en curso, no congelada.)
 
 ---
 
@@ -165,3 +165,4 @@ Crear primero el documento nuevo y después "armonizarlo" con P1/P2 viola la jer
 | v1.2 | 2026-07-15 | Nueva sección "Documentos técnicos de dominio (ERP)" — registrado `domain-model-v1.0.md`, pista de gobierno separada de la estrategia corporativa/QR. |
 | v1.3 | 2026-07-15 | `domain-model-v1.0.md` actualizado a v1.1 — Acta Técnica congelada, Principio 8 agregado. |
 | v1.4 | 2026-07-15 | `domain-model-v1.0.md` actualizado a v1.2 — Cuenta de Cobro congelada. |
+| v1.5 | 2026-07-15 | `domain-model-v1.0.md` actualizado a v1.3 — renombre a "Hoja de Vida del Equipo" (lenguaje real del negocio) + descubrimiento en curso (no congelado). |
