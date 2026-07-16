@@ -782,10 +782,11 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 4. **No modificar módulos congelados** salvo bug funcional real.
 5. **No comenzar hito sin acordar alcance** — confirmar antes de implementar.
 
-**Credenciales de desarrollo:**
-- `admin@erp.local` / `Admin2026!` · `mario@erp.local` / `Mario2026!`
-- PostgreSQL: `localhost:5433` / `erp_emprendedores`
-- Backend: `http://localhost:3000` | Frontend: `http://localhost:5173`
+**Acceso (fase de operación, desde 2026-07-16):** admin definitivo único **`mario@stechnodes.com`** (creado con `npm run bootstrap:admin`, contraseña definida por el operador vía `ADMIN_PASSWORD`, cambiable desde la app en Usuarios → Cambiar contraseña). Los usuarios de desarrollo (`admin@erp.local`, etc.) fueron eliminados. La base se limpió y las numeraciones se reiniciaron a `00001` para operar con datos reales.
+
+**Entorno local:** PostgreSQL `localhost:5433` / `erp_emprendedores` (Docker, `restart=always`) · Backend `http://localhost:3000` · Frontend `http://localhost:5173`.
+
+**Fase de operación real (en curso):** poblar datos maestros de Emmanuel → operar hacia adelante con trabajo real → en paralelo organizar la documentación histórica. **Migración histórica de Emmanuel = objetivo diferido a fase posterior basada en evidencia** (formato/volumen/calidad reales); se diseñará un cargador de migración acotado (resuelve OT-4/MNT-1 solo para migración, sin tocar la operación en vivo) cuando se conozcan los datos. OT-4, MNT-1 y RFC-4 permanecen congelados como backlog de arquitectura hasta tener evidencia de uso real. Workaround operativo de MNT-1: un plan de mantenimiento por equipo.
 
 ---
 
