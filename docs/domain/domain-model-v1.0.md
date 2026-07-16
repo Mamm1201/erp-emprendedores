@@ -1,12 +1,12 @@
-# Modelo de Dominio STECH NODES — v1.3 †
+# Modelo de Dominio STECH NODES — v1.4 †
 
 > **Tipo:** Normativo (técnico/arquitectura de dominio — no corporativo).
-> **Estado:** Congelado parcialmente. Ver §6 para el detalle de qué está cerrado y qué sigue en descubrimiento.
-> **Fecha de creación:** 2026-07-15 · **Última actualización:** 2026-07-15 — (1) Migración de nombre: el concepto antes rotulado "Historia Documental del Equipo" (nombre interno de exploración) se renombra a **Hoja de Vida del Equipo**, validado como lenguaje real del negocio (aparece ya en `schema.prisma:477`, `CLAUDE.md` y la UI de `EquipmentPage.tsx`). Migración de término, sin cambio de sustancia en las definiciones ya congeladas. (2) Descubrimiento de la Hoja de Vida del Equipo iniciado — ver §5.5, **NO congelada**.
+> **Estado:** Congelado. Las cinco definiciones del proceso (Cotización, OT, Acta Técnica, Cuenta de Cobro, Hoja de Vida del Equipo) están cerradas. Ver §6.
+> **Fecha de creación:** 2026-07-15 · **Última actualización:** 2026-07-15 — **Hoja de Vida del Equipo congelada** (§5.5) como **registro técnico integral del activo** (expediente que reúne sin poseer), no como línea de tiempo de intervenciones. Los "hitos del ciclo de vida del activo" quedan **fuera del alcance congelado** como hipótesis de diseño diferida (sin evidencia validada) — ver §5.5 y §7.
 > **Precedencia:** Este documento gobierna el modelo conceptual del ERP (entidades de dominio, lenguaje ubicuo, definiciones documentales de los artefactos del proceso de mantenimiento). No gobierna posicionamiento ni comunicación externa — eso corresponde a `docs/strategy/positioning-brief-v1.3.html` y `docs/strategy/business-rector-v1.0.html`, que tienen prioridad sobre cualquier término de este documento si llegaran a tocar el mismo tema.
 > **Regla de actualización:** cambios a las secciones marcadas como congeladas requieren una decisión de dominio formal, con fecha y motivo, igual que las decisiones de `docs/strategy/`. Las secciones marcadas como pendientes se pueden completar sin reabrir lo ya congelado.
 >
-> † El archivo se llama `domain-model-v1.0.md` pero su contenido fue actualizado a v1.3. El número de versión canónico es v1.3. (v1.1: Acta Técnica congelada. v1.2: Cuenta de Cobro congelada. v1.3: renombre Hoja de Vida del Equipo + descubrimiento en curso.)
+> † El archivo se llama `domain-model-v1.0.md` pero su contenido fue actualizado a v1.4. El número de versión canónico es v1.4. (v1.1: Acta Técnica. v1.2: Cuenta de Cobro. v1.3: renombre Hoja de Vida + descubrimiento en curso. v1.4: Hoja de Vida congelada como registro técnico integral; hitos del ciclo de vida diferidos.)
 
 ---
 
@@ -17,8 +17,7 @@ Este documento consolida el modelo conceptual de negocio de STECH NODES descubie
 - El lenguaje ubicuo del dominio de mantenimiento técnico (activos, actividades, documentos del proceso).
 - Los principios rectores que gobiernan el ERP como sistema de trazabilidad documental.
 - Las decisiones operativas congeladas D-07 a D-11.
-- Las definiciones documentales oficiales de **Cotización**, **Orden de Trabajo**, **Acta Técnica** y **Cuenta de Cobro**.
-- El estado de lo que aún está pendiente de definir (Hoja de Vida del Equipo).
+- Las definiciones documentales oficiales de **Cotización**, **Orden de Trabajo**, **Acta Técnica**, **Cuenta de Cobro** y **Hoja de Vida del Equipo**.
 - El backlog de mejoras de arquitectura/implementación derivado de la auditoría del ERP contra este modelo, explícitamente **no implementado** en esta etapa.
 
 ---
@@ -68,7 +67,7 @@ Este documento consolida el modelo conceptual de negocio de STECH NODES descubie
 | **Orden de Trabajo (OT)** | Soporte documental obligatorio de la ejecución. Documento raíz de la ejecución operativa. | ✅ Definición oficial congelada — §5.2 |
 | **Acta Técnica** | Documenta de forma estructurada la evidencia técnica generada durante la intervención. Opcional según tipo de servicio. | ✅ Definición oficial congelada — §5.3 |
 | **Cuenta de Cobro** | Documento financiero que comunica formalmente al cliente el resultado económico de un servicio, contrato u otra relación comercial. Independiente de la OT. | ✅ Definición oficial congelada — §5.4 |
-| **Hoja de Vida del Equipo** | El producto real del ERP — vista derivada de solo lectura que ensambla, cronológicamente y por Equipo, la trayectoria técnica del activo (intervenciones + hitos del ciclo de vida). No es un documento emitido ni una propiedad de ninguno de los otros individualmente. | 🔍 En descubrimiento — ver §5.5. Nombre validado; definición NO congelada |
+| **Hoja de Vida del Equipo** | Registro técnico integral del activo — expediente que reúne (sin poseer) identificación, información técnica, estado, cronograma vigente, historial de intervenciones y soportes. Composición de solo lectura, no se almacena como entidad. | ✅ Definición oficial congelada — §5.5 |
 
 ---
 
@@ -192,41 +191,40 @@ La Acta Técnica deriva de una Orden de Trabajo y documenta técnicamente la eje
 
 **Inicio y fin de su responsabilidad.** Comienza cuando existe un resultado económico ya determinado que corresponde comunicar formalmente al cliente, sin importar en qué momento se determinó. Termina cuando ese resultado queda formalizado y disponible para su gestión posterior (conciliación, pago, contabilización). No se extiende a esa gestión: la habilita, no la ejecuta.
 
-### 5.5 Hoja de Vida del Equipo — 🔍 EN DESCUBRIMIENTO (NO congelada)
+### 5.5 Hoja de Vida del Equipo — CONGELADA
 
-> **Estado (2026-07-15):** el nombre está validado como lenguaje real del negocio; la **definición documental completa queda pendiente de congelación** para la próxima sesión. Esta sección registra el descubrimiento hecho hasta ahora, no una definición cerrada. No crear entidades, modelos Prisma ni cambios de arquitectura hasta cerrar este descubrimiento.
+> **Naturaleza del concepto.** La Hoja de Vida no es un documento que alguien emite ni una entidad que se almacena aparte. Es el **registro técnico integral del activo**, que se **compone** (vista de solo lectura) a partir de conceptos que ya tienen su propia responsabilidad en el dominio. Nombre validado como lenguaje real del negocio ("hoja de vida" ya se usa en `schema.prisma:477`, `CLAUDE.md` y la UI `EquipmentPage.tsx:468`). Sustentado en: la problemática de Fondo Emprender, la solución de STECH NODES, la experiencia en IPS y la entrevista al líder administrativo de Clínica Emmanuel.
 
-**Nombre.** *Hoja de Vida del Equipo.* "Historia Documental del Equipo" fue un rótulo interno de exploración; no corresponde al lenguaje real del negocio. El término "hoja de vida" ya se usa en `schema.prisma:477` (rótulo del modelo `Equipment`), en `CLAUDE.md` y en la UI (`EquipmentPage.tsx:468`, "Hoja de vida de equipos por sede").
+**Propósito.** Representar el registro técnico integral de un activo y mantener disponible para la institución la información técnica vinculada a ese activo, de modo que pueda reconstruirla cuando la necesite — especialmente en auditorías (Resolución 3100), rotación de responsables o consultas operativas. Responde al problema de continuidad de la información técnica; no a la gestión documental como fin en sí mismo.
 
-**Naturaleza (descubierta).** No es un documento que alguien emite — no tiene fecha de emisión ni autor. Es una **vista derivada de solo lectura**: se ensambla al consultarla a partir de los documentos y hechos ya existentes del Equipo, cronológicamente. Coherente con el Principio 8. Consecuencia de arquitectura: no debe almacenarse como objeto aparte (evitar desincronización, misma razón por la que se descartó "Resultado de Mantenimiento" como entidad).
+**Qué representa realmente.** El **expediente técnico integral** del activo. Cuando una IPS pide "la hoja de vida de un equipo" espera encontrar, en un mismo concepto, el registro completo del activo — no únicamente la cronología de intervenciones, que es una parte del expediente, no su totalidad. Es una **composición de solo lectura**: reúne información que otros conceptos ya poseen, sin duplicarla ni almacenarse como entidad propia.
 
-**Problemática que guía el diseño (confirmada).** La continuidad de la información técnica del activo — permitir que la institución **reconstruya la trayectoria técnica del equipo cuando la necesite** (auditorías, consultas operativas). No es la gestión documental como fin en sí mismo.
+**Qué le corresponde reunir (las secciones del expediente).**
+1. **Identificación del activo** — origen: ficha `Equipment`.
+2. **Información técnica** (marca, modelo, serial y características según el tipo de equipo) — origen: ficha `Equipment`.
+3. **Estado actual** — origen: ficha `Equipment`.
+4. **Cronograma vigente de mantenimiento** — origen: planeación (`MaintenancePlan` / `MaintenanceVisit`). Compuesto, no poseído.
+5. **Historial de intervenciones** — origen: `WorkOrder` + `ServiceRecord` (Acta). Compuesto.
+6. **Soportes y evidencias asociados a las intervenciones** — origen: `FileAttachment` + Actas. Compuesto/referenciado.
 
-**Alcance (confirmado).**
-- Centrada **exclusivamente en el activo específico**. Su objetivo es la trazabilidad técnica del equipo.
-- Las **Cuentas de Cobro y elementos económicos NO son contenido principal**, aunque pueden existir relaciones hacia los servicios que originaron las intervenciones.
-- Debe incluir **dos categorías de contenido**:
-  1. **Documentos de intervención** (mantenimientos, correctivos): sus datos ya existen (`WorkOrder` con `equipmentId` + `ServiceRecord`/Acta + evidencias `FileAttachment`). Falta solo la vista que los reúna.
-  2. **Hitos del ciclo de vida del propio activo** (instalación, estado, ubicación, cambios relevantes, baja): **hoy NO se registran como eventos** — ver hallazgo abajo.
+**Qué NO le corresponde.**
+- **No genera la información ni garantiza su continuidad.** Eso es responsabilidad del **proceso técnico estructurado de STECH NODES**, que vincula cada intervención al activo desde el momento en que ocurre. La Hoja de Vida representa el resultado, no lo produce ni lo asegura.
+- **No es propietaria de la información que reúne.** Cada componente conserva su responsabilidad (la ficha del activo, la planeación/cronograma, las intervenciones, las evidencias). La Hoja de Vida **reúne sin poseer** — no duplica ni se vuelve fuente de verdad paralela.
+- **No gestiona el cronograma** (eso es la planeación) **ni almacena los soportes** (eso es la gestión de evidencias): los compone y referencia. La entrevista confirmó que la IPS distingue estos tres como responsabilidades separadas (Hoja de Vida / Cronograma / Soportes).
+- **No es gestión documental como fin.** Su fin es la continuidad y reconstrucción de la trayectoria técnica del activo.
 
-**Hallazgo confirmado — `Equipment` es ficha, no historial.** El modelo `Equipment` guarda solo el **estado actual** del activo (`status`, `location`, `criticality`, `warrantyExpiresAt`, `installDate`) y lo sobrescribe al cambiar. No hay memoria de las transiciones: cuándo pasó a baja, por qué, desde qué ubicación se movió, etc. Para la Hoja de Vida falta un **concepto de eventos/novedades del ciclo de vida del activo** — cuyo alcance queda pendiente de definir (ver preguntas abiertas).
+**Qué aporta (su razón de ser).** Es lo que hace posible **reconstruir la trayectoria técnica del activo cuando la institución la necesita**. Materializa internamente la promesa de STECH NODES: *"la información queda organizada, vinculada al activo y disponible para la institución cuando la necesite."*
 
-**Relación con el Portal QR (confirmada — conceptos relacionados pero distintos).**
-| | Portal QR (existe, congelado) | Hoja de Vida (a definir) |
-|---|---|---|
-| Naturaleza | Proyección **pública mínima** del activo | Representación **interna completa** de la trayectoria técnica |
-| Audiencia | Pública, sin autenticación | Interna, ERP autenticado |
-| Frontera | `EquipmentPublicDto` / `toPublicDto()` — campos excluidos congelados | Sin restricción de exposición pública |
+**Ubicación en la tríada de la propuesta de valor.**
+- El **proceso técnico estructurado** *garantiza* que cada intervención quede vinculada al activo.
+- La **Hoja de Vida** *representa* de forma organizada esa continuidad (registro técnico integral).
+- El **QR** *materializa la disponibilidad inmediata* de una porción pública gobernada de esa información en el activo físico. El QR es un canal que expone un subconjunto (decisiones QR congeladas: `qr-functional-design`, D-B1, DTO público mínimo); la Hoja de Vida es la representación interna completa. **No se confunden**: el Portal QR apunta directamente al `Equipment` y no consume la Hoja de Vida.
 
-El Portal QR **apunta directamente al Equipo** (consulta `Equipment` en `PublicService`), no consume una Hoja de Vida. Su campo `lastMaintenance` es un extracto público mínimo (1 registro), gobernado por decisiones QR congeladas (D-4/D-4.1, D-B1, `qr-functional-design`). **La Hoja de Vida interna no debe diseñarse como "lo que el portal consume"**: incluirá información que jamás puede llegar al público. Son dos proyecciones separadas sobre el mismo Equipo.
+**Inicio y fin.** No se emite ni se cierra: existe mientras el activo exista en el sistema y se compone al consultarla, en cualquier momento de la vida del activo.
 
-**Riesgo ya conocido que afecta a la Hoja de Vida.** DT-06-B Etapa 2: las OTs preventivas de planes con más de un equipo quedan sin `equipmentId` → no aparecerían en la Hoja de Vida del activo aunque el mantenimiento ocurrió. Es un hueco directo en la promesa de continuidad técnica, no solo un detalle de generación de OTs.
+> **FUERA DEL ALCANCE CONGELADO — hipótesis de diseño diferida (no validada).** Durante el descubrimiento surgió que `Equipment` es la **ficha del activo (estado actual), no su historial**: guarda `status`, `location`, `criticality`, `installDate` como valores que se sobrescriben, sin memoria de las transiciones. Esto sugirió un posible **concepto de hitos/eventos del ciclo de vida del activo** (instalación, traslado, salida/retorno de servicio, baja con motivo). **Se decidió NO incorporarlo hoy:** no hay evidencia suficiente de que la institución necesite reconstruir esos hechos como eventos — es una hipótesis de diseño, no un descubrimiento validado del dominio. Si el desarrollo del ERP o futuras entrevistas con clientes muestran esa necesidad, se evolucionará el modelo en ese momento. Ver §7 (backlog). Nota relacionada: DT-06-B Etapa 2 sí es un hueco real de la capa de garantía (OTs preventivas multi-equipo sin `equipmentId` no aparecen en la Hoja de Vida) — pertenece al proceso, no a la Hoja de Vida.
 
-**Preguntas abiertas para la próxima sesión (antes de congelar):**
-1. ¿Cuál es la responsabilidad exacta de la Hoja de Vida del Equipo dentro del dominio?
-2. ¿Qué eventos del ciclo de vida del activo tienen significado de negocio y deben persistirse? (acotar a hitos con sentido operativo — instalación, cambio de estado, traslado, baja con motivo, quizá criticidad — sin caer en un audit-log genérico de todo cambio de todo campo).
-3. ¿Cómo se relacionan esos eventos con las intervenciones técnicas existentes (OT, Acta Técnica, evidencias)?
-4. ¿Qué información de la Hoja de Vida puede alimentar futuras evoluciones del Portal QR sin mezclar los dos conceptos?
+> **La Hoja de Vida del Equipo es el registro técnico integral del activo: reúne, sin poseer, su identificación, información técnica, estado, cronograma vigente, historial de intervenciones y soportes, y los mantiene disponibles para que la institución reconstruya su trayectoria técnica cuando la necesite.**
 
 ---
 
@@ -240,8 +238,8 @@ El Portal QR **apunta directamente al Equipo** (consulta `Equipment` en `PublicS
 | Orden de Trabajo | ✅ Definición documental oficial congelada |
 | Acta Técnica | ✅ Definición documental oficial congelada |
 | Cuenta de Cobro | ✅ Definición documental oficial congelada |
-| Hoja de Vida del Equipo | 🔍 EN DESCUBRIMIENTO (§5.5) — nombre validado, definición NO congelada. 4 preguntas abiertas para la próxima sesión. |
-| Concepto de eventos/novedades del ciclo de vida del activo | 🔍 Identificado como necesario (§5.5), alcance pendiente. NO crear entidad hasta cerrar el descubrimiento de la Hoja de Vida. |
+| Hoja de Vida del Equipo | ✅ Definición documental oficial congelada (§5.5) — registro técnico integral del activo. |
+| Concepto de hitos/eventos del ciclo de vida del activo | ⏸️ Hipótesis de diseño DIFERIDA (no validada) — fuera del alcance congelado de la Hoja de Vida. Se evolucionará solo con evidencia (desarrollo o entrevistas). Ver §5.5 y §7. |
 
 ---
 
@@ -258,8 +256,10 @@ Hallazgos de la auditoría de consistencia (ERP actual vs. este modelo) y de la 
 | — | `CreateWorkOrderDto` no expone el campo `type` — toda OT manual recibe `CORRECTIVE` por defecto, sin importar su naturaleza real. | Deuda técnica |
 | — | OTs históricas y futuras (hasta que se resuelva RFC-1) quedan mal etiquetadas como `CORRECTIVE` por defecto. | Deuda técnica |
 | — | Generación de Cuenta de Cobro copia todos los ítems de la OT por defecto — riesgo de facturar por error algo cubierto por contrato. | Mejora de UX |
-| — | No existe endpoint ni vista interna de historial completo de OTs por Equipo (el único mecanismo existente, `service-records.findByEquipment`, solo cubre Actas, y no está expuesto en el frontend del ERP). | Mejora de UX / Cambio de arquitectura |
-| DT-06-B — Etapa 2 | `generateWorkOrder()` no asigna `equipmentId` cuando el plan de mantenimiento tiene más de un equipo asociado. Pendiente de análisis funcional y técnico (ver `DEVELOPMENT_CONTEXT.md`). Cobra más peso ahora bajo el criterio de trazabilidad del activo (punto 7): es una causa directa de historial incompleto para contratos multi-equipo. | Pendiente de análisis (no es deuda técnica todavía — requiere decisión de diseño) |
+| — | No existe endpoint ni vista interna de historial completo de OTs por Equipo (el único mecanismo existente, `service-records.findByEquipment`, solo cubre Actas, y no está expuesto en el frontend del ERP). Es la implementación mínima de la Hoja de Vida (§5.5): componer las secciones del expediente por Equipo. | Mejora de UX / Cambio de arquitectura |
+| — | Hoja de Vida — "información técnica según el tipo de equipo": la ficha `Equipment` tiene campos genéricos (marca/modelo/serial), sin specs propias por tipo. Posible enriquecimiento al implementar el expediente. Sin evidencia de urgencia. | Mejora futura |
+| **Hipótesis diferida** | Hitos/eventos del ciclo de vida del activo (instalación, traslado, salida/retorno de servicio, baja con motivo) como eventos persistidos. `Equipment` es hoy ficha (estado actual), no historial. **Fuera del alcance congelado de la Hoja de Vida** — no validado por evidencia. Revisar solo si el desarrollo o entrevistas con clientes muestran la necesidad real (§5.5). No crear entidad hasta entonces. | Hipótesis de diseño (no iniciar) |
+| DT-06-B — Etapa 2 | `generateWorkOrder()` no asigna `equipmentId` cuando el plan de mantenimiento tiene más de un equipo asociado. Pendiente de análisis funcional y técnico (ver `DEVELOPMENT_CONTEXT.md`). Bajo el criterio de trazabilidad del activo: es una causa directa de historial incompleto para contratos multi-equipo — hueco de la **capa de garantía** (el proceso), que la Hoja de Vida representa fielmente como ausencia. | Pendiente de análisis (no es deuda técnica todavía — requiere decisión de diseño) |
 
 ---
 

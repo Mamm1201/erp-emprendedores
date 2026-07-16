@@ -4,6 +4,25 @@
 
 ---
 
+## v2.6.0 — Modelo de Dominio v1.4: Hoja de Vida del Equipo congelada (2026-07-15)
+
+Cierre de la fase de descubrimiento documental del dominio. Commit exclusivamente documental — no crea entidades, modelos Prisma ni cambios de arquitectura.
+
+### `docs/domain/domain-model-v1.0.md` (contenido actualizado a v1.4)
+- **Hoja de Vida del Equipo — definición documental oficial congelada (§5.5).** Concepto: **registro técnico integral del activo** (expediente), no una línea de tiempo de intervenciones. Corrección de dominio clave surgida de la experiencia en IPS + la entrevista al líder administrativo de Clínica Emmanuel.
+- **Naturaleza:** composición de solo lectura que **reúne sin poseer** — identificación, información técnica (según tipo), estado actual, cronograma vigente, historial de intervenciones y soportes. Cada componente conserva su responsabilidad (ficha `Equipment`, planeación, OT/Acta, evidencias). No se almacena como entidad; no es fuente de verdad paralela; no es gestión documental como fin.
+- **Tríada de la propuesta de valor** documentada: el proceso técnico *garantiza* la vinculación al activo · la Hoja de Vida *representa* la continuidad · el QR *materializa la disponibilidad* de una porción pública gobernada (no consume la Hoja de Vida; son conceptos distintos).
+- **Hitos del ciclo de vida del activo (instalación, traslado, salida/retorno de servicio, baja): hipótesis de diseño DIFERIDA, fuera del alcance congelado** — sin evidencia validada de que la institución necesite reconstruirlos como eventos. Se evolucionará el modelo solo si el desarrollo o futuras entrevistas lo demuestran. Registrado en §7 (backlog) como "no iniciar".
+- Tablas de estado (§3.3, §6), encabezado y backlog (§7) actualizados. Fin del descubrimiento documental: 5 definiciones congeladas (Cotización, OT, Acta Técnica, Cuenta de Cobro, Hoja de Vida del Equipo).
+
+### `MASTER_DOCUMENT_INDEX.md` y `DEVELOPMENT_CONTEXT.md`
+- Documento de dominio a v1.4; estado "Congelado" (ya no parcial en lo documental); punto de retomo actualizado (paso a diseño técnico u otro descubrimiento, a decisión del usuario).
+
+### Estado del commit
+Exclusivamente documental — sin cambios de código, sin migraciones, sin entidades nuevas.
+
+---
+
 ## v2.5.3 — Checkpoint de descubrimiento: Hoja de Vida del Equipo (2026-07-15)
 
 Checkpoint documental de descubrimiento en curso — **no congela ninguna definición**, no crea entidades ni modelos Prisma.
