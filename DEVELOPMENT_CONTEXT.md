@@ -78,9 +78,9 @@
 | Sedes | 🟢 Validado | Sin hallazgos — el nivel mejor cubierto |
 | Equipos | 🟡 Implementado, pendiente validación visual | CE-1 y CE-2 implementados y probados por API; falta recorrido UI. CE-4, CE-5, CE-6 al backlog |
 | Portal QR | 🟡 Validado con pendientes | Funciona y alineado con su alcance de dominio. Pendiente: datos de contacto reales, equipo demo realista, prueba física (Bloque 7), y DT-06-B Etapa 2 (afecta `lastMaintenance`) |
-| Cotización | ⏳ Pendiente | Auditoría de alineación previa: A-2/A-3 (Servicio Ofertado, cardinalidad), A-6 |
-| Orden de Trabajo | ⏳ Pendiente | Auditoría previa: A-1 (precios/totales en OT — raíz RFC-4), A-4, A-5 |
-| Acta Técnica | ⏳ Pendiente | Auditoría previa: mejor alineada; A-7 (evidencias en PDF) |
+| Cotización | 🟡 Validado con pendientes | Flujo funcional OK (crear · estados · PDF · totales · snapshot comercial). Pendientes al backlog: COT-1/COT-2/COT-3/COT-4. Falta recorrido visual |
+| Orden de Trabajo | 🟡 Validado con pendientes | Flujo funcional OK (crear · estados · vínculo a equipo · reflejo en QR). Pendientes: OT-1/OT-2/OT-3 backlog; **OT-4 bloqueante de migración**. Falta recorrido visual |
+| Acta Técnica | 🟡 Validado con pendientes | El mejor alineado. Flujo OK (crear · checklist · firma retrofechable · PDF · findByEquipment). Único pendiente: ACT-1 (evidencias en PDF). Falta recorrido visual |
 | Cuenta de Cobro | ⏳ Pendiente | Auditoría previa: A-1 (refleja vs decide), cobertura RFC-4 |
 | Contratos / Planes / Visitas | ⏳ Pendiente | DT-06-B Etapa 2 vive aquí |
 | Dashboard | ⏳ Pendiente | — |
@@ -106,6 +106,79 @@ Auditoría funcional por ejecución real (crear cliente/sede/equipo vía API + i
 **Revalidación (2026-07-16):** re-ejecutada la misma prueba API que detectó el bug → crear equipo con `criticality:HIGH` + `warrantyExpiresAt` → **201** (antes 400), persiste en BD y vuelve en el GET; editar a `CRITICAL` + garantía `null` → **200**. `tsc --noEmit` limpio en backend y frontend. **Pendiente:** recorrido visual del formulario (bloqueado por fricción del arnés de pruebas en el login, no por defecto del producto).
 
 **Decisión pre-migración:** antes de cargar datos reales conviene resolver también CE-3 (dirección fiscal del cliente). CE-4/CE-5/CE-6 se reevalúan tras la **primera migración piloto**, que dará la evidencia de qué hace falta realmente.
+
+### Hallazgos de auditoría — módulo Cotización (2026-07-16)
+
+Validación funcional por ejecución real: crear cotización (2 ítems) → estados DRAFT→SENT→APPROVED → PDF → totales → snapshot. **Flujo sólido, sin contradicción interna.**
+
+| ID | Hallazgo | Categoría | Estado |
+|----|----------|-----------|--------|
+| COT-1 | La unidad no es el "Servicio Ofertado": los ítems son líneas genéricas y la aprobación es de toda la cotización, no por servicio. Dominio §5.1: cada servicio aprobado respalda 1..N OTs. (= A-2) | Implementación incorrecta | ⏳ Backlog |
+| COT-2 | `WorkOrder.quotationId @unique` → una cotización respalda 1 OT, no "una o varias". (= A-3) | Implementación incorrecta | ⏳ Backlog |
+| COT-3 | Condiciones comerciales estructuradas (forma de pago, garantía) — slots del PDF mapeados a `null`. (= A-6) | Implementación incompleta | ⏳ Backlog |
+| COT-4 | `issueDate` y `number` no capturables (se fijan en `now()` / autogenerado) → no se puede retrofechar/preservar el número de documentos históricos. **Baja prioridad en Cotización** (no se migran cotizaciones viejas); **crítico en OT/Acta**, donde la fecha real de intervención alimenta la Hoja de Vida. | Implementación incompleta | ⏳ Backlog (atacar en OT/Acta) |
+
+**Correcciones realizadas:** ninguna — los pendientes son schema nuevo (COT-3) o conceptuales (COT-1/COT-2), no cumplen el criterio de "corrección mínima de bajo riesgo". Permanecen en backlog.
+
+**Veredicto:** 🟡 Validado con pendientes. Funcionalmente listo para uso; los pendientes son evolución, no bloqueo.
+
+### Hallazgos de auditoría — módulo Orden de Trabajo (2026-07-16)
+
+Validación funcional por ejecución real: crear OT correctiva vinculada a equipo → estados DRAFT→SCHEDULED→IN_PROGRESS→COMPLETED → reflejo en portal QR. **Flujo sólido end-to-end (incluida la cadena OT→equipo→QR).**
+
+| ID | Hallazgo | Categoría | Estado |
+|----|----------|-----------|--------|
+| OT-1 | La OT lleva precios y totales (`WorkOrderItem` con `unitPrice/discount/tax`, `total` en la OT). Dominio §5.2: registra recursos de ejecución, no factura. Raíz de RFC-4. (= A-1) | Implementación incorrecta | ⏳ Backlog |
+| OT-2 | `type` no capturable en creación → toda OT nace `CORRECTIVE`. El campo y el enum existen; falta exponerlo. (= A-4) | Implementación incorrecta | ⏳ Backlog (candidato a quick-win estilo CE, diferido por decisión de barrido) |
+| OT-3 | Origen comercial inferido (`quotationId`/`maintenanceVisit`), no explícito. (= A-5) | Implementación incompleta | ⏳ Backlog |
+| **OT-4** | `completedAt`/`startedAt` se fijan en `now()` al transicionar — no retrofechables. Al migrar intervenciones históricas, toda OT quedaría "completada hoy"; como `completedAt` alimenta `lastMaintenance` (D-4.1) y la Hoja de Vida, **desfecha toda la trayectoria técnica migrada**. | Implementación incompleta | 🔴 **BLOQUEANTE de migración histórica** — no es quick-win (los timestamps los pone la lógica de transición; requiere diseño propio). Evaluar tras Acta/Cuenta de Cobro. |
+
+**Correcciones realizadas:** ninguna (por decisión: terminar el barrido antes de tocar código, salvo contradicciones internas evidentes como CE-1/CE-2).
+
+**Veredicto:** 🟡 Validado con pendientes. Funciona end-to-end; OT-4 es el pendiente de mayor peso para la migración.
+
+### Hallazgos de auditoría — módulo Acta Técnica (2026-07-16)
+
+Validación funcional por ejecución real: crear Acta (hallazgos + actividades + recomendaciones + firma retrofechada + 3 ítems de checklist) → PDF → `findByEquipment`. **El módulo mejor alineado con el dominio (§5.3); sin contradicción interna.**
+
+| ID | Hallazgo | Categoría | Estado |
+|----|----------|-----------|--------|
+| ACT-1 | Las evidencias/fotos (`FileAttachment`) existen pero no se renderizan en el PDF del Acta. Dominio §5.3: el Acta contiene la evidencia técnica producida. (= A-7) | Implementación incompleta | ⏳ Backlog |
+
+**Notas de migración (positivas):** `clientSignedAt` es retrofechable (la firma histórica se preserva); la fecha efectiva del Acta proviene del `completedAt` de su OT → depende de OT-4, no añade bloqueo nuevo.
+
+**Nota de arquitectura:** `findByEquipment` (`GET /equipment/:id/service-records`) existe en el backend pero **no está expuesto en el frontend** — es la semilla de la Hoja de Vida (el historial por equipo ya es consultable por API; falta la vista interna).
+
+**Correcciones realizadas:** ninguna. **Veredicto:** 🟡 Validado con pendientes (el más limpio; único pendiente ACT-1 + recorrido visual).
+
+---
+
+## Resumen ejecutivo del backlog — por impacto (referencia de priorización)
+
+> Se actualiza al cierre de cada módulo. Ordena todos los hallazgos abiertos según su impacto en los objetivos del proyecto (migración histórica → salida comercial → UX → mejora futura), no por módulo. Cobertura actual: Clientes/Sedes/Equipos, Portal QR, Cotización, Orden de Trabajo, Acta Técnica. *(Pendiente: Cuenta de Cobro, Contratos/Planes/Visitas, Dashboard, Hoja de Vida.)*
+
+### 🔴 Bloquea migración histórica
+- **OT-4** — `completedAt` no retrofechable → toda intervención migrada queda con fecha de hoy y rompe la Hoja de Vida. **Prerequisito del piloto histórico.** Requiere diseño (modo migración o exponer `completedAt` en el cierre).
+
+### 🔴 Bloquea salida comercial (demo a IPS)
+- **QR — datos** — teléfono ficticio (`+57 (601) 000-0000`) + equipo demo vacío (sin marca/modelo/serial) → el portal subvende la propuesta de valor. Corrección barata (datos/copy).
+- **QR — prueba física** — validación con teléfono real pendiente (Bloque 7).
+
+### 🟡 Afecta experiencia de usuario / calidad de datos
+- **OT-2** — `type` no capturable (todo CORRECTIVE) → OTs mal etiquetadas. Quick-win disponible.
+- **CE-3** — cliente sin dirección fiscal / representante legal → afecta Cuenta de Cobro y completitud de migración.
+- **COT-3** — condiciones comerciales (forma de pago, garantía) no capturables (slots PDF muertos).
+- **ACT-1** — evidencias/fotos no se renderizan en el PDF del Acta.
+- **CE-5** — `serialNumber` no único → riesgo de duplicados al migrar.
+
+### 🟢 Mejora futura (arquitectura / evolución)
+- **OT-1 (RFC-4)** — separar registro de ejecución de la facturación (precios fuera de la OT). Raíz de varios pendientes.
+- **COT-1 / COT-2** — "Servicio Ofertado" como unidad + cardinalidad cotización→OT (1:N).
+- **OT-3 (RFC-3)** — origen comercial explícito en la OT.
+- **CE-4** — características técnicas por tipo de equipo (con descubrimiento acotado).
+- **CE-6** — carga masiva para la migración (hoy uno por uno).
+
+*(CE-1 y CE-2 ya corregidos — fuera del backlog. COT-4 = OT-4, unificado aquí.)*
 
 ---
 
@@ -682,4 +755,4 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 
 ---
 
-*Actualizado: 2026-07-16 — v2.7.0 — Inicio de la **fase de validación de producto** (ver § Fase de validación de producto y su Tablero). Auditoría funcional de Clientes/Sedes/Equipos por ejecución real → hallazgos CE-1 a CE-6. Corregidos CE-1 (`warrantyExpiresAt` incapturable pese a que el QR lo usa) y CE-2 (`criticality` clavada en MEDIUM): campos ya existentes en el modelo, expuestos en las 5 capas; re-probados por API (201/200). Quedan 🟡 pendientes de validación visual (fricción del arnés de login, no defecto). CE-3 a CE-6 al backlog, a reevaluar tras la primera migración piloto. Próximo: continuar el barrido de validación por el módulo Cotización.*
+*Actualizado: 2026-07-16 — v2.7.0 — Inicio de la **fase de validación de producto** (ver § Fase de validación de producto y su Tablero). Auditoría funcional de Clientes/Sedes/Equipos por ejecución real → hallazgos CE-1 a CE-6. Corregidos CE-1 (`warrantyExpiresAt` incapturable pese a que el QR lo usa) y CE-2 (`criticality` clavada en MEDIUM): campos ya existentes en el modelo, expuestos en las 5 capas; re-probados por API (201/200). Quedan 🟡 pendientes de validación visual (fricción del arnés de login, no defecto). CE-3 a CE-6 al backlog, a reevaluar tras la primera migración piloto. Cotización 🟡, Orden de Trabajo 🟡 y Acta Técnica 🟡 validadas (Acta = la mejor alineada). Resumen ejecutivo del backlog por impacto vigente (OT-4 = bloqueante de migración). Próximo: validación del módulo Cuenta de Cobro.*
