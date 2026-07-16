@@ -4,6 +4,32 @@
 
 ---
 
+## v2.7.0 — Validación: Equipos CE-1/CE-2 (criticality + warrantyExpiresAt) (2026-07-16)
+
+Inicio de la fase de validación de producto. Primera corrección de código de la fase.
+
+### Contexto
+Auditoría funcional del módulo Clientes/Sedes/Equipos (ejecución real, lente de migración de datos reales). Hallazgos CE-1 a CE-6 registrados en `DEVELOPMENT_CONTEXT.md`. Se corrigen los dos de bajo riesgo ya definidos:
+- **CE-1 (implementación incorrecta):** `warrantyExpiresAt` no era capturable, pero el portal QR lo usa para el estado "contrato vencido" → estado inalcanzable. Contradicción interna.
+- **CE-2 (implementación incompleta):** `criticality` no capturable → clavada en `MEDIUM`.
+
+### Backend
+- `dto/create-equipment.dto.ts`, `dto/update-equipment.dto.ts` — exponen `criticality` (`@IsEnum`) y `warrantyExpiresAt` (`@IsDateString`).
+- `equipment.service.ts` — create y update mapean ambos campos (garantía con conversión `string → Date`).
+- `equipment.constants.ts` — `EQUIPMENT_SELECT` devuelve `criticality` y `warrantyExpiresAt`.
+
+### Frontend
+- `lib/types.ts` — nuevo tipo `EquipmentCriticality`; campos añadidos a la interfaz `Equipment`.
+- `use-equipment.ts` — `EquipmentFormData` extendido.
+- `EquipmentPage.tsx` — schema Zod, mapeos y defaults; nuevos campos de formulario: selector "Criticidad" e input date "Garantía / contrato vence".
+
+### Verificación
+- `tsc --noEmit`: 0 errores backend + frontend.
+- **Re-ejecutada la prueba API que detectó el bug:** crear equipo con `criticality:HIGH` + `warrantyExpiresAt:2027-03-15` → **201** (antes 400), persiste en BD, vuelve en el GET; editar a `CRITICAL` + garantía `null` → **200**.
+- Pendiente: recorrido visual del formulario (bloqueado por fricción del arnés de login, no por defecto del producto). Queda 🟡 hasta validación visual.
+
+---
+
 ## v2.6.0 — Modelo de Dominio v1.4: Hoja de Vida del Equipo congelada (2026-07-15)
 
 Cierre de la fase de descubrimiento documental del dominio. Commit exclusivamente documental — no crea entidades, modelos Prisma ni cambios de arquitectura.

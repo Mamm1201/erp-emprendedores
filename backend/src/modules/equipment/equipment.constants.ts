@@ -11,6 +11,8 @@ export const EQUIPMENT_SELECT = {
   location: true,
   notes: true,
   status: true,
+  criticality: true,
+  warrantyExpiresAt: true,
   qrCode: true,
   createdAt: true,
   updatedAt: true,

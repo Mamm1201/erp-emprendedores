@@ -6,11 +6,22 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { EquipmentType } from '../../../generated/prisma/client';
+import {
+  EquipmentType,
+  EquipmentCriticality,
+} from '../../../generated/prisma/client';
 
 export class CreateEquipmentDto {
   @IsEnum(EquipmentType)
   type: EquipmentType;
+
+  @IsOptional()
+  @IsEnum(EquipmentCriticality)
+  criticality?: EquipmentCriticality;
+
+  @IsOptional()
+  @IsDateString()
+  warrantyExpiresAt?: string;
 
   @IsOptional()
   @IsString()

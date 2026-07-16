@@ -18,7 +18,7 @@ import {
 import { useClients } from '@/hooks/use-clients';
 import { useBranches } from '@/hooks/use-branches';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Equipment, EquipmentType, EquipmentStatus } from '@/lib/types';
+import type { Equipment, EquipmentType, EquipmentStatus, EquipmentCriticality } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -68,6 +68,15 @@ const STATUS_BADGE: Record<EquipmentStatus, 'success' | 'secondary' | 'danger'> 
 
 const STATUS_OPTIONS: EquipmentStatus[] = ['ACTIVE', 'INACTIVE', 'DECOMMISSIONED'];
 
+const CRITICALITY_LABELS: Record<EquipmentCriticality, string> = {
+  LOW: 'Baja',
+  MEDIUM: 'Media',
+  HIGH: 'Alta',
+  CRITICAL: 'Crítica',
+};
+
+const CRITICALITY_OPTIONS: EquipmentCriticality[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+
 const SELECT_CLASS =
   'flex h-9 w-full rounded-md border border-[hsl(var(--input))] bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:opacity-50';
 
@@ -75,6 +84,8 @@ const SELECT_CLASS =
 
 const equipmentSchema = z.object({
   type: z.enum(['NURSE_CALL', 'MEDICAL_ALERT', 'GENERATOR', 'UPS', 'ELECTRICAL', 'OTHER']),
+  criticality: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+  warrantyExpiresAt: z.string().optional().or(z.literal('')),
   brand: z.string().max(100).optional().or(z.literal('')),
   model: z.string().max(100).optional().or(z.literal('')),
   serialNumber: z.string().max(100).optional().or(z.literal('')),
@@ -89,6 +100,8 @@ type EquipmentSchema = z.infer<typeof equipmentSchema>;
 function toFormValues(eq: Equipment): EquipmentSchema {
   return {
     type: eq.type,
+    criticality: eq.criticality,
+    warrantyExpiresAt: eq.warrantyExpiresAt ? eq.warrantyExpiresAt.slice(0, 10) : '',
     brand: eq.brand ?? '',
     model: eq.model ?? '',
     serialNumber: eq.serialNumber ?? '',
@@ -102,6 +115,8 @@ function toFormValues(eq: Equipment): EquipmentSchema {
 function toDto(values: EquipmentSchema): EquipmentFormData {
   return {
     type: values.type,
+    criticality: values.criticality,
+    warrantyExpiresAt: values.warrantyExpiresAt || undefined,
     brand: values.brand || undefined,
     model: values.model || undefined,
     serialNumber: values.serialNumber || undefined,
@@ -145,7 +160,7 @@ function EquipmentFormModal({
       reset(
         editing
           ? toFormValues(editing)
-          : { type: 'NURSE_CALL', brand: '', model: '', serialNumber: '', installDate: '', location: '', notes: '', status: 'ACTIVE' },
+          : { type: 'NURSE_CALL', criticality: 'MEDIUM', warrantyExpiresAt: '', brand: '', model: '', serialNumber: '', installDate: '', location: '', notes: '', status: 'ACTIVE' },
       );
     }
   }, [open, editing, reset]);
@@ -170,17 +185,27 @@ function EquipmentFormModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Tipo */}
-          <div className="space-y-1.5">
-            <Label htmlFor="type">Tipo *</Label>
-            <select id="type" {...register('type')} className={SELECT_CLASS}>
-              {TYPE_OPTIONS.map((t) => (
-                <option key={t} value={t}>{TYPE_LABELS[t]}</option>
-              ))}
-            </select>
-            {errors.type && (
-              <p className="text-xs text-[hsl(var(--destructive))]">{errors.type.message}</p>
-            )}
+          {/* Tipo y Criticidad */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="type">Tipo *</Label>
+              <select id="type" {...register('type')} className={SELECT_CLASS}>
+                {TYPE_OPTIONS.map((t) => (
+                  <option key={t} value={t}>{TYPE_LABELS[t]}</option>
+                ))}
+              </select>
+              {errors.type && (
+                <p className="text-xs text-[hsl(var(--destructive))]">{errors.type.message}</p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="criticality">Criticidad</Label>
+              <select id="criticality" {...register('criticality')} className={SELECT_CLASS}>
+                {CRITICALITY_OPTIONS.map((c) => (
+                  <option key={c} value={c}>{CRITICALITY_LABELS[c]}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Marca y Modelo */}
@@ -207,23 +232,29 @@ function EquipmentFormModal({
             </div>
           </div>
 
-          {/* Fecha instalación y Estado */}
+          {/* Fecha instalación y Vencimiento de garantía/contrato */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="installDate">Fecha instalación</Label>
               <Input id="installDate" type="date" {...register('installDate')} />
             </div>
-            {isEditing && (
-              <div className="space-y-1.5">
-                <Label htmlFor="status">Estado</Label>
-                <select id="status" {...register('status')} className={SELECT_CLASS}>
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div className="space-y-1.5">
+              <Label htmlFor="warrantyExpiresAt">Garantía / contrato vence</Label>
+              <Input id="warrantyExpiresAt" type="date" {...register('warrantyExpiresAt')} />
+            </div>
           </div>
+
+          {/* Estado (solo en edición) */}
+          {isEditing && (
+            <div className="space-y-1.5">
+              <Label htmlFor="status">Estado</Label>
+              <select id="status" {...register('status')} className={SELECT_CLASS}>
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Notas */}
           <div className="space-y-1.5">

@@ -232,6 +232,7 @@ export type EquipmentType =
   | 'OTHER';
 
 export type EquipmentStatus = 'ACTIVE' | 'INACTIVE' | 'DECOMMISSIONED';
+export type EquipmentCriticality = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 // ─── API response shapes ──────────────────────────────────────────────────────
 
@@ -456,6 +457,8 @@ export interface Equipment {
   location: string | null;
   notes: string | null;
   status: EquipmentStatus;
+  criticality: EquipmentCriticality;
+  warrantyExpiresAt: string | null;
   qrCode: string | null;
   createdAt: string;
   updatedAt: string;

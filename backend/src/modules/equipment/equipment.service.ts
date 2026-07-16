@@ -69,6 +69,10 @@ export class EquipmentService {
       data: {
         branchId,
         type: dto.type,
+        criticality: dto.criticality ?? undefined,
+        warrantyExpiresAt: dto.warrantyExpiresAt
+          ? new Date(dto.warrantyExpiresAt)
+          : null,
         brand: dto.brand ?? null,
         model: dto.model ?? null,
         serialNumber: dto.serialNumber ?? null,
@@ -126,6 +130,12 @@ export class EquipmentService {
       where: { id },
       data: {
         ...(dto.type !== undefined && { type: dto.type }),
+        ...(dto.criticality !== undefined && { criticality: dto.criticality }),
+        ...(dto.warrantyExpiresAt !== undefined && {
+          warrantyExpiresAt: dto.warrantyExpiresAt
+            ? new Date(dto.warrantyExpiresAt)
+            : null,
+        }),
         ...(dto.brand !== undefined && { brand: dto.brand }),
         ...(dto.model !== undefined && { model: dto.model }),
         ...(dto.serialNumber !== undefined && { serialNumber: dto.serialNumber }),

@@ -7,9 +7,9 @@
 
 ## Estado actual
 
-**Versión:** `v2.6.0` (Modelo de Dominio v1.4 — Hoja de Vida del Equipo congelada · fase de dominio cerrada)
+**Versión:** `v2.7.0` (Fase de validación de producto iniciada — módulo Equipos: CE-1/CE-2 corregidos)
 **Rama activa:** `develop`
-**Última sesión:** 2026-07-15
+**Última sesión:** 2026-07-16
 
 ### Hitos completados
 
@@ -54,10 +54,58 @@
 | v2.5.2 | Modelo de Dominio v1.2 | Cuenta de Cobro congelada — "comunicar formalmente al cliente el resultado económico derivado de un servicio, contrato u otra relación comercial". Caso $0/cubierto subsumido ("resultado económico", no "obligación"). Nombre conservado en el lenguaje del negocio; la forma tributaria de emisión es asunto de implementación, a evolucionar si el negocio cambia de forma jurídica. Sin cambios de código. | ✅ Cerrado — `docs/domain/domain-model-v1.0.md` actualizado a v1.2 |
 | v2.5.3 | Checkpoint descubrimiento | Hoja de Vida del Equipo — descubrimiento iniciado, **no congelada**. Nombre validado (renombre de "Historia Documental del Equipo"). Confirmado: `Equipment` es ficha del activo, no historial; Portal QR y Hoja de Vida son conceptos relacionados pero distintos; identificada la necesidad de un concepto de eventos del ciclo de vida (alcance pendiente). 4 preguntas abiertas para la próxima sesión. Sin cambios de código, sin entidades nuevas. | 🔍 En curso — ver `docs/domain/domain-model-v1.0.md` §5.5 (v1.3) |
 | v2.6.0 | Modelo de Dominio v1.4 | **Hoja de Vida del Equipo congelada** como **registro técnico integral del activo** (expediente que reúne, sin poseer, identificación, información técnica, estado, cronograma vigente, historial de intervenciones y soportes). Corrección de dominio clave: no es una línea de tiempo de intervenciones sino un expediente completo. Sustentada en el problema/solución de Fondo Emprender, la experiencia en IPS y la entrevista al líder administrativo. Los **hitos del ciclo de vida del activo** quedan como **hipótesis de diseño diferida (no validada)**, fuera del alcance congelado. **Fin de la fase de descubrimiento documental del dominio.** Sin cambios de código. | ✅ Cerrado — `docs/domain/domain-model-v1.0.md` v1.4 |
+| v2.7.0 | Validación — Equipos | Inicio de la **fase de validación de producto**. Auditoría funcional (ejecución real) de Clientes/Sedes/Equipos con lente de migración de datos reales → hallazgos CE-1 a CE-6. Corrección de **CE-1** (`warrantyExpiresAt` incapturable pese a que el QR lo usa — contradicción interna) y **CE-2** (`criticality` clavada en MEDIUM): ambos campos ya existían en el modelo, expuestos en DTOs/service/select + tipos/hook/formulario. Re-ejecutada la prueba API que detectó el bug → 201/200 OK. | 🟡 Implementado, **pendiente validación visual** (fricción del arnés, no defecto) |
 
-**Versión:** `v2.6.0` (Modelo de Dominio v1.4 — Hoja de Vida del Equipo congelada · fase de dominio cerrada)
+**Versión:** `v2.7.0` (Fase de validación de producto — módulo Equipos: CE-1/CE-2 corregidos)
 
-**Estado general:** Build limpio · TypeScript 0 errores · QR Fase 1 Bloques 1–6 operativos, Bloque 7 con desarrollo y validaciones técnicas completas (validación física pendiente, diferida a necesidad real de negocio) · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · **Modelo de Dominio v1.4: las cinco definiciones (Cotización, OT, Acta Técnica, Cuenta de Cobro, Hoja de Vida del Equipo) congeladas — fase de descubrimiento documental del dominio cerrada** · Portal `http://localhost:5174` corriendo · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
+**Estado general:** Build limpio · TypeScript 0 errores · **Fase de validación de producto en curso** (ver § Tablero de validación) · Modelo de Dominio v1.4 congelado (5 definiciones) · QR Fase 1 operativo · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
+
+---
+
+## Fase de validación de producto (referencia oficial)
+
+> **Objetivo:** validar módulo por módulo la implementación real contra el dominio congelado y contra el flujo real de trabajo de una IPS, para poder afirmar objetivamente que el ERP está listo para **migrar datos reales** y luego iniciar la **fase comercial**.
+>
+> **Metodología (invariable):** (1) ejecutar el módulo; (2) compararlo con el dominio congelado; (3) compararlo con el flujo real de una IPS; (4) identificar solo diferencias reales; (5) clasificar en *implementación incorrecta* / *implementación incompleta* / *descubrimiento pendiente* (solo si el dominio realmente no responde); (6) corregir lo mínimo necesario; (7) volver a probar. **No se reabren definiciones congeladas salvo evidencia funcional objetiva de contradicción.**
+>
+> **Criterio de "Validado" (único para todos los módulos):** una corrección solo pasa a 🟢 **Validado** cuando además se verifica **desde la interfaz de usuario en un recorrido normal**. Mientras solo esté probada a nivel de API/código, queda 🟡 **Implementado, pendiente validación visual**.
+
+### Tablero de validación del ERP
+
+| Módulo | Estado | Observaciones |
+|--------|--------|---------------|
+| Clientes | 🟡 Validado con pendientes | CE-3 al backlog (dirección fiscal, representante legal, régimen — necesarios para migración y Cuenta de Cobro) |
+| Sedes | 🟢 Validado | Sin hallazgos — el nivel mejor cubierto |
+| Equipos | 🟡 Implementado, pendiente validación visual | CE-1 y CE-2 implementados y probados por API; falta recorrido UI. CE-4, CE-5, CE-6 al backlog |
+| Portal QR | 🟡 Validado con pendientes | Funciona y alineado con su alcance de dominio. Pendiente: datos de contacto reales, equipo demo realista, prueba física (Bloque 7), y DT-06-B Etapa 2 (afecta `lastMaintenance`) |
+| Cotización | ⏳ Pendiente | Auditoría de alineación previa: A-2/A-3 (Servicio Ofertado, cardinalidad), A-6 |
+| Orden de Trabajo | ⏳ Pendiente | Auditoría previa: A-1 (precios/totales en OT — raíz RFC-4), A-4, A-5 |
+| Acta Técnica | ⏳ Pendiente | Auditoría previa: mejor alineada; A-7 (evidencias en PDF) |
+| Cuenta de Cobro | ⏳ Pendiente | Auditoría previa: A-1 (refleja vs decide), cobertura RFC-4 |
+| Contratos / Planes / Visitas | ⏳ Pendiente | DT-06-B Etapa 2 vive aquí |
+| Dashboard | ⏳ Pendiente | — |
+| Hoja de Vida | ⏳ Pendiente | Implementación aún no iniciada (expediente compuesto, §5.5 del dominio) |
+
+**Meta de la fase:** todos los módulos en 🟢 → el ERP se declara listo para migración de datos reales y fase comercial.
+
+### Hallazgos de auditoría — módulo Clientes / Sedes / Equipos (2026-07-16)
+
+Auditoría funcional por ejecución real (crear cliente/sede/equipo vía API + inspección de BD), con lente de migración de Emmanuel/INDE.
+
+| ID | Hallazgo | Categoría | Estado |
+|----|----------|-----------|--------|
+| CE-1 | `warrantyExpiresAt` no capturable (create/update/form lo rechazaban con 400), pero el portal QR lo usa para el estado "contrato vencido" → estado inalcanzable. Contradicción interna. | Implementación incorrecta | ✅ Corregido (v2.7.0) — pendiente validación visual |
+| CE-2 | `criticality` no capturable → clavada en `MEDIUM` para todos los activos. | Implementación incompleta | ✅ Corregido (v2.7.0) — pendiente validación visual |
+| CE-3 | `Client` sin dirección fiscal, representante legal ni régimen tributario. Datos reales de IPS necesarios para migración y para la Cuenta de Cobro. | Implementación incompleta | ⏳ Backlog |
+| CE-4 | Sin características técnicas por tipo de equipo (n.° de habitaciones, kVA, etc.). El dominio (Hoja de Vida §5.5) reconoce "información técnica según el tipo"; falta la capacidad y el detalle de qué campos por tipo. | Implementación incompleta (con descubrimiento acotado) | ⏳ Backlog |
+| CE-5 | `serialNumber` no único — al migrar históricos podrían colarse duplicados sin aviso. | Implementación incompleta | ⏳ Backlog |
+| CE-6 | Sin carga masiva — migrar decenas de equipos es uno por uno vía navegación anidada. | Implementación incompleta | ⏳ Backlog |
+
+**Corrección aplicada (CE-1, CE-2):** ambos campos ya existían en el modelo `Equipment`; solo se expusieron de forma consistente en `create/update-equipment.dto.ts`, `equipment.service.ts`, `EQUIPMENT_SELECT`, `lib/types.ts`, `use-equipment.ts` y el formulario de `EquipmentPage.tsx` (selector Criticidad + fecha "Garantía / contrato vence").
+
+**Revalidación (2026-07-16):** re-ejecutada la misma prueba API que detectó el bug → crear equipo con `criticality:HIGH` + `warrantyExpiresAt` → **201** (antes 400), persiste en BD y vuelve en el GET; editar a `CRITICAL` + garantía `null` → **200**. `tsc --noEmit` limpio en backend y frontend. **Pendiente:** recorrido visual del formulario (bloqueado por fricción del arnés de pruebas en el login, no por defecto del producto).
+
+**Decisión pre-migración:** antes de cargar datos reales conviene resolver también CE-3 (dirección fiscal del cliente). CE-4/CE-5/CE-6 se reevalúan tras la **primera migración piloto**, que dará la evidencia de qué hace falta realmente.
 
 ---
 
@@ -634,4 +682,4 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 
 ---
 
-*Actualizado: 2026-07-15 — v2.6.0 — Hoja de Vida del Equipo CONGELADA como **registro técnico integral del activo** (`docs/domain/domain-model-v1.0.md §5.5`, v1.4). Corrección de dominio clave: la IPS entiende un expediente técnico completo (identificación, información técnica, estado, cronograma vigente, historial de intervenciones, soportes), no una línea de tiempo de intervenciones. Es una composición de solo lectura — reúne sin poseer; cada componente conserva su responsabilidad. Los hitos del ciclo de vida del activo quedan como hipótesis de diseño diferida (no validada), fuera del alcance congelado. **Con esto cierra la fase de descubrimiento documental del dominio: 5 definiciones congeladas.** Commit exclusivamente documental — sin cambios de código. Próximo: lo define el usuario (paso a diseño técnico del backlog, u otro descubrimiento).*
+*Actualizado: 2026-07-16 — v2.7.0 — Inicio de la **fase de validación de producto** (ver § Fase de validación de producto y su Tablero). Auditoría funcional de Clientes/Sedes/Equipos por ejecución real → hallazgos CE-1 a CE-6. Corregidos CE-1 (`warrantyExpiresAt` incapturable pese a que el QR lo usa) y CE-2 (`criticality` clavada en MEDIUM): campos ya existentes en el modelo, expuestos en las 5 capas; re-probados por API (201/200). Quedan 🟡 pendientes de validación visual (fricción del arnés de login, no defecto). CE-3 a CE-6 al backlog, a reevaluar tras la primera migración piloto. Próximo: continuar el barrido de validación por el módulo Cotización.*

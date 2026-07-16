@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Equipment, EquipmentType, EquipmentStatus, PaginatedResponse } from '@/lib/types';
+import type { Equipment, EquipmentType, EquipmentStatus, EquipmentCriticality, PaginatedResponse } from '@/lib/types';
 
 export interface EquipmentFormData {
   type: EquipmentType;
@@ -11,6 +11,8 @@ export interface EquipmentFormData {
   location?: string;
   notes?: string;
   status?: EquipmentStatus;
+  criticality?: EquipmentCriticality;
+  warrantyExpiresAt?: string;
 }
 
 function equipmentBase(clientId: string, branchId: string) {
