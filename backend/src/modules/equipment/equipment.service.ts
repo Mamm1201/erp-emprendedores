@@ -70,6 +70,7 @@ export class EquipmentService {
         branchId,
         type: dto.type,
         criticality: dto.criticality ?? undefined,
+        status: dto.status ?? undefined,
         warrantyExpiresAt: dto.warrantyExpiresAt
           ? new Date(dto.warrantyExpiresAt)
           : null,

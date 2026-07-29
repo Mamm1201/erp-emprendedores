@@ -14,6 +14,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthUser } from '../auth/auth.service';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { CreateInvoiceFromPreparationDto } from './dto/create-invoice-from-preparation.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { QueryInvoicesDto } from './dto/query-invoices.dto';
 import { UpdateInvoiceStatusDto } from './dto/update-invoice-status.dto';
@@ -48,6 +49,14 @@ export class InvoicesController {
   @Post()
   create(@Body() dto: CreateInvoiceDto, @CurrentUser() user: AuthUser) {
     return this.invoicesService.create(dto, user.id);
+  }
+
+  @Post('from-preparation')
+  createFromPreparation(
+    @Body() dto: CreateInvoiceFromPreparationDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.invoicesService.createFromPreparation(dto, user.id);
   }
 
   @Patch(':id')

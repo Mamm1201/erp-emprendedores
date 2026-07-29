@@ -391,6 +391,69 @@ export interface WorkOrderItem {
   updatedAt: string;
 }
 
+// ── Utilización de recurso (OT-8 · contexto Operaciones · sin economía) ──
+export type ResourceCategory = 'MATERIAL' | 'LABOR' | 'EXPENSE';
+export type ResourceOrigin = 'PLANNED' | 'ADDITIONAL';
+
+export interface ResourceUtilization {
+  id: string;
+  resourceName: string;
+  category: ResourceCategory;
+  quantity: string;
+  unit: string;
+  origin: ResourceOrigin;
+  observation: string | null;
+  createdAt: string;
+  createdBy: { id: string; name: string };
+}
+
+// ── Preparación de Facturación (RFC-06 · contexto Facturación) ──
+export type BillingPreparationStatus = 'DRAFT' | 'CONFIRMED';
+export type BillingResolution = 'CHARGE' | 'ABSORB';
+
+export interface BillingLineResolutionView {
+  id: string;
+  resolution: BillingResolution;
+  source: string;
+  billableQuantity: string | null;
+  unitPrice: string | null;
+  discountAmount: string;
+  taxRate: string;
+  lineTotal: string;
+}
+
+export interface BillingPreparationElement {
+  utilization: {
+    id: string;
+    resourceName: string;
+    category: ResourceCategory;
+    quantity: string;
+    unit: string;
+    origin: ResourceOrigin;
+    observation: string | null;
+  };
+  resolution: BillingLineResolutionView | null;
+}
+
+export interface BillingPreparation {
+  id: string;
+  workOrderId: string;
+  workOrderNumber: string;
+  status: BillingPreparationStatus;
+  notes: string | null;
+  createdAt: string;
+  confirmedAt: string | null;
+  createdBy: { id: string; name: string };
+  confirmedBy: { id: string; name: string } | null;
+  elements: BillingPreparationElement[];
+  result: {
+    chargedCount: number;
+    absorbedCount: number;
+    pendingCount: number;
+    total: string;
+  };
+}
+
 export interface WorkOrder {
   id: string;
   number: string;

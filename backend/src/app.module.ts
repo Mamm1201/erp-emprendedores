@@ -13,6 +13,8 @@ import { EquipmentModule } from './modules/equipment/equipment.module';
 import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-plans.module';
 import { ServiceRecordsModule } from './modules/service-records/service-records.module';
 import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
+import { ResourceUtilizationsModule } from './modules/resource-utilizations/resource-utilizations.module';
+import { BillingPreparationsModule } from './modules/billing-preparations/billing-preparations.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
@@ -36,6 +38,8 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     BranchesModule,
     QuotationsModule,
     WorkOrdersModule,
+    ResourceUtilizationsModule,
+    BillingPreparationsModule,
     EquipmentModule,
     MaintenancePlansModule,
     ServiceRecordsModule,

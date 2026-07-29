@@ -9,6 +9,7 @@ import {
 import {
   EquipmentType,
   EquipmentCriticality,
+  EquipmentStatus,
 } from '../../../generated/prisma/client';
 
 export class CreateEquipmentDto {
@@ -18,6 +19,10 @@ export class CreateEquipmentDto {
   @IsOptional()
   @IsEnum(EquipmentCriticality)
   criticality?: EquipmentCriticality;
+
+  @IsOptional()
+  @IsEnum(EquipmentStatus)
+  status?: EquipmentStatus;
 
   @IsOptional()
   @IsDateString()

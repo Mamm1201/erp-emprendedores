@@ -15,6 +15,7 @@ export interface WorkOrderFormData {
 
 export interface WorkOrderUpdateData {
   branchId?: string;
+  equipmentId?: string;
   title?: string;
   description?: string;
   scheduledAt?: string;

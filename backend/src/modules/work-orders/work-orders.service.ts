@@ -98,7 +98,15 @@ export class WorkOrdersService {
       await this.resolveEquipment(dto.equipmentId, dto.branchId);
     }
 
-    const { items, totals } = this.buildItemsPayload(dto.items ?? []);
+    // Al convertir una cotización sin ítems explícitos, la OT hereda las líneas
+    // de la cotización (visita, repuestos, etc.). Sin esto la OT nace vacía y la
+    // Cuenta de Cobro no tendría qué facturar.
+    const sourceItems =
+      dto.quotationId && (!dto.items || dto.items.length === 0)
+        ? await this.copyItemsFromQuotation(dto.quotationId)
+        : (dto.items ?? []);
+
+    const { items, totals } = this.buildItemsPayload(sourceItems);
 
     return this.prisma.$transaction(async (tx) => {
       const number = await nextDocumentNumber(
@@ -151,6 +159,10 @@ export class WorkOrdersService {
       await this.resolveBranch(workOrder.clientId, dto.branchId);
     }
 
+    if (dto.equipmentId) {
+      await this.resolveEquipment(dto.equipmentId, dto.branchId);
+    }
+
     const itemsPayload = dto.items ? this.buildItemsPayload(dto.items) : null;
 
     return this.prisma.$transaction(async (tx) => {
@@ -168,6 +180,9 @@ export class WorkOrdersService {
             scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
           }),
           ...(dto.assignedToId !== undefined && { assignedToId: dto.assignedToId }),
+          ...(dto.equipmentId !== undefined && {
+            equipmentId: dto.equipmentId || null,
+          }),
           updatedById: userId,
           ...(itemsPayload && {
             subtotal: itemsPayload.totals.subtotal,
@@ -277,6 +292,36 @@ export class WorkOrdersService {
     }
 
     return where;
+  }
+
+  private async copyItemsFromQuotation(
+    quotationId: string,
+  ): Promise<WorkOrderItemDto[]> {
+    const quotation = await this.prisma.quotation.findUnique({
+      where: { id: quotationId },
+      select: {
+        items: {
+          orderBy: { lineOrder: 'asc' },
+          select: {
+            lineOrder: true,
+            description: true,
+            quantity: true,
+            unitPrice: true,
+            discountAmount: true,
+            taxRate: true,
+          },
+        },
+      },
+    });
+
+    return (quotation?.items ?? []).map((item) => ({
+      lineOrder: item.lineOrder,
+      description: item.description,
+      quantity: Number(item.quantity),
+      unitPrice: Number(item.unitPrice),
+      discountAmount: Number(item.discountAmount),
+      taxRate: Number(item.taxRate),
+    }));
   }
 
   private buildItemsPayload(items: WorkOrderItemDto[]) {

@@ -27,6 +27,7 @@ import {
   PAYMENT_SELECT,
 } from './invoices.constants';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { CreateInvoiceFromPreparationDto } from './dto/create-invoice-from-preparation.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { QueryInvoicesDto } from './dto/query-invoices.dto';
 import { UpdateInvoiceStatusDto } from './dto/update-invoice-status.dto';
@@ -256,6 +257,103 @@ export class InvoicesService {
         select: {
           ...INVOICE_SELECT,
           items: { select: INVOICE_ITEM_SELECT, orderBy: { lineOrder: 'asc' } },
+          payments: { select: PAYMENT_SELECT },
+        },
+      });
+    });
+  }
+
+  /**
+   * FASE 2 — camino ADITIVO. Crea la Cuenta de Cobro desde una Preparación
+   * CONFIRMED: cada resolución CHARGE se convierte en una línea (precio ya decidido
+   * en Facturación). ABSORB no factura. No modifica createFromWorkOrder/Contract.
+   */
+  async createFromPreparation(
+    dto: CreateInvoiceFromPreparationDto,
+    userId: string,
+  ) {
+    const prep = await this.prisma.billingPreparation.findFirst({
+      where: { id: dto.preparationId },
+      select: {
+        id: true,
+        status: true,
+        workOrderId: true,
+        workOrder: {
+          select: { clientId: true, invoice: { select: { id: true } } },
+        },
+        resolutions: {
+          where: { resolution: 'CHARGE' },
+          select: {
+            billableQuantity: true,
+            unitPrice: true,
+            discountAmount: true,
+            taxRate: true,
+            utilization: { select: { resourceName: true } },
+          },
+        },
+      },
+    });
+
+    if (!prep) {
+      throw new NotFoundException(
+        `Preparación "${dto.preparationId}" no encontrada`,
+      );
+    }
+    if (prep.status !== 'CONFIRMED') {
+      throw new BadRequestException(
+        'Solo se puede facturar una preparación CONFIRMED.',
+      );
+    }
+    if (prep.workOrder.invoice) {
+      throw new BadRequestException(
+        'La OT de esta preparación ya tiene una Cuenta de Cobro.',
+      );
+    }
+    if (prep.resolutions.length === 0) {
+      throw new BadRequestException(
+        'La preparación no tiene cargos (todo absorbido/cubierto): no genera Cuenta de Cobro.',
+      );
+    }
+
+    const itemsPayload = this.buildItemsPayload(
+      prep.resolutions.map((r, index) => ({
+        lineOrder: index,
+        description: r.utilization.resourceName,
+        quantity: Number(r.billableQuantity),
+        unitPrice: Number(r.unitPrice),
+        discountAmount: Number(r.discountAmount),
+        taxRate: Number(r.taxRate),
+      })),
+    );
+
+    return this.prisma.$transaction(async (tx) => {
+      const number = await nextDocumentNumber(
+        tx,
+        INVOICE_DOCUMENT_TYPE,
+        INVOICE_NUMBER_PREFIX,
+      );
+      return tx.invoice.create({
+        data: {
+          number,
+          workOrderId: prep.workOrderId,
+          preparationId: prep.id,
+          clientId: prep.workOrder.clientId,
+          status: InvoiceStatus.DRAFT,
+          dueDate: new Date(dto.dueDate),
+          notes: dto.notes ?? null,
+          createdById: userId,
+          subtotal: itemsPayload.totals.subtotal,
+          discountTotal: itemsPayload.totals.discountTotal,
+          taxTotal: itemsPayload.totals.taxTotal,
+          total: itemsPayload.totals.total,
+          items: { create: itemsPayload.items },
+        },
+        select: {
+          ...INVOICE_SELECT,
+          items: {
+            select: INVOICE_ITEM_SELECT,
+            orderBy: { lineOrder: 'asc' },
+          },
           payments: { select: PAYMENT_SELECT },
         },
       });

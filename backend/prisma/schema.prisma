@@ -144,6 +144,32 @@ enum ChecklistResult {
   NA
 }
 
+enum ResourceCategory {
+  MATERIAL
+  LABOR
+  EXPENSE
+}
+
+enum ResourceOrigin {
+  PLANNED
+  ADDITIONAL
+}
+
+enum BillingPreparationStatus {
+  DRAFT
+  CONFIRMED
+}
+
+enum BillingResolution {
+  CHARGE
+  ABSORB
+}
+
+enum BillingResolutionSource {
+  RULE
+  DISCRETIONARY
+}
+
 // ─── Secuencias comerciales ──────────────────────────────────────────────────
 
 model DocumentSequence {
@@ -179,6 +205,9 @@ model User {
   expensesCreated    Expense[]             @relation("ExpenseCreatedBy")
   fileAttachments    FileAttachment[]
   contractsSigned    MaintenanceContract[] @relation("ContractSignedBy")
+  resourceUtilizations ResourceUtilization[] @relation("ResourceUtilizationCreatedBy")
+  billingPreparationsCreated   BillingPreparation[] @relation("BillingPreparationCreatedBy")
+  billingPreparationsConfirmed BillingPreparation[] @relation("BillingPreparationConfirmedBy")
 
   @@map("users")
 }
@@ -335,7 +364,9 @@ model WorkOrder {
   branch           Branch?           @relation(fields: [branchId], references: [id])
   quotation        Quotation?        @relation(fields: [quotationId], references: [id])
   equipment        Equipment?        @relation(fields: [equipmentId], references: [id])
-  items            WorkOrderItem[]
+  items                WorkOrderItem[]
+  resourceUtilizations ResourceUtilization[]
+  billingPreparation   BillingPreparation?
   invoice          Invoice?
   expenses         Expense[]
   assignedTo       User?             @relation("WorkOrderAssignedTo", fields: [assignedToId], references: [id])
@@ -371,6 +402,82 @@ model WorkOrderItem {
   @@map("work_order_items")
 }
 
+// ─── Utilización de recurso (OT-8 — contexto Operaciones) ─────────────────────
+// Entity local del agregado WorkOrder. Registra el hecho técnico de haber usado
+// un recurso durante la intervención. SIN economía (RFC-06 / modelo Operaciones).
+// Invariantes: pertenece a una única OT, no existe sin OT, y se congela con la OT
+// al pasar a COMPLETED/CANCELLED. Recurso hoy inline (texto); catálogo diferido.
+
+model ResourceUtilization {
+  id           String           @id @default(cuid())
+  workOrderId  String
+  resourceName String
+  category     ResourceCategory
+  quantity     Decimal          @db.Decimal(12, 3)
+  unit         String
+  origin       ResourceOrigin
+  observation  String?
+  createdById  String
+  createdAt    DateTime         @default(now())
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("ResourceUtilizationCreatedBy", fields: [createdById], references: [id])
+  billingLineResolutions BillingLineResolution[]
+
+  @@index([workOrderId])
+  @@map("resource_utilizations")
+}
+
+// ─── Preparación de Facturación (contexto Facturación · RFC-06) ────────────────
+// Aggregate Root: decide, por cada elemento ejecutado (Utilización), su resolución
+// económica. Consume disposiciones regladas (futuro) y decide el residual. El
+// RESULTADO NO se persiste — se deriva de las resoluciones; el snapshot fiscal lo
+// conserva el documento al emitirse. Sin lógica reglada aquí (invariante no-apropiación).
+
+model BillingPreparation {
+  id            String                   @id @default(cuid())
+  workOrderId   String                   @unique
+  status        BillingPreparationStatus @default(DRAFT)
+  notes         String?
+  createdById   String
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  confirmedById String?
+  confirmedAt   DateTime?
+
+  workOrder   WorkOrder               @relation(fields: [workOrderId], references: [id])
+  createdBy   User                    @relation("BillingPreparationCreatedBy", fields: [createdById], references: [id])
+  confirmedBy User?                   @relation("BillingPreparationConfirmedBy", fields: [confirmedById], references: [id])
+  resolutions BillingLineResolution[]
+  invoice     Invoice?
+
+  @@map("billing_preparations")
+}
+
+// Value Object del agregado (persistido como fila hija): la resolución económica de
+// UN elemento ejecutado. Guarda los INSUMOS de la decisión (cantidad, precio,
+// descuento, impuesto); los totales de línea y el total se DERIVAN, no se guardan.
+model BillingLineResolution {
+  id                   String                  @id @default(cuid())
+  billingPreparationId String
+  utilizationId        String
+  resolution           BillingResolution
+  source               BillingResolutionSource @default(DISCRETIONARY)
+  billableQuantity     Decimal?                @db.Decimal(12, 3)
+  unitPrice            Decimal?                @db.Decimal(12, 2)
+  discountAmount       Decimal                 @default(0) @db.Decimal(12, 2)
+  taxRate              Decimal                 @default(0) @db.Decimal(5, 2)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  preparation BillingPreparation  @relation(fields: [billingPreparationId], references: [id], onDelete: Cascade)
+  utilization ResourceUtilization @relation(fields: [utilizationId], references: [id])
+
+  @@unique([billingPreparationId, utilizationId])
+  @@index([billingPreparationId])
+  @@map("billing_line_resolutions")
+}
+
 // ─── Cuenta de cobro ─────────────────────────────────────────────────────────
 
 model Invoice {
@@ -378,6 +485,7 @@ model Invoice {
   number        String        @unique
   workOrderId   String?       @unique
   contractId    String?
+  preparationId String?       @unique
   clientId      String
   status        InvoiceStatus @default(DRAFT)
   issueDate     DateTime      @default(now()) @db.Date
@@ -393,12 +501,13 @@ model Invoice {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  workOrder WorkOrder?          @relation(fields: [workOrderId], references: [id])
-  contract  MaintenanceContract? @relation(fields: [contractId], references: [id])
-  client    Client               @relation(fields: [clientId], references: [id])
-  items     InvoiceItem[]
-  payments  Payment[]
-  createdBy User?                @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
+  workOrder   WorkOrder?           @relation(fields: [workOrderId], references: [id])
+  contract    MaintenanceContract? @relation(fields: [contractId], references: [id])
+  preparation BillingPreparation?  @relation(fields: [preparationId], references: [id])
+  client      Client               @relation(fields: [clientId], references: [id])
+  items       InvoiceItem[]
+  payments    Payment[]
+  createdBy   User?                @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
 
   @@index([clientId, status])
   @@index([contractId])

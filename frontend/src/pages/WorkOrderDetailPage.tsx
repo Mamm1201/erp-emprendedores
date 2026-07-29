@@ -6,7 +6,9 @@ import { useExpenses }  from '@/hooks/use-expenses';
 import { WorkOrderHeader }    from '@/components/work-orders/WorkOrderHeader';
 import { WorkOrderInfoCard }  from '@/components/work-orders/WorkOrderInfoCard';
 import { WorkOrderItemsCard } from '@/components/work-orders/WorkOrderItemsCard';
+import { ResourceUtilizationsCard } from '@/components/work-orders/ResourceUtilizationsCard';
 import { ServiceRecordCard }  from '@/components/work-orders/ServiceRecordCard';
+import { BillingPreparationCard } from '@/components/work-orders/BillingPreparationCard';
 import { ExpensesCard }       from '@/components/work-orders/ExpensesCard';
 import { CostSummaryCard }    from '@/components/work-orders/CostSummaryCard';
 import { TimelineCard }       from '@/components/work-orders/TimelineCard';
@@ -82,8 +84,13 @@ export function WorkOrderDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           <WorkOrderInfoCard workOrder={workOrder} />
           <WorkOrderItemsCard workOrder={workOrder} />
+          <ResourceUtilizationsCard
+            workOrderId={workOrder.id}
+            workOrderStatus={workOrder.status}
+          />
           <EvidencesCard workOrderId={workOrder.id} />
           <ServiceRecordCard workOrderId={workOrder.id} />
+          <BillingPreparationCard workOrder={workOrder} />
           <ExpensesCard workOrderId={workOrder.id} workOrderStatus={workOrder.status} />
         </div>
 

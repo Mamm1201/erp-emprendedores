@@ -33,6 +33,10 @@ export class UpdateWorkOrderDto {
   assignedToId?: string;
 
   @IsOptional()
+  @IsString()
+  equipmentId?: string;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => WorkOrderItemDto)

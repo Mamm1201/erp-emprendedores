@@ -56,6 +56,9 @@ pids
 *.seed
 *.pid.lock
 
+# Uploaded evidence / attachments (runtime, not source)
+/uploads/
+
 # Prisma local databases
 
 *.db

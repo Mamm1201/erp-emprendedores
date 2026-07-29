@@ -9,7 +9,13 @@
 
 **Versión:** `v2.8.0` (Fase de validación funcional CERRADA — ERP Validation Report v1.0)
 **Rama activa:** `develop`
-**Última sesión:** 2026-07-16
+**Última sesión:** 2026-07-28
+**Fase actual:** Operación real — primer cliente recurrente (Clínica Avellaneda Hernandez SAS: sede Calle 106 · Bogotá, planta eléctrica, preventivo cada 4 meses). Regla vigente: corregir en el momento solo lo que bloquee operar o dañe UX; el resto va a backlog. Ver *Hallazgos de operación real (2026-07-25)*.
+**Progreso 2026-07-25:**
+- **Avellaneda (cliente 1):** (1) Preventivo montado completo (cliente → sede → equipo/QR → cotización COT-00001 → contrato CMTO-00001 ACTIVE $2.991.888 anual → plan cada 4 meses → 3 visitas). (2) **Primer correctivo facturado de punta a punta:** cotización (visita $90.000) → OT-00001 (visita + 4 repuestos = **$405.000**, planta SN-009 anclada) → Acta Técnica → Cuenta de Cobro **CC-2026-00001 EMITIDA $405.000**. Durante el flujo se detectaron y corrigieron CE-7, OT-6, OT-7; y se topó con **OT-8 (urgente)** que exigió workaround por API.
+- **Emmanuel (cliente 2):** cliente multi-sede montado. 4 sedes: 3 bajo preventivo (Calle 126, Manzanos, Mirador) + 1 fuera de contrato (Spring, solo correctivos). **17 equipos** creados. **3 contratos independientes** (uno por sede, ANNUAL, $10.4M c/u, inicio 6-ene-2026 → 6-ene-2027, ciclo Anual, correctivo/repuestos/transporte incluidos) — decisión del usuario: contrato por sede para poder dar de baja una sin tocar las otras. **17 planes** (uno por equipo, Trimestral, por MNT-1) + **17 visitas de octubre**. Notas: (a) se corrigió un cruce de equipos entre contratos (riesgo "contratos indistinguibles"); (b) los 17 planes se crearon por API por volumen — evidencia real del costo de MNT-1 (17 planes para 3 visitas físicas).
+- **OT-8 implementado (2026-07-28):** tras cerrar RFC-06 (flujo Cotización→OT→Facturación) y el modelo del contexto Operaciones (WorkOrder = Aggregate Root, Utilización de Recurso = Entity local), se implementó el concepto **Utilización de Recurso** en la OT (Prisma + backend con invariantes + frontend card "Recursos utilizados"). 100% aditivo, sin economía. Cierra la captura técnica; la facturación de adicionales espera a *Preparación de Facturación* (capa táctica abierta).
+- **Preparación de Facturación — Fase 1 (2026-07-28):** modelo funcional + táctico congelados (Aggregate Root `BillingPreparation` + VO `BillingLineResolution`; resultado DERIVADO, no persistido; sin eventos — invocación directa). Fase 1 implementada y verificada E2E: migración aditiva (`20260728215337`, tablas `billing_preparations`/`billing_line_resolutions`) + backend del agregado con invariantes (OT COMPLETED, completitud al confirmar, inmutabilidad tras confirmar, pertenencia a la OT). 100% aditivo (no toca `Invoice`/`WorkOrderItem`/`Quotation`). **Fase 2 (2026-07-28): loop de facturación cerrado.** `Invoice.createFromPreparation` + endpoint `POST /invoices/from-preparation` + columna aditiva `Invoice.preparationId` (nullable/unique, migración `20260728222000`). Una preparación CONFIRMED genera la Cuenta de Cobro: solo las líneas CHARGE se facturan, ABSORB no; `workOrderId`+`preparationId` para trazabilidad; ocupa el slot 1:1 de la OT (impide doble facturación). El camino viejo (`createFromWorkOrder`) intacto. Verificado E2E. **Fase 3 (2026-07-28): frontend.** `BillingPreparationCard` en el detalle de la OT (solo visible/operable con OT `COMPLETED`): abrir preparación → decidir por elemento CHARGE/ABSORB (modal con precio/descuento/impuesto para CHARGE) → resultado económico derivado en vivo (del servidor) → confirmar (bloqueado si hay pendientes) → inmutable → "Generar Cuenta de Cobro" (`POST /invoices/from-preparation`). Solo consume APIs existentes, sin cambios de backend. Verificado end-to-end en el navegador (abrir → resolver → confirmar → generar → factura con solo las líneas CHARGE). **Pendiente:** Fase 4 (disposiciones de contrato → ataca CC-1), Fase 5 (docs). Fases 1-3 dejan el flujo Cotización→OT→Utilizaciones→Preparación→Cuenta de Cobro **usable de punta a punta en la UI**.
 
 ### Hitos completados
 
@@ -176,6 +182,146 @@ Validación funcional por ejecución real: contrato → asociar 2 equipos → 2 
 
 ---
 
+### Hallazgos de operación real — carga de cliente (Avellaneda, 2026-07-25)
+
+Primer montaje de un cliente recurrente real (Clínica Avellaneda Hernandez SAS — planta eléctrica, preventivo cada 4 meses). Surgen hallazgos por uso real del flujo comercial completo (cliente → sede → equipo → cotización → contrato → plan).
+
+| ID | Categoría | Impacto | Prioridad | Estado | Descripción |
+|----|-----------|---------|-----------|--------|-------------|
+| CE-7 | Implementación incorrecta | Operación (bloqueaba registro de equipo) | — | ✅ Corregido 2026-07-25 | `CreateEquipmentDto` no aceptaba `status` (sí lo aceptaba `UpdateEquipmentDto`); el formulario compartido crear/editar siempre lo envía → registrar equipo fallaba con *"property status should not exist"*. Corregido: `status?` opcional en el DTO de creación + `status: dto.status ?? undefined` en `equipment.service.create()`. Validado por registro real desde la UI. |
+| COT-5 | Descubrimiento / UX de flujo comercial | Operación + Comercial | Media | ⏳ Backlog | La cotización aprobada se deja convertir en OT de una sola vez sin advertir, incluso para clientes recurrentes que deben ir a Contrato. Además, una cotización `CONVERTED` queda en estado terminal aunque su OT se cancele → cotización varada e irreutilizable. Nada guía la bifurcación correctivo-puntual vs. contrato-recurrente. Causó limpieza manual de registros (2 cotizaciones + 1 OT). |
+| MNT-2 | Inconsistencia de dominio | Operación (representación) | Baja | ⏳ Backlog | `BillingCycle` (Mensual/Trimestral/Anual) no tiene "cuatrimestral / cada 4 meses", pero `MaintenanceFrequency` sí (`EVERY_4_MONTHS`). El contrato no puede expresar con exactitud la cadencia de cobro de un cliente cada-4-meses. No bloquea: la facturación real es manual por OT. |
+| OT-5 | Implementación incompleta (cara operativa de RFC-4) | Operación | Media | ⏳ Backlog | La OT preventiva generada desde una visita nace sin ítems y en $0; no hereda el precio acordado del contrato/cotización. El operador debe agregar el valor manualmente en cada visita antes de facturar, o la Cuenta de Cobro sale en $0. Riesgo de error humano recurrente. Relacionado con RFC-4 / CC-1 / OT-1. **(Sigue abierto: OT-7 solo cubre la conversión cotización→OT; la OT preventiva viene de `generateWorkOrder`, no de una cotización.)** |
+| OT-6 | Implementación incorrecta | Operación (bloqueaba anclar OT al activo) | — | ✅ Corregido 2026-07-25 | No se podía asignar el equipo al **editar** una OT. `UpdateWorkOrderDto` no aceptaba `equipmentId`, `update()` no lo mapeaba, y `WorkOrderEditModal` no pasaba el prop `equipment` a los campos → el selector nunca aparecía. Como la conversión cotización→OT tampoco ponía el equipo, una OT así **no podía anclarse al activo** (rompía trazabilidad en QR/Hoja de Vida). Corregido en las 3 capas (mirror de `create`). Verificado por PATCH real (OT ↔ planta SN-009). |
+| OT-7 | Implementación incorrecta | Operación (bloqueaba facturar) | — | ✅ Corregido 2026-07-25 | La conversión cotización→OT **descartaba las líneas de la cotización** (y el equipo) → la OT nacía vacía en $0 y la Cuenta de Cobro no tenía qué facturar. Causa: `convertToWorkOrder()` (frontend) solo enviaba `clientId/branchId/quotationId/title`. Corregido en **backend** (robusto): al convertir sin ítems explícitos, la OT hereda las líneas vía `copyItemsFromQuotation()`. Verificado E2E (cotización 2 líneas → OT hereda 2 líneas, total correcto). |
+| OT-8 | Descubrimiento / brecha de diseño | Operación (bloqueó facturación real) | **🔴 URGENTE** | ⏳ Backlog | **No existe editor de líneas de servicio en la OT** (ni al crear ni al editar; la tarjeta `WorkOrderItemsCard` es solo lectura). Las líneas solo pueden venir de la cotización al convertir (OT-7). Consecuencia: **no se pueden agregar valores/repuestos descubiertos después de generar la cotización** — el caso más común de un correctivo (se cotiza la visita, y en campo aparecen los repuestos). **Evidencia real (2026-07-25):** bloqueó el primer correctivo de Avellaneda; hubo que agregar las 4 líneas de repuestos ($315.000) **por API** porque la UI no lo permite — un workaround NO reproducible por el usuario. Prioridad elevada de Media→Urgente: no es edge case, es el flujo normal de correctivos. Solución mínima: editor de líneas en la OT (en Borrador/Programada). Decisión de fondo en RFC-5 / RFC-4 (dónde viven los valores). |
+
+**Nota CE-3:** verificar que Avellaneda tenga NIT cargado antes de emitir la primera Cuenta de Cobro (ya en backlog 🟡).
+
+---
+
+## RFC-06 — Flujo Cotización → OT → Facturación (CONGELADA — capa estratégica)
+
+> Congelada 2026-07-26. Cierre de una discusión de dominio extensa, contrastada con SAP PM/CS, IBM Maximo, Dynamics 365 FS, ERPNext y Odoo. **Capa estratégica CONGELADA; capa táctica DELIBERADAMENTE ABIERTA** hasta analizar invariantes del contexto de Facturación.
+
+**Concepto de negocio congelado:** existe un **paso administrativo** donde la realidad técnica (lo ejecutado en la OT) se transforma en una **decisión económica** (qué se cobra, qué se absorbe, qué cubre garantía, cómo se valoran los adicionales) **ANTES** de emitir el documento fiscal. Nombre de trabajo: **"Preparación de Facturación"** (nombre final vía ritual de lenguaje ubicuo — sin congelar).
+
+**Flujo de negocio congelado:**
+1. Cotización inmutable tras aceptación.
+2. OT técnica, **sin precios de venta**.
+3. OT inmutable al firmar el cliente (+ generar/enviar PDF).
+4. Separación **costo** (ejecución) ≠ **precio** (decisión posterior).
+5. Decisión económica **administrativa, posterior al cierre técnico** de la OT.
+6. Documento fiscal **externalizado por integración** (Siigo/Alegra u otro) → **NO diseñar el dominio alrededor de la Cuenta de Cobro**.
+
+**Contextos acotados congelados:** *Operaciones* (OT) · *Facturación* (Preparación + adaptador fiscal) · *Finanzas/Contabilidad* por **integración** (no se construye).
+
+**Patrón de referencia:** **Patrón B** (SAP DP90→Billing Request; Maximo billing batch), simplificado para PYME. **NO** se adopta el Patrón A "cotización/orden viva" (Odoo).
+
+**RFCs relacionadas:** RFC-04 → **ADOPTADA** · RFC-05 → **RECHAZADA**.
+
+**🔓 ABIERTO (capa táctica — se deriva después):** si "Preparación de Facturación" es Aggregate Root / Entity / Process Manager / Domain Service + eventos, u otra forma. **Criterio acordado:** solo se introduce un Aggregate si el análisis de invariantes lo justifica; si no hay frontera de consistencia real, se evita la complejidad. Requiere análisis específico del contexto de Facturación (invariantes, responsabilidades, ciclo de vida, nombre) — **pendiente, no bloquea OT-8**.
+
+---
+
+## Modelo de dominio — Contexto Operaciones (CONGELADO)
+
+> Congelado 2026-07-26. Cierra la capa **táctica** del contexto Operaciones (RFC-06 dejó abierta la de Facturación; esto es solo Operaciones). Derivado de invariantes/ciclo de vida/ownership, no de preferencias de diseño.
+
+**Responsabilidad de la OT (post-RFC-06):** ser el **registro fiel e íntegro de una intervención técnica sobre un activo, hasta su cierre inmutable**. Fuente autoritativa de la realidad técnica. **No decide nada económico** (sin precios, costos, totales, cobro).
+
+**Clasificación táctica:**
+- **Orden de Trabajo (`WorkOrder`) → Aggregate Root.** Frontera de consistencia de la intervención.
+- **Utilización de Recurso (`ResourceUtilization`) → Entity local dentro del agregado WorkOrder.** Justificación **solo desde Operaciones**: (a) debe poder **corregirse** durante la ventana editable; (b) debe poder **auditarse individualmente** (quién/cuándo por hecho); (c) **pertenece exclusivamente a una OT**; (d) se **congela junto con la OT** al cerrarse. → Requiere identidad estable → **Entity, no Value Object**.
+- **Registro técnico/Acta, Checklist, Firma de cierre → Value Objects dentro del agregado.**
+- **Equipo → Aggregate Root de otro contexto (Gestión de Activos), referenciado por identidad.** No poseído por la OT.
+- **Recurso de catálogo → master data de contexto de soporte (Catálogo/Inventario), referenciado; existencia diferida** (hoy inline por texto).
+
+**Invariantes del agregado `WorkOrder` (CONGELADAS):**
+1. Una Utilización de Recurso pertenece a una **única** OT.
+2. Una Utilización de Recurso **no puede existir sin** una OT.
+3. Una OT `COMPLETED` o `CANCELLED` **no admite modificaciones** en ninguno de sus hechos técnicos.
+4. El cierre de la OT **congela atómicamente** todas sus utilizaciones, checklist, acta y demás hechos técnicos.
+
+**Utilización de Recurso — atributos mínimos (congelados):** recurso (texto libre por ahora) · categoría (material/mano de obra/gasto) · cantidad · unidad · origen (planeado/adicional en sitio) · observación (opcional) · quién/cuándo (automático). **Sin economía.**
+
+**Ventana de edición de utilizaciones:** `DRAFT`, `SCHEDULED`, `IN_PROGRESS` (se registran durante la ejecución). Congeladas en `COMPLETED`/`CANCELLED`.
+
+**Compatibilidad:** implementación **100% aditiva**. NO se toca `WorkOrderItem`, `Invoice`, `Quotation`, `ServiceRecord`, ni PDFs. `ResourceUtilization` **convive** con el modelo actual hasta que exista Preparación de Facturación.
+
+---
+
+## Modelo de dominio — Contexto Preparación de Facturación (FUNCIONAL, CONGELADO)
+
+> Congelado 2026-07-28. Cierra la capa **funcional** del contexto Facturación (RFC-06). Capa táctica en derivación. Todo derivado de invariantes, no de preferencias. No refinar salvo contradicción objetiva durante la implementación.
+
+**Responsabilidad exacta:** **consume** las resoluciones regladas (cobertura, precio, descuento, condiciones), **compone** el resultado económico a cobrar, y **solo decide discrecionalmente el residual** que ninguna regla resolvió. NO reconcilia, NO fija precios, NO emite el documento fiscal.
+
+**Fronteras entre contextos (explícitas y congeladas):**
+- **Comercial** es dueño de: acuerdos, coberturas, precios, políticas y demás **resoluciones regladas** (incluida la reconciliación cotización↔ejecución).
+- **Operaciones** es dueño **exclusivamente** de: la realidad técnica ejecutada (Utilizaciones de Recurso, sin economía).
+- **Preparación de Facturación**: consume esas resoluciones, compone el resultado económico, y **únicamente** toma decisiones discrecionales sobre el residual que ninguna regla resolvió.
+- **Sistema fiscal**: únicamente **materializa el documento legal** (Cuenta de Cobro hoy, Factura Electrónica mañana) — externo/integrado.
+
+**Hechos de negocio:** (1) se abre una preparación desde una intervención cerrada; (2) se **consultan** las disposiciones comerciales de lo ejecutado (Comercial reconcilia, Facturación consume); (3) se identifica el **residual** (sin resolución reglada); (4) se decide discrecionalmente el residual (cobrar/absorber/conceder); (5) se **compone** el resultado; (6) se confirma; (7) se entrega para emisión fiscal — o se cierra sin cobro.
+
+**Conceptos propios:** la preparación, la decisión discrecional sobre cada elemento residual, el resultado económico, el registro **interno** (margen/absorbido). **Referenciados:** OT/Utilizaciones (Operaciones), disposiciones/cobertura/precio (Comercial), costo (interno), documento fiscal (externo), cliente.
+
+**Invariantes (CONGELADAS):**
+1. Una preparación corresponde a una **única** intervención cerrada.
+2. **Completitud:** cada elemento tiene resolución = (reglada, recibida) ∪ (residual, discrecional), **sin solaparse**.
+3. **No doble cobro:** lo cubierto por regla no se factura.
+4. **Consistencia:** el resultado es consistente con los precios recibidos + las decisiones de inclusión (Facturación **no valora, compone**).
+5. **No altera sus fuentes:** la OT y la cotización están congeladas; las lee.
+6. **Inmutabilidad tras emisión.**
+7. **Puede existir sin cobro** (todo absorbido/cubierto → sin documento fiscal).
+8. **No-apropiación:** *Preparación de Facturación nunca modifica, revierte ni re-decide una resolución proveniente de una garantía, contrato, política o regla comercial.* Su discrecionalidad se limita al residual.
+
+**Recibe** — de Operaciones: identificación de la intervención + Utilizaciones (recurso, categoría, cantidad, unidad, origen, observación), **sin precio ni costo**. De Comercial: **disposiciones** (cobertura, precio, descuento, condiciones) como resultado consultado. Costo: por vía interna.
+
+**Produce** (para el sistema fiscal): conjunto de **cargos** (concepto, cantidad, unidad, precio recibido, descuento, impuesto) + total + referencias de trazabilidad. **No produce:** costo, margen, ni qué se absorbió (interno).
+
+**Eventos** — Entra: `IntervenciónCerrada` (OT firmada, de Operaciones). Salen: `FacturaciónPreparada` (con cobro → emisión fiscal) · `PreparaciónCerradaSinCobro` (todo absorbido/cubierto).
+
+---
+
+## Incremento "Utilización → Preparación → Cuenta de Cobro" — ✅ CERRADO (2026-07-28)
+
+**Estado:** Fases 1-3 implementadas, verificadas (backend E2E + UI end-to-end) y **auditadas**. Incremento **estable y cerrado**. La **Fase 4** (disposiciones de contrato → CC-1) queda como **incremento independiente futuro**, no bloqueante.
+
+**Flujo operativo DEFINITIVO:**
+`Cotización → OT → Utilizaciones de Recurso (técnico, sin economía) → Preparación de Facturación (admin: cobrar/absorber + precio; resultado derivado) → Cuenta de Cobro (solo lo cobrado)`.
+
+**Dominio congelado** (ver secciones *Modelo de dominio — Operaciones* y *— Preparación de Facturación*): Operaciones (`WorkOrder` = Aggregate Root, Utilización = Entity local) · Facturación (Preparación = Aggregate Root, decisión por elemento = VO, resultado derivado, Domain Services consultados, **no** Process Manager). RFC-06 estratégica congelada + táctica derivada.
+
+**Decisiones de arquitectura adoptadas:**
+- Separación de contextos: Operaciones (técnica) · Comercial (reglas/precios/cobertura) · Facturación (residual + composición) · Fiscal (externo/integrado).
+- OT sin economía; el precio se decide en Facturación.
+- Resultado económico **DERIVADO, no persistido**; el snapshot definitivo lo conserva el documento fiscal.
+- Sin infraestructura de eventos (invocación directa); domain events como concepto.
+- Documento fiscal como realización enchufable (Cuenta de Cobro hoy, Factura Electrónica mañana).
+- **100% aditivo**; coexistencia transitoria con `WorkOrderItem` (se retira en el futuro).
+
+**Invariantes implementadas y verificadas:**
+- *Operaciones:* utilización pertenece a una única OT · no existe sin OT · OT `COMPLETED`/`CANCELLED` inmutable · congelamiento atómico al cierre.
+- *Facturación:* una prep por OT cerrada · completitud (`reglada ∪ residual`) al confirmar · no doble cobro · consistencia (compone, no valora) · no altera fuentes · inmutabilidad tras confirmar · puede existir sin cobro · **no-apropiación**.
+
+**Artefactos:** migraciones aditivas `20260728044121` / `215337` / `222000`; backend `resource-utilizations` + `billing-preparations` + `Invoice.createFromPreparation`; frontend `ResourceUtilizationsCard` + `BillingPreparationCard`.
+
+**Auditoría (2026-07-28):** cero contradicciones de dominio · cero violaciones de invariantes · cero regresiones (flujo viejo intacto, `CC-2026-00001` íntegra) · migraciones aditivas (sin `DROP`) · listo para Fase 4 sin refactor. Higiene: ESLint backend limpio, frontend `noUnusedLocals` limpio, sin `TODO/FIXME`, nombres consistentes.
+
+### Deuda técnica del incremento (NO bloqueante · separada del dominio — el modelo NO se reabre)
+
+- **M-1** 🟡 — Sin `VOID`/reapertura de una preparación `CONFIRMED`. La inmutabilidad es por diseño (inv 6), pero operativamente falta recuperación si se confirma mal y aún no hay factura. *Futuro: estado `VOID` para prep confirmada-sin-factura.*
+- **M-2** 🟡 — Superposición de UI: en el detalle de la OT conviven el card de Preparación y el viejo "+ Crear cuenta de cobro". Sin riesgo de datos (`workOrderId @unique` impide doble factura). *Futuro: ocultar el camino viejo para OTs con utilizaciones.*
+- **M-3** 🟢 — Guard de no-apropiación pendiente para Fase 4: `setResolution` debe rechazar sobrescribir resoluciones `RULE` (hoy inofensivo — todo `DISCRETIONARY`). Adición de Fase 4, ya provisionada por el campo `source`.
+- **M-4** 🟢 — La UI factura la cantidad completa (no expone `billableQuantity`). API/dominio soportan parcial; feature diferida.
+- **M-5** 🟢 — 2 endpoints válidos no consumidos por la UI actual (`GET /billing-preparations/:id`, `DELETE .../resolutions/:utilizationId`). Completitud REST, no código muerto; el `DELETE` es el "limpiar decisión" que la UI puede añadir. *Mantener.*
+
+**Cierre operativo — análisis de aceptación del cliente (2026-07-28):** se auditó la diferencia entre *fin de ejecución técnica* (`COMPLETED`) y *aceptación del cliente*. **Veredicto: NO requiere reabrir el modelo** — es un hecho de negocio real pero **no modelado** + una **decisión de negocio pendiente**, incorporable de forma **aditiva** sin contradecir ninguna invariante congelada (las invariantes son agnósticas a qué hecho cierra la OT). La aceptación del cliente queda como **incremento futuro independiente** (ver backlog 🟢). **Este incremento (Utilización de Recurso + Preparación de Facturación + Cuenta de Cobro) queda DEFINITIVAMENTE CERRADO** — no se reabre salvo apertura explícita de un incremento nuevo.
+
+---
+
 ## Resumen ejecutivo del backlog — por impacto (referencia de priorización)
 
 > Se actualiza al cierre de cada módulo. Ordena todos los hallazgos abiertos según su impacto en los objetivos del proyecto (migración histórica → salida comercial → UX → mejora futura), no por módulo. Cobertura actual: Clientes/Sedes/Equipos, Portal QR, Cotización, Orden de Trabajo, Acta Técnica, Cuenta de Cobro, Contratos/Planes/Visitas. *(Pendiente: Dashboard, Hoja de Vida.)*
@@ -185,9 +331,12 @@ Validación funcional por ejecución real: contrato → asociar 2 equipos → 2 
 - **MNT-1 (DT-06-B)** — OT preventiva de plan multi-equipo sin `equipmentId` → si se migran/generan preventivos por plan, no se vinculan al activo. (También Comercial/Operación.)
 
 ### 🔴 Bloquea salida comercial (demo a IPS / propuesta de valor)
-- **MNT-1 (DT-06-B)** — el preventivo recurrente de contratos multi-equipo no aparece en el QR/Hoja de Vida del activo → **rompe la promesa "el historial viaja con el equipo" en el escenario comercial central.** Alta prioridad, junto con OT-4.
+- **MNT-1 (DT-06-B)** — el preventivo recurrente de contratos multi-equipo no aparece en el QR/Hoja de Vida del activo → **rompe la promesa "el historial viaja con el equipo" en el escenario comercial central.** Alta prioridad, junto con OT-4. **Evidencia de costo real (Emmanuel, 2026-07-25):** el workaround "un plan por equipo" obligó a crear **17 planes + 17 visitas** para lo que operativamente son **3 visitas físicas** (una por sede); se tuvo que hacer por API. El costo operativo del workaround escala linealmente con el nº de equipos.
 - **QR — datos** — teléfono ficticio (`+57 (601) 000-0000`) + equipo demo vacío (sin marca/modelo/serial) → el portal subvende la propuesta de valor. Corrección barata (datos/copy).
 - **QR — prueba física** — validación con teléfono real pendiente (Bloque 7).
+
+### ✅ OT-8 — RESUELTO (implementado 2026-07-28)
+- **OT-8 (reformulado por RFC-06) — ✅ IMPLEMENTADO.** La OT ahora captura la **ejecución real** vía el concepto **Utilización de Recurso** (contexto Operaciones): recurso (texto), categoría (material/mano de obra/gasto), cantidad, unidad, origen (planeado/adicional en sitio), observación, quién/cuándo — **SIN economía**. Fases completas: (1) Prisma `ResourceUtilization` + enums + **migración aditiva** `20260728044121`; (2) backend (DTOs, servicio, controlador `work-orders/:id/resource-utilizations`, **invariantes del agregado** aplicadas — inmutabilidad al cierre, pertenencia a una OT, ventana editable DRAFT/SCHEDULED/IN_PROGRESS); (3) frontend card **"Recursos utilizados"** (CRUD gated por estado); (4) verificado E2E backend + visual frontend. **100% aditivo** — NO toca `WorkOrderItem`/`Invoice`/`Quotation`/`ServiceRecord`. **Nota:** cierra la **captura técnica**; el **cierre del loop de facturación** (poner precio → cobrar adicionales) espera al módulo de **Preparación de Facturación** (RFC-06, capa táctica ABIERTA — próximo bloque).
 
 ### 🟡 Afecta operación / experiencia de usuario / calidad de datos
 - **CC-1** — la Cuenta de Cobro copia todos los ítems de la OT → riesgo de **facturar de más** líneas cubiertas por contrato. Impacto Operación, prioridad Alta.
@@ -196,16 +345,22 @@ Validación funcional por ejecución real: contrato → asociar 2 equipos → 2 
 - **COT-3** — condiciones comerciales (forma de pago, garantía) no capturables (slots PDF muertos).
 - **ACT-1** — evidencias/fotos no se renderizan en el PDF del Acta.
 - **CE-5** — `serialNumber` no único → riesgo de duplicados al migrar.
+- **COT-5** — conversión cotización→OT sin guía + cotización `CONVERTED` varada si se cancela su OT. Trap del flujo comercial; impacto Operación/Comercial, prioridad Media.
+- **OT-5** — OT preventiva nace en $0, no hereda el precio del contrato → carga manual por visita, riesgo de Cuenta de Cobro en $0. Cara operativa de RFC-4.
+- **MNT-2** — `BillingCycle` sin "cada 4 meses" (inconsistente con `MaintenanceFrequency`). No bloquea (cobro manual). Prioridad Baja.
+- *(OT-8 elevado a 🔴 URGENTE — ver sección arriba.)*
 
 ### 🟢 Mejora futura (arquitectura / evolución)
-- **OT-1 / CC-1 (RFC-4)** — separar registro de ejecución de la facturación (precios fuera de la OT; cobertura por línea). Raíz compartida de OT-1 y CC-1; la cara operativa de CC-1 está en el bloque 🟡.
+- **Incremento futuro — Aceptación del Cliente (contexto Operaciones).** Modelar el hecho de negocio *"aceptación / recepción del cliente"* de una intervención y su **evidencia** (firmada · tácita por silencio · remota · por apoderado), como capa **aditiva** sobre la OT. Objetivo: distinguir *fin de ejecución técnica* de *aceptación del cliente* — porque **garantía, historial del activo y facturación** dependen semánticamente de la aceptación, mientras que hoy `COMPLETED` = ejecución técnica (→ se puede facturar trabajo no aceptado). **NO modifica los agregados ni las invariantes congelados** (Operaciones/Facturación permanecen cerrados). **Decisión de negocio pendiente antes de abrirlo:** ¿la aceptación es obligatoria para cerrar toda OT, o admite formas tácita/diferida? Analizado y diferido el 2026-07-28 (veredicto: no reabre el modelo). **No abordar hasta abrir explícitamente el incremento.**
+- **OT-1 / CC-1 (RFC-4) — ✅ ADOPTADA por RFC-06** — separar registro de ejecución de la facturación (precios fuera de la OT; cobertura por línea). Ya no es "mejora futura": es principio congelado del nuevo flujo.
+- **RFC-5 (propuesta del usuario, 2026-07-25) — ❌ RECHAZADA por RFC-06** (se decide cotización inmutable + Patrón B; no "cotización viva"). Se conserva el registro por trazabilidad de la decisión. — **flujo "diagnostica-luego-completa" para correctivos.** Problema real: en un correctivo se cotiza la visita antes de saber qué falla; durante la visita aparecen repuestos/trabajos que no estaban cotizados. Hoy no hay forma de incorporarlos después (OT-8: la OT no tiene editor de líneas). Dos filosofías opuestas para resolverlo — es **decisión de diseño, no ajuste**: **(A) "Cotización viva"** (propuesta del usuario): la cotización se amplía tras la visita, con una fase de re-aprobación del cliente antes de convertir; la OT solo lleva descripción, los valores quedan en la cotización. Ventaja: respaldo comercial del extra. Matiz: una cotización es una oferta de un momento; mantenerla abierta mezcla oferta con ejecución. **(B) "OT viva"** (dirección del dominio / RFC-4): la cotización es solo la oferta inicial; la OT recibe las líneas reales de lo ejecutado (editor OT-8) y de ahí se factura; los valores **sí** viven en la OT. Las dos chocan en dónde viven los valores. Ligado a RFC-4 / OT-5 / OT-8. No abordar durante la fase de operación.
 - **COT-1 / COT-2** — "Servicio Ofertado" como unidad + cardinalidad cotización→OT (1:N).
 - **OT-3 (RFC-3)** — origen comercial explícito en la OT.
 - **CE-4** — características técnicas por tipo de equipo (con descubrimiento acotado).
 - **CE-6** — carga masiva para la migración (hoy uno por uno).
 - **CC-2** — retrofecha de `issueDate` en Cuenta de Cobro (Migración, prioridad Baja).
 
-*(CE-1 y CE-2 ya corregidos — fuera del backlog. COT-4 = OT-4, unificado.)*
+*(CE-1, CE-2, CE-7, OT-6 y OT-7 ya corregidos — fuera del backlog. COT-4 = OT-4, unificado.)*
 
 ---
 

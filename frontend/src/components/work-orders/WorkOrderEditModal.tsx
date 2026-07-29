@@ -7,6 +7,7 @@ import type { WorkOrder, WorkOrderStatus } from '@/lib/types';
 import { useUpdateWorkOrder } from '@/hooks/use-work-orders';
 import { useTechnicians } from '@/hooks/use-users';
 import { useBranches } from '@/hooks/use-branches';
+import { useEquipment } from '@/hooks/use-equipment';
 import { WorkOrderFormFields } from './WorkOrderFormFields';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +24,7 @@ const EDITABLE_STATUSES: WorkOrderStatus[] = ['DRAFT', 'SCHEDULED'];
 
 const editSchema = z.object({
   branchId: z.string().optional(),
+  equipmentId: z.string().optional(),
   title: z.string().min(1, 'El título es obligatorio').max(300),
   description: z.string().max(2000).optional().or(z.literal('')),
   scheduledAt: z.string().optional().or(z.literal('')),
@@ -47,11 +49,19 @@ export function WorkOrderEditModal({ workOrder, open, onClose }: WorkOrderEditMo
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<EditSchema>({
     resolver: zodResolver(editSchema),
     defaultValues: buildDefaults(workOrder),
   });
+
+  const selectedBranchId = watch('branchId');
+  const { data: equipmentData } = useEquipment(
+    workOrder.client.id,
+    selectedBranchId || null,
+  );
+  const equipmentList = equipmentData?.data ?? [];
 
   useEffect(() => {
     if (open) reset(buildDefaults(workOrder));
@@ -63,6 +73,7 @@ export function WorkOrderEditModal({ workOrder, open, onClose }: WorkOrderEditMo
 
     await updateWO.mutateAsync({
       branchId: values.branchId || undefined,
+      equipmentId: values.equipmentId || undefined,
       title: values.title,
       description: values.description || undefined,
       scheduledAt: values.scheduledAt || undefined,
@@ -84,6 +95,7 @@ export function WorkOrderEditModal({ workOrder, open, onClose }: WorkOrderEditMo
             errors={errors}
             branches={branches}
             technicians={technicians}
+            equipment={selectedBranchId ? equipmentList : undefined}
             disabled={!isEditable}
           />
 
@@ -116,6 +128,7 @@ export function WorkOrderEditModal({ workOrder, open, onClose }: WorkOrderEditMo
 function buildDefaults(wo: WorkOrder): EditSchema {
   return {
     branchId: wo.branch?.id ?? '',
+    equipmentId: wo.equipmentId ?? '',
     title: wo.title,
     description: wo.description ?? '',
     scheduledAt: wo.scheduledAt ? wo.scheduledAt.slice(0, 16) : '',
