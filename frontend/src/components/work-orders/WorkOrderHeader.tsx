@@ -1,11 +1,22 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Pencil, FileDown } from 'lucide-react';
+import { ArrowLeft, Loader2, Pencil, FileDown, CalendarClock } from 'lucide-react';
 
 import type { WorkOrder, WorkOrderStatus } from '@/lib/types';
-import { useUpdateWorkOrderStatus } from '@/hooks/use-work-orders';
+import { useUpdateWorkOrderStatus, useUpdateWorkOrder } from '@/hooks/use-work-orders';
 import { getApiToken } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -91,13 +102,32 @@ interface WorkOrderHeaderProps {
 export function WorkOrderHeader({ workOrder, onCreateInvoice, onViewInvoice, onEdit }: WorkOrderHeaderProps) {
   const navigate   = useNavigate();
   const updateStatus = useUpdateWorkOrderStatus();
+  const updateWO     = useUpdateWorkOrder(workOrder.id);
 
   const { id, number, status, invoice } = workOrder;
   const nextStatus = NEXT_STATUS[status];
-  const isPending  = updateStatus.isPending;
+  const isPending  = updateStatus.isPending || updateWO.isPending;
+
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduledAt, setScheduledAt]   = useState(
+    workOrder.scheduledAt ? workOrder.scheduledAt.slice(0, 16) : '',
+  );
 
   function handleTransition(target: WorkOrderStatus) {
     updateStatus.mutate({ id, status: target });
+  }
+
+  // "Programar" (DRAFT → SCHEDULED): fija la fecha de ejecución y avanza el estado.
+  function openScheduleDialog() {
+    setScheduledAt(workOrder.scheduledAt ? workOrder.scheduledAt.slice(0, 16) : '');
+    setScheduleOpen(true);
+  }
+
+  async function handleSchedule() {
+    if (!scheduledAt) return;
+    await updateWO.mutateAsync({ scheduledAt });
+    await updateStatus.mutateAsync({ id, status: 'SCHEDULED' });
+    setScheduleOpen(false);
   }
 
   return (
@@ -137,12 +167,12 @@ export function WorkOrderHeader({ workOrder, onCreateInvoice, onViewInvoice, onE
           </Button>
         )}
 
-        {/* Primary forward transition */}
+        {/* Primary forward transition — "Programar" abre el diálogo de fecha */}
         {nextStatus && (
           <Button
             size="sm"
             disabled={isPending}
-            onClick={() => handleTransition(nextStatus)}
+            onClick={() => (status === 'DRAFT' ? openScheduleDialog() : handleTransition(nextStatus))}
           >
             {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
             {NEXT_LABEL[status]}
@@ -192,6 +222,46 @@ export function WorkOrderHeader({ workOrder, onCreateInvoice, onViewInvoice, onE
           </Button>
         )}
       </div>
+
+      {/* Diálogo de programación — fija la fecha de ejecución */}
+      <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarClock className="h-4 w-4" />
+              Programar orden de trabajo
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label htmlFor="scheduleDate">Fecha de ejecución</Label>
+            <Input
+              id="scheduleDate"
+              type="datetime-local"
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+            />
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">
+              Día en que se ejecutará el trabajo; no tiene que ser hoy.
+            </p>
+          </div>
+
+          {updateWO.error && (
+            <p className="text-sm text-[hsl(var(--destructive))]">{updateWO.error.message}</p>
+          )}
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" disabled={isPending}>
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button type="button" disabled={!scheduledAt || isPending} onClick={handleSchedule}>
+              {isPending ? 'Programando…' : 'Programar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
