@@ -7,10 +7,13 @@ export interface ChecklistItemPdfDto {
 export interface ServiceRecordPdfDto {
   // Identificación del documento
   workOrderNumber: string;
+  workOrderTitle: string;
+  workOrderType: string;
   generatedAt: string;
 
   // Fechas operativas
   scheduledAt: string | null;
+  startedAt: string | null;
   completedAt: string | null;
   clientSignedAt: string | null;
 

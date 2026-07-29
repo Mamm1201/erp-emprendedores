@@ -13,7 +13,10 @@ import {
   XCircle,
   MinusCircle,
   Search,
+  FileDown,
 } from 'lucide-react';
+
+import { getApiToken } from '@/lib/api';
 
 import { useWorkOrders } from '@/hooks/use-work-orders';
 import { useEquipment } from '@/hooks/use-equipment';
@@ -90,6 +93,29 @@ const RESULT_CONFIG: Record<
 };
 
 const RESULT_ORDER: ChecklistResult[] = ['OK', 'WARNING', 'FAIL', 'NA'];
+
+// ─── PDF del acta ─────────────────────────────────────────────────────────────
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
+async function downloadServiceRecordPdf(workOrderId: string, workOrderNumber: string) {
+  const token = getApiToken();
+  const res = await fetch(`${BASE_URL}/documents/work-orders/${workOrderId}/service-record/pdf`, {
+    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) {
+    alert('No se pudo generar el PDF del acta. Inténtalo de nuevo.');
+    return;
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `acta-tecnica-${workOrderNumber}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // ─── ChecklistRow ─────────────────────────────────────────────────────────────
 
@@ -379,9 +405,22 @@ function ViewServiceRecordModal({
               )}
             </div>
             {record && (
-              <Badge variant={checklistSummaryVariant} className="shrink-0">
-                {checklistSummaryLabel}
-              </Badge>
+              <div className="flex items-center gap-2 shrink-0">
+                <Badge variant={checklistSummaryVariant}>
+                  {checklistSummaryLabel}
+                </Badge>
+                {workOrder && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => downloadServiceRecordPdf(workOrder.id, workOrder.number)}
+                  >
+                    <FileDown className="h-3.5 w-3.5" />
+                    Descargar PDF
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </DialogHeader>

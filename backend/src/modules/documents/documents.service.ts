@@ -114,9 +114,12 @@ export class DocumentsService {
 
     const dto: ServiceRecordPdfDto = {
       workOrderNumber: wo.number,
+      workOrderTitle: wo.title,
+      workOrderType: wo.type,
       generatedAt: fmtDate(new Date()),
 
       scheduledAt: wo.scheduledAt ? fmtDate(wo.scheduledAt) : null,
+      startedAt: wo.startedAt ? fmtDate(wo.startedAt) : null,
       completedAt: wo.completedAt ? fmtDate(wo.completedAt) : null,
       clientSignedAt: sr.clientSignedAt ? fmtDate(sr.clientSignedAt) : null,
 

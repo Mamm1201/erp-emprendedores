@@ -22,9 +22,15 @@ const RESULT_COLOR: Record<string, string> = {
   NA: '#9CA3AF',
 };
 
+const TYPE_LABEL: Record<string, string> = {
+  PREVENTIVE: 'Preventivo',
+  CORRECTIVE: 'Correctivo',
+  INSPECTION: 'Inspección',
+};
+
 const s = StyleSheet.create({
   narrativeBlock: {
-    marginBottom: sp.md,
+    marginBottom: sp.sm,
   },
   narrativeLabel: {
     fontSize: fs.xs,
@@ -37,7 +43,7 @@ const s = StyleSheet.create({
   narrativeText: {
     fontSize: fs.base,
     color: palette.text,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
   },
   narrativeEmpty: {
     fontSize: fs.base,
@@ -73,7 +79,7 @@ const s = StyleSheet.create({
     fontStyle: 'italic',
   },
   signatureBlock: {
-    marginTop: sp.xl,
+    marginTop: sp.md,
     flexDirection: 'row',
     gap: sp.xl,
   },
@@ -93,6 +99,12 @@ const s = StyleSheet.create({
     fontSize: fs.sm,
     color: palette.text,
     marginTop: sp.xs,
+  },
+  otTitle: {
+    fontSize: fs.md,
+    fontFamily: 'Helvetica-Bold',
+    color: palette.dark,
+    marginBottom: sp.xs,
   },
 });
 
@@ -136,12 +148,15 @@ export function ServiceRecordDocument({ data }: { data: ServiceRecordPdfDto }) {
     { label: 'Cliente', value: data.clientLegalName },
     { label: 'NIT / RUT', value: data.clientTaxId },
     { label: 'Sede', value: data.branchName },
+    { label: 'Dirección', value: data.branchAddress },
     { label: 'Ciudad', value: data.branchCity },
   ].filter((f) => f.value);
 
   const visitRight = [
+    { label: 'Tipo de mantenimiento', value: TYPE_LABEL[data.workOrderType] ?? data.workOrderType },
     { label: 'Técnico asignado', value: data.technicianName },
     { label: 'Fecha programada', value: data.scheduledAt },
+    { label: 'Fecha de inicio', value: data.startedAt },
     { label: 'Fecha de cierre', value: data.completedAt },
     { label: 'Firmado por cliente', value: data.clientSignedAt },
   ].filter((f) => f.value);
@@ -154,6 +169,8 @@ export function ServiceRecordDocument({ data }: { data: ServiceRecordPdfDto }) {
         issueDate={data.generatedAt}
         contactEmail={COMPANY.emails.soporte}
       />
+
+      <Text style={s.otTitle}>{data.workOrderTitle}</Text>
 
       <InfoGrid
         title="Datos de la visita"
