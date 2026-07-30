@@ -79,13 +79,27 @@ export class WorkOrdersService {
           select: WORK_ORDER_ITEM_SELECT,
           orderBy: { lineOrder: 'asc' },
         },
-        invoice: { select: { id: true, number: true, status: true } },
+        invoice: {
+          select: {
+            id: true,
+            number: true,
+            status: true,
+            total: true,
+            payments: { where: { voidedAt: null }, select: { amount: true } },
+          },
+        },
         serviceRecord: { select: { id: true } },
       },
     });
 
     if (!workOrder) {
       throw new NotFoundException(`WorkOrder with id "${id}" not found`);
+    }
+
+    if (workOrder.invoice) {
+      const { payments, ...invoice } = workOrder.invoice;
+      const paidTotal = sumMoney(payments.map((p) => toMoney(p.amount)));
+      return { ...workOrder, invoice: { ...invoice, paidTotal } };
     }
 
     return workOrder;

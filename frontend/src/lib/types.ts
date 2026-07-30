@@ -479,7 +479,7 @@ export interface WorkOrder {
   client: { id: string; legalName: string; tradeName: string | null };
   branch: { id: string; name: string; city: string | null } | null;
   serviceRecord: { id: string } | null;
-  invoice: { id: string; number: string; status: string } | null;
+  invoice: { id: string; number: string; status: string; total?: string; paidTotal?: string } | null;
   quotation: { id: string; number: string } | null;
   items?: WorkOrderItem[];
 }
