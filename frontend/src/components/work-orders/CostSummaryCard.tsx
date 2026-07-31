@@ -29,6 +29,20 @@ function economicCycle(woStatus: string, invoiceStatus: string | undefined): Cyc
   return { label: 'Cerrada sin facturar', variant: 'warning' };
 }
 
+// ─── Firmeza del margen mostrado ──────────────────────────────────────────────
+// Responsabilidad separada del ciclo económico: qué tan firme es el margen que se
+// muestra. real = ingreso de factura firme · estimado/pendiente = sobre el estimado ·
+// na = OT cancelada (no aplica análisis).
+
+type MarginFirmness = 'real' | 'estimado' | 'pendiente' | 'na';
+
+function marginFirmness(woStatus: string, revenueSource: 'invoice' | 'workorder'): MarginFirmness {
+  if (woStatus === 'CANCELLED') return 'na';
+  if (revenueSource === 'invoice') return 'real';
+  if (woStatus === 'COMPLETED') return 'pendiente';
+  return 'estimado';
+}
+
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface CostSummaryCardProps {
@@ -71,6 +85,14 @@ export function CostSummaryCard({ workOrder, expenses }: CostSummaryCardProps) {
   const marginPct   = revenue > 0 ? (grossMargin / revenue) * 100 : 0;
   const isLoss      = grossMargin < 0;
 
+  // Firmeza del margen + recaudo de la factura (cobrado / saldo)
+  const firmness = marginFirmness(status, revenueSource);
+  const paid  = invoice?.paidTotal != null ? parseFloat(invoice.paidTotal) : 0;
+  const saldo = (invoice?.total != null ? parseFloat(invoice.total) : 0) - paid;
+  const marginLabel = firmness === 'real'
+    ? (isLoss ? 'Pérdida bruta' : 'Margen bruto')
+    : 'Margen estimado';
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -91,6 +113,11 @@ export function CostSummaryCard({ workOrder, expenses }: CostSummaryCardProps) {
             </span>
             <span className="font-mono tabular-nums font-medium">{formatMoney(revenue)}</span>
           </div>
+          {revenueSource === 'invoice' && (
+            <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
+              Cobrado {formatMoney(paid)} · saldo {formatMoney(saldo)}
+            </p>
+          )}
           {isEstimated && (
             <p className="text-[10px] text-amber-signal mt-0.5">
               Basado en líneas de OT · Se actualizará al facturar
@@ -114,21 +141,30 @@ export function CostSummaryCard({ workOrder, expenses }: CostSummaryCardProps) {
           </div>
         </div>
 
-        {/* Margin */}
-        <div className="border-t pt-3 space-y-1">
-          <div className="flex justify-between text-sm">
-            <span className="font-semibold">{isLoss ? 'Pérdida bruta' : 'Margen bruto'}</span>
-            <span className={cn('font-mono tabular-nums font-bold', marginColor(marginPct))}>
-              {isLoss ? '− ' : ''}{formatMoney(Math.abs(grossMargin))}
-            </span>
+        {/* Margin (o nota de OT cancelada) */}
+        {firmness === 'na' ? (
+          <p className="border-t pt-3 text-xs text-[hsl(var(--muted-foreground))]">
+            OT cancelada · no aplica análisis de rentabilidad.
+          </p>
+        ) : (
+          <div className="border-t pt-3 space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="font-semibold">{marginLabel}</span>
+              <span className={cn('font-mono tabular-nums font-bold', marginColor(marginPct))}>
+                {isLoss ? '− ' : ''}{formatMoney(Math.abs(grossMargin))}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-[hsl(var(--muted-foreground))]">Margen</span>
+              <span className={cn('text-lg font-bold font-mono tabular-nums', marginColor(marginPct))}>
+                {marginPct.toFixed(1)} %
+              </span>
+            </div>
+            {firmness === 'pendiente' && (
+              <p className="text-[10px] text-amber-signal">Pendiente de facturación</p>
+            )}
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-[hsl(var(--muted-foreground))]">Margen</span>
-            <span className={cn('text-lg font-bold font-mono tabular-nums', marginColor(marginPct))}>
-              {marginPct.toFixed(1)} %
-            </span>
-          </div>
-        </div>
+        )}
 
       </CardContent>
     </Card>
