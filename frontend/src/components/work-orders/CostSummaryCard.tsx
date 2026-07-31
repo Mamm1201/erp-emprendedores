@@ -32,9 +32,13 @@ export function CostSummaryCard({ workOrder, expenses }: CostSummaryCardProps) {
     ? 'invoice'
     : 'workorder';
 
-  // The invoice.total is not embedded in WorkOrder — we use workOrder.total as the canonical
-  // revenue figure in both cases. When invoice is confirmed, the amounts match (same line items).
-  const revenue = parseFloat(woTotal);
+  // Ingreso: en estados firmes (ISSUED/PARTIALLY_PAID/PAID) usamos invoice.total;
+  // en el resto (sin factura, DRAFT, VOID) usamos el estimado de la OT.
+  const invoiceTotal = invoice?.total;
+  const revenue =
+    revenueSource === 'invoice' && invoiceTotal != null
+      ? parseFloat(invoiceTotal)
+      : parseFloat(woTotal);
 
   // Aggregate costs
   const totalCost = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
