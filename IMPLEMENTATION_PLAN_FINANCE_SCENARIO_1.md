@@ -378,10 +378,10 @@ coinciden con `getSummary`/margen global.
 
 | ID | Tarea | Tam. | Clasificación | Dep. | Estado |
 |---|---|---|---|---|---|
-| T-01 | Exponer invoice.total + pagado en OT | S | Fundación | — | Pending |
-| T-02 | CostSummaryCard lee ingreso de factura | S | Deuda técnica | T-01 | Pending |
-| T-03 | Chip de estado del ciclo | S | UX | T-01 | Pending |
-| T-04 | Cobrado + margen por estado | S | UX | T-01 | Pending |
+| T-01 | Exponer invoice.total + pagado en OT | S | Fundación | — | ✅ Completed (`29eeb9d`) |
+| T-02 | CostSummaryCard lee ingreso de factura | S | Deuda técnica | T-01 | ✅ Completed (`181d08b`) |
+| T-03 | Chip de estado del ciclo | S | UX | T-01 | ✅ Completed (`8598977`) |
+| T-04 | Cobrado + margen por estado | S | UX | T-01 | ✅ Completed (`07e19a5`) |
 | T-05 | Aviso "sin costos · verificar" | XS | UX | — | Pending |
 | T-06 | Módulo `finance` + DTO período | S | Fundación | — | Pending |
 | T-07 | Rollup por cliente (compartido) | M | Fundación | T-06 | Pending |
