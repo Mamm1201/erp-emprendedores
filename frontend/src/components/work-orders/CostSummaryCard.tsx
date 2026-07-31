@@ -1,6 +1,7 @@
 import type { Expense, ExpenseCategory, WorkOrder } from '@/lib/types';
 import { formatMoney } from '@/lib/money';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { CATEGORY_LABEL } from '@/lib/expense-constants';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +11,22 @@ function marginColor(pct: number): string {
   if (pct >= 40)  return 'text-node-teal';
   if (pct >= 20)  return 'text-amber-signal';
   return 'text-alert-red';
+}
+
+// ─── Estado del ciclo económico de la OT ──────────────────────────────────────
+// Deriva la etapa del ciclo desde el estado de la OT + el de su factura.
+// La regla debe mantenerse coherente con el embudo del Pulso (T-09, backend).
+
+type CycleBadge = { label: string; variant: 'secondary' | 'info' | 'warning' | 'success' };
+
+function economicCycle(woStatus: string, invoiceStatus: string | undefined): CycleBadge {
+  if (woStatus === 'CANCELLED') return { label: 'Cancelada', variant: 'secondary' };
+  if (woStatus !== 'COMPLETED') return { label: 'En ejecución', variant: 'secondary' };
+  if (invoiceStatus === 'PAID') return { label: 'Cobrada', variant: 'success' };
+  if (invoiceStatus === 'ISSUED' || invoiceStatus === 'PARTIALLY_PAID') {
+    return { label: 'Facturada sin cobrar', variant: 'info' };
+  }
+  return { label: 'Cerrada sin facturar', variant: 'warning' };
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -24,7 +41,8 @@ interface CostSummaryCardProps {
 export function CostSummaryCard({ workOrder, expenses }: CostSummaryCardProps) {
   if (expenses.length === 0) return null;
 
-  const { invoice, total: woTotal } = workOrder;
+  const { invoice, total: woTotal, status } = workOrder;
+  const cycle = economicCycle(status, invoice?.status);
 
   // Revenue: use invoice total when available, otherwise OT total (estimated)
   const isEstimated   = !invoice || invoice.status === 'DRAFT';
@@ -56,9 +74,12 @@ export function CostSummaryCard({ workOrder, expenses }: CostSummaryCardProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
-          Rentabilidad
-        </CardTitle>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-sm font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
+            Rentabilidad
+          </CardTitle>
+          <Badge variant={cycle.variant}>{cycle.label}</Badge>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
 
