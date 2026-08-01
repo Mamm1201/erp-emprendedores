@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { FinanceService } from './finance.service';
 
 // Protegido por el JwtAuthGuard global (cualquier usuario autenticado), igual
@@ -10,5 +10,10 @@ export class FinanceController {
   @Get('ping')
   ping() {
     return this.financeService.ping();
+  }
+
+  @Get('clients/:clientId')
+  getClientFinance(@Param('clientId') clientId: string) {
+    return this.financeService.getClientFinance(clientId);
   }
 }
