@@ -12,6 +12,11 @@ export class FinanceController {
     return this.financeService.ping();
   }
 
+  @Get('receivable')
+  getReceivable() {
+    return this.financeService.getReceivable();
+  }
+
   @Get('clients/:clientId')
   getClientFinance(@Param('clientId') clientId: string) {
     return this.financeService.getClientFinance(clientId);
