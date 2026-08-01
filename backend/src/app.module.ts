@@ -17,6 +17,7 @@ import { ResourceUtilizationsModule } from './modules/resource-utilizations/reso
 import { BillingPreparationsModule } from './modules/billing-preparations/billing-preparations.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { FinanceModule } from './modules/finance/finance.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { FilesModule } from './modules/files/files.module';
 import { DocumentsModule } from './modules/documents/documents.module';
@@ -46,6 +47,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     InvoicesModule,
     ExpensesModule,
     DashboardModule,
+    FinanceModule,
     FilesModule,
     DocumentsModule,
     MaintenanceContractsModule,
