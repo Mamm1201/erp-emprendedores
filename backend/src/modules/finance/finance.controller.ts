@@ -17,6 +17,11 @@ export class FinanceController {
     return this.financeService.getReceivable();
   }
 
+  @Get('pulse')
+  getPulse() {
+    return this.financeService.getPulse();
+  }
+
   @Get('clients/:clientId')
   getClientFinance(@Param('clientId') clientId: string) {
     return this.financeService.getClientFinance(clientId);

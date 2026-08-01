@@ -13,7 +13,24 @@ import { sumMoney, toMoney } from '../../common/utils/money.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InvoicesService } from '../invoices/invoices.service';
 import { ClientFinanceDto } from './dto/client-finance.dto';
+import { PulseDto } from './dto/pulse.dto';
 import { ReceivableDto } from './dto/receivable.dto';
+
+// Etapas del embudo del ciclo económico (lente OT). Excluye Cancelada.
+const FUNNEL_STAGES = [
+  'En ejecución',
+  'Cerrada sin facturar',
+  'Facturada sin cobrar',
+  'Cobrada',
+] as const;
+type FunnelStage = (typeof FUNNEL_STAGES)[number];
+
+// Facturas firmes (mismo criterio que el rollup por cliente de T-07).
+const FIRM_INVOICE_STATUSES = [
+  InvoiceStatus.ISSUED,
+  InvoiceStatus.PARTIALLY_PAID,
+  InvoiceStatus.PAID,
+];
 
 // Tramos de aging por antigüedad (días de vencimiento sobre dueDate).
 const AGING_BUCKETS = ['No vencido', '1-30', '31-60', '61-90', '90+'] as const;
@@ -216,6 +233,97 @@ export class FinanceService {
         count: c.count,
       })),
       concentration: { topN, amount: topAmount.toFixed(2), pct },
+    };
+  }
+
+  // Pulso (T-09), all-time. Embudo del ciclo económico de las OT (lente OT),
+  // margen bruto global, y signos vitales reutilizados de getSummary.
+  async getPulse(): Promise<PulseDto> {
+    const [workOrders, costAgg, summary] = await Promise.all([
+      this.prisma.workOrder.findMany({
+        where: { deletedAt: null, status: { not: WorkOrderStatus.CANCELLED } },
+        select: {
+          status: true,
+          total: true,
+          invoice: { select: { status: true, total: true } },
+        },
+      }),
+      this.prisma.expense.aggregate({
+        where: { deletedAt: null, workOrderId: { not: null } },
+        _sum: { amount: true },
+      }),
+      this.invoicesService.getSummary(),
+    ]);
+
+    // ── Embudo (lente OT) · clasificación coherente con economicCycle (frontend) ──
+    // La regla replica CostSummaryCard.economicCycle: != COMPLETED → En ejecución;
+    // COMPLETED con factura PAID → Cobrada; ISSUED/PARTIALLY_PAID → Facturada sin
+    // cobrar; el resto (sin factura / DRAFT / VOID) → Cerrada sin facturar.
+    // DEUDA TÉCNICA: esta clasificación se duplica entre frontend (economicCycle)
+    // y backend (aquí) por ser runtimes distintos. NO se unifica en T-09 (sin
+    // refactor preventivo); registrada como deuda para una fuente/contrato común.
+    const amount = new Map<FunnelStage, Prisma.Decimal>();
+    const count = new Map<FunnelStage, number>();
+    for (const s of FUNNEL_STAGES) {
+      amount.set(s, toMoney(0));
+      count.set(s, 0);
+    }
+
+    for (const wo of workOrders) {
+      let stage: FunnelStage;
+      let value: Prisma.Decimal;
+      if (wo.status !== WorkOrderStatus.COMPLETED) {
+        stage = 'En ejecución';
+        value = toMoney(wo.total);
+      } else if (wo.invoice?.status === InvoiceStatus.PAID) {
+        stage = 'Cobrada';
+        value = toMoney(wo.invoice.total);
+      } else if (
+        wo.invoice?.status === InvoiceStatus.ISSUED ||
+        wo.invoice?.status === InvoiceStatus.PARTIALLY_PAID
+      ) {
+        stage = 'Facturada sin cobrar';
+        value = toMoney(wo.invoice.total);
+      } else {
+        stage = 'Cerrada sin facturar';
+        value = toMoney(wo.total);
+      }
+      amount.set(stage, amount.get(stage)!.add(value));
+      count.set(stage, count.get(stage)! + 1);
+    }
+
+    const funnel = FUNNEL_STAGES.map((stage) => ({
+      stage,
+      count: count.get(stage)!,
+      amount: amount.get(stage)!.toFixed(2),
+    }));
+
+    // ── SIN invariante embudo ↔ getSummary (modelos distintos, a propósito) ──
+    // El embudo representa OT; getSummary representa facturas. Las facturas de
+    // contrato existen en getSummary (facturado / receivable) pero NO tienen OT,
+    // así que no aparecen en el embudo. Por eso NO se verifica igualdad entre
+    // ambos: sería un invariante falso. Los signos vitales vienen de getSummary.
+
+    // Margen bruto global: facturado firme (reutiliza getSummary.byStatus, sin
+    // recomputar) − costo directo (Σ gastos de OT).
+    const invoiced = sumMoney(
+      FIRM_INVOICE_STATUSES.map((s) => toMoney(summary.byStatus[s]?.total ?? 0)),
+    );
+    const cost = toMoney(costAgg._sum.amount ?? 0);
+    const gross = invoiced.sub(cost);
+    const pct = invoiced.isZero()
+      ? 0
+      : gross.div(invoiced).mul(100).toDecimalPlaces(1).toNumber();
+
+    return {
+      funnel,
+      margin: {
+        invoiced: invoiced.toFixed(2),
+        cost: cost.toFixed(2),
+        gross: gross.toFixed(2),
+        pct,
+      },
+      summary,
     };
   }
 }
