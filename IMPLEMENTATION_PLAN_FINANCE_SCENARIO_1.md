@@ -258,7 +258,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** —
 - **Tamaño:** S · **Clasificación:** Fundación
 - **Criterio de aceptación:** el módulo carga; un endpoint ping responde; `FinancePeriodQueryDto` valida period/rango/cliente.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`93539d8`) — enum mínimo (CURRENT_MONTH/LAST_12_MONTHS/CUSTOM), sin @Roles, ping 401 sin token; 200 autenticado pendiente de sesión válida.
 
 ### T-07 — Rollup económico por cliente (único, compartido)
 - **Objetivo:** una sola agregación por cliente: facturado, costo, margen, nº OT, recurrencia, salud de cobro.
@@ -266,7 +266,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** T-06
 - **Tamaño:** M · **Clasificación:** Fundación
 - **Criterio de aceptación:** margen = Σ(facturado de sus OT) − Σ(costo de sus OT); la faceta "por cobrar" coincide con la de Cartera; resuelto con `groupBy`/`aggregate` únicos.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`fa9f5df`) — facturado por `Invoice.clientId` (incl. contrato, caveat documentado); costo Σ gastos de sus OT (incl. canceladas, asimetría intencional); margen; nº OT no canceladas. Salud de cobro diferida a T-08 (opción c); all-time. Lógica verificada contra BD.
 
 ### T-08 — Receivable + aging + cartera por cliente
 - **Objetivo:** exponer el receivable con distribución por antigüedad, por cliente y concentración.
@@ -383,8 +383,8 @@ coinciden con `getSummary`/margen global.
 | T-03 | Chip de estado del ciclo | S | UX | T-01 | ✅ Completed (`8598977`) |
 | T-04 | Cobrado + margen por estado | S | UX | T-01 | ✅ Completed (`07e19a5`) |
 | T-05 | Aviso "sin costos · verificar" | XS | UX | — | ✅ Completed (`7c2ddf3`) |
-| T-06 | Módulo `finance` + DTO período | S | Fundación | — | Pending |
-| T-07 | Rollup por cliente (compartido) | M | Fundación | T-06 | Pending |
+| T-06 | Módulo `finance` + DTO período | S | Fundación | — | ✅ Completed (`93539d8`) |
+| T-07 | Rollup por cliente (compartido) | M | Fundación | T-06 | ✅ Completed (`fa9f5df`) |
 | T-08 | Receivable + aging + por cliente | M | Fundación | T-06 | Pending |
 | T-09 | Embudo + margen global (pulse) | M | Fundación | T-06 | Pending |
 | T-10 | Listas de atención | M | Fundación | T-06 | Pending |
