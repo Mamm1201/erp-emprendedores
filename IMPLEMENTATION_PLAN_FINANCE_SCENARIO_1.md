@@ -274,7 +274,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** T-06
 - **Tamaño:** M · **Clasificación:** Fundación
 - **Criterio de aceptación:** Σ tramos de aging = `totalReceivable`; Σ cartera-por-cliente = `totalReceivable`; excluye DRAFT/VOID.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`d3d5aed`) — Opción C: titular de `getSummary` (intacto), detalle en FinanceService protegido por invariantes `Decimal.equals()`; aging por dueDate, Top 5, sin clamp. Verificado contra BD (Σ=783.900).
 
 ### T-09 — Embudo del ciclo + margen global (endpoint Pulso)
 - **Objetivo:** conteos/Σ por etapa del ciclo económico y margen global del período.
@@ -385,7 +385,7 @@ coinciden con `getSummary`/margen global.
 | T-05 | Aviso "sin costos · verificar" | XS | UX | — | ✅ Completed (`7c2ddf3`) |
 | T-06 | Módulo `finance` + DTO período | S | Fundación | — | ✅ Completed (`93539d8`) |
 | T-07 | Rollup por cliente (compartido) | M | Fundación | T-06 | ✅ Completed (`fa9f5df`) |
-| T-08 | Receivable + aging + por cliente | M | Fundación | T-06 | Pending |
+| T-08 | Receivable + aging + por cliente | M | Fundación | T-06 | ✅ Completed (`d3d5aed`) |
 | T-09 | Embudo + margen global (pulse) | M | Fundación | T-06 | Pending |
 | T-10 | Listas de atención | M | Fundación | T-06 | Pending |
 | T-11 | Cartera (evolución EstadoCuentas) | L | UX | T-08 | Pending |
