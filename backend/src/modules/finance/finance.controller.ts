@@ -22,6 +22,11 @@ export class FinanceController {
     return this.financeService.getPulse();
   }
 
+  @Get('attention')
+  getAttention() {
+    return this.financeService.getAttention();
+  }
+
   @Get('clients/:clientId')
   getClientFinance(@Param('clientId') clientId: string) {
     return this.financeService.getClientFinance(clientId);

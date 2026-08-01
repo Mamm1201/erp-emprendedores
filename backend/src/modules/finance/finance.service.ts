@@ -12,6 +12,7 @@ import {
 import { sumMoney, toMoney } from '../../common/utils/money.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InvoicesService } from '../invoices/invoices.service';
+import { AttentionDto } from './dto/attention.dto';
 import { ClientFinanceDto } from './dto/client-finance.dto';
 import { PulseDto } from './dto/pulse.dto';
 import { ReceivableDto } from './dto/receivable.dto';
@@ -26,7 +27,7 @@ const FUNNEL_STAGES = [
 type FunnelStage = (typeof FUNNEL_STAGES)[number];
 
 // Facturas firmes (mismo criterio que el rollup por cliente de T-07).
-const FIRM_INVOICE_STATUSES = [
+const FIRM_INVOICE_STATUSES: InvoiceStatus[] = [
   InvoiceStatus.ISSUED,
   InvoiceStatus.PARTIALLY_PAID,
   InvoiceStatus.PAID,
@@ -325,5 +326,113 @@ export class FinanceService {
       },
       summary,
     };
+  }
+
+  // Listas de atención (T-10), snapshot as-of-now. Cuatro listas independientes,
+  // sin límite, ordenadas peor-primero (la priorización final es del frontend).
+  // Reutiliza criterios ya definidos; no crea reglas nuevas.
+  async getAttention(): Promise<AttentionDto> {
+    const now = new Date();
+
+    const [overdueInvoices, completedOrders] = await Promise.all([
+      // overdue = mismo criterio que getSummary.overdue (ISSUED/PARTIALLY_PAID
+      // con dueDate < now; total bruto). Sin DRAFT/VOID/PAID.
+      this.prisma.invoice.findMany({
+        where: {
+          status: {
+            in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID],
+          },
+          dueDate: { lt: now },
+        },
+        orderBy: { dueDate: 'asc' },
+        select: {
+          id: true,
+          number: true,
+          total: true,
+          dueDate: true,
+          client: { select: { tradeName: true, legalName: true } },
+        },
+      }),
+      // Base común de las tres listas OT: OT COMPLETED no eliminadas (las
+      // canceladas quedan excluidas por el propio filtro de estado).
+      this.prisma.workOrder.findMany({
+        where: { deletedAt: null, status: WorkOrderStatus.COMPLETED },
+        select: {
+          id: true,
+          number: true,
+          total: true,
+          completedAt: true,
+          client: { select: { tradeName: true, legalName: true } },
+          invoice: { select: { status: true, total: true } },
+          expenses: { where: { deletedAt: null }, select: { amount: true } },
+        },
+      }),
+    ]);
+
+    const overdue = overdueInvoices.map((inv) => ({
+      invoiceId: inv.id,
+      number: inv.number,
+      clientName: inv.client.tradeName ?? inv.client.legalName,
+      total: toMoney(inv.total).toFixed(2),
+      dueDate: inv.dueDate,
+    }));
+
+    const completedNotInvoiced: AttentionDto['completedNotInvoiced'] = [];
+    const completedNoCost: AttentionDto['completedNoCost'] = [];
+    const negativeMargin: AttentionDto['negativeMargin'] = [];
+
+    for (const wo of completedOrders) {
+      const clientName = wo.client.tradeName ?? wo.client.legalName;
+      const firm =
+        wo.invoice != null &&
+        FIRM_INVOICE_STATUSES.includes(wo.invoice.status);
+
+      // Terminadas sin facturar = etapa "Cerrada sin facturar" del embudo (T-09):
+      // COMPLETED sin factura firme (sin factura / DRAFT / VOID).
+      if (!firm) {
+        completedNotInvoiced.push({
+          workOrderId: wo.id,
+          number: wo.number,
+          clientName,
+          total: toMoney(wo.total).toFixed(2),
+          completedAt: wo.completedAt,
+        });
+      }
+
+      // Cerradas sin costos = condición de T-05: COMPLETED con 0 gastos.
+      if (wo.expenses.length === 0) {
+        completedNoCost.push({
+          workOrderId: wo.id,
+          number: wo.number,
+          clientName,
+          completedAt: wo.completedAt,
+        });
+      }
+
+      // Margen negativo: mejor ingreso disponible (firme → invoice.total, si no
+      // → wo.total) − costo < 0. firmness refleja solo el origen del ingreso.
+      const revenue = firm ? toMoney(wo.invoice!.total) : toMoney(wo.total);
+      const cost = sumMoney(wo.expenses.map((e) => toMoney(e.amount)));
+      const margin = revenue.sub(cost);
+      if (margin.isNegative()) {
+        negativeMargin.push({
+          workOrderId: wo.id,
+          number: wo.number,
+          clientName,
+          revenue: revenue.toFixed(2),
+          cost: cost.toFixed(2),
+          margin: margin.toFixed(2),
+          firmness: firm ? 'real' : 'estimado',
+        });
+      }
+    }
+
+    const completedAtAsc = (a: Date | null, b: Date | null) =>
+      (a ? a.getTime() : 0) - (b ? b.getTime() : 0);
+    completedNotInvoiced.sort((a, b) => completedAtAsc(a.completedAt, b.completedAt));
+    completedNoCost.sort((a, b) => completedAtAsc(a.completedAt, b.completedAt));
+    negativeMargin.sort((a, b) => toMoney(a.margin).cmp(toMoney(b.margin)));
+
+    return { overdue, completedNotInvoiced, completedNoCost, negativeMargin };
   }
 }
