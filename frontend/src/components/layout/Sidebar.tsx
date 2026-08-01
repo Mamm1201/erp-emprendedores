@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   { to: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
   { to: '/cuentas-cobro', label: 'Cuentas de cobro', icon: Receipt },
   { to: '/pagos', label: 'Pagos recibidos', icon: Banknote },
-  { to: '/estado-cuentas', label: 'Estado de cuentas', icon: BarChart3 },
+  { to: '/estado-cuentas', label: 'Cartera', icon: BarChart3 },
   { to: '/ordenes', label: 'Órdenes de trabajo', icon: ClipboardList },
   { to: '/actas', label: 'Actas técnicas', icon: ClipboardCheck },
   { to: '/contratos', label: 'Contratos mant.', icon: FileSignature },

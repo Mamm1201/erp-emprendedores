@@ -1,118 +1,64 @@
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { FileText, Wallet } from 'lucide-react';
 
-import { useFinancialSummary } from '@/hooks/use-invoices';
-import type { InvoiceStatus } from '@/lib/types';
+import { useReceivable } from '@/hooks/use-finance';
+import type { ReceivableAgingBucket } from '@/lib/types';
 import { formatMoney } from '@/lib/money';
 import { Button } from '@/components/ui/button';
 
-// ─── SummaryCard ──────────────────────────────────────────────────────────────
+// ─── Aging bucket colors (severidad creciente) ────────────────────────────────
 
-function SummaryCard({
-  label,
-  value,
-  sub,
-  icon: Icon,
-  color,
-  onClick,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon: React.ElementType;
-  color: 'blue' | 'red' | 'green' | 'gray';
-  onClick?: () => void;
-}) {
-  const colorMap = {
-    blue:  'bg-stech-blue/10 text-stech-blue border-stech-blue/30',
-    red:   'bg-alert-red/10 text-alert-red border-alert-red/30',
-    green: 'bg-node-teal/10 text-node-teal border-node-teal/30',
-    gray: 'bg-[hsl(var(--muted)/0.5)] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]',
-  };
-
-  return (
-    <div
-      className={`rounded-lg border p-4 space-y-2 ${onClick ? 'cursor-pointer hover:shadow-sm transition-shadow' : ''}`}
-      onClick={onClick}
-    >
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">{label}</p>
-        <span className={`p-1.5 rounded-md ${colorMap[color]}`}>
-          <Icon className="h-4 w-4" />
-        </span>
-      </div>
-      <p className="text-2xl font-bold tabular-nums">{value}</p>
-      {sub && <p className="text-xs text-[hsl(var(--muted-foreground))]">{sub}</p>}
-    </div>
-  );
-}
-
-// ─── Status row ───────────────────────────────────────────────────────────────
-
-const STATUS_LABELS: Record<InvoiceStatus, string> = {
-  DRAFT: 'Borrador',
-  ISSUED: 'Emitidas',
-  PARTIALLY_PAID: 'Pago parcial',
-  PAID: 'Pagadas',
-  VOID: 'Anuladas',
+const AGING_BAR: Record<string, string> = {
+  'No vencido': 'bg-node-teal',
+  '1-30': 'bg-amber-signal',
+  '31-60': 'bg-alert-red/50',
+  '61-90': 'bg-alert-red/75',
+  '90+': 'bg-alert-red',
 };
 
-const STATUS_ORDER: InvoiceStatus[] = [
-  'ISSUED',
-  'PARTIALLY_PAID',
-  'PAID',
-  'DRAFT',
-  'VOID',
-];
-
-// ─── Month name helper ────────────────────────────────────────────────────────
-
-function monthLabel(yearMonth: string): string {
-  const [year, month] = yearMonth.split('-');
-  const d = new Date(parseInt(year), parseInt(month) - 1, 1);
-  return format(d, 'MMM yyyy', { locale: es });
+function agingBar(bucket: string): string {
+  return AGING_BAR[bucket] ?? 'bg-[hsl(var(--muted))]';
 }
 
-// ─── EstadoCuentasPage ────────────────────────────────────────────────────────
+// ─── Cartera (hub de lo por cobrar) ───────────────────────────────────────────
 
 export function EstadoCuentasPage() {
   const navigate = useNavigate();
-  const { data: summary, isLoading, isError, refetch } = useFinancialSummary();
+  const { data: r, isLoading, isError, refetch } = useReceivable();
 
   if (isLoading) {
-    return (
-      <div className="p-6 text-[hsl(var(--muted-foreground))]">Cargando resumen financiero…</div>
-    );
+    return <div className="p-6 text-[hsl(var(--muted-foreground))]">Cargando cartera…</div>;
   }
 
-  if (isError || !summary) {
+  if (isError || !r) {
     return (
       <div className="p-6 space-y-2">
-        <p className="text-[hsl(var(--destructive))]">No se pudo cargar el resumen financiero.</p>
+        <p className="text-[hsl(var(--destructive))]">No se pudo cargar la cartera.</p>
         <Button variant="outline" size="sm" onClick={() => refetch()}>Reintentar</Button>
       </div>
     );
   }
 
-  const s = summary;
-  const hasOverdue = s.overdue.count > 0;
+  const total = parseFloat(r.totalReceivable);
+  const overdueAmount = r.aging
+    .filter((b) => b.bucket !== 'No vencido')
+    .reduce((sum, b) => sum + parseFloat(b.amount), 0);
+  const overduePct = total > 0 ? Math.round((overdueAmount / total) * 100) : 0;
+  const hasOverdue = overdueAmount > 0;
 
-  // Variation vs last month
-  const thisM = parseFloat(s.paidThisMonth);
-  const lastM = parseFloat(s.paidLastMonth);
-  const variation =
-    lastM > 0 ? Math.round(((thisM - lastM) / lastM) * 100) : null;
+  // Base positiva para las proporciones de la tira (los sobrepagos no aportan ancho).
+  const barBase = r.aging.reduce((sum, b) => sum + Math.max(0, parseFloat(b.amount)), 0);
+  const width = (b: ReceivableAgingBucket) =>
+    barBase > 0 ? (Math.max(0, parseFloat(b.amount)) / barBase) * 100 : 0;
 
   return (
     <div className="p-6 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Estado de cuentas</h1>
+          <h1 className="text-2xl font-bold">Cartera</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-            Resumen financiero del negocio
+            Lo por cobrar, por antigüedad y por cliente
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => refetch()} className="text-xs">
@@ -120,169 +66,113 @@ export function EstadoCuentasPage() {
         </Button>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard
-          label="Por cobrar"
-          value={formatMoney(s.totalReceivable)}
-          sub={`${(s.byStatus['ISSUED']?.count ?? 0) + (s.byStatus['PARTIALLY_PAID']?.count ?? 0)} cuenta(s) pendiente(s)`}
-          icon={Clock}
-          color="blue"
-          onClick={() => navigate('/cuentas-cobro')}
-        />
-        <SummaryCard
-          label="Vencidas"
-          value={formatMoney(s.overdue.total)}
-          sub={s.overdue.count > 0 ? `${s.overdue.count} cuenta(s) vencida(s)` : 'Sin vencidos'}
-          icon={AlertTriangle}
-          color={hasOverdue ? 'red' : 'gray'}
-          onClick={hasOverdue ? () => navigate('/cuentas-cobro') : undefined}
-        />
-        <SummaryCard
-          label="Cobrado este mes"
-          value={formatMoney(s.paidThisMonth)}
-          sub={
-            variation !== null
-              ? variation >= 0
-                ? `↑ ${variation}% vs mes anterior`
-                : `↓ ${Math.abs(variation)}% vs mes anterior`
-              : 'Primer mes registrado'
-          }
-          icon={TrendingUp}
-          color="green"
-        />
-        <SummaryCard
-          label="Cobrado mes anterior"
-          value={formatMoney(s.paidLastMonth)}
-          sub="Pagos recibidos"
-          icon={CheckCircle}
-          color="gray"
-        />
-      </div>
+      {/* ── Bloque 1 · Riesgo ── */}
+      <section className="rounded-lg border p-5 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">Total por cobrar</p>
+            <p className="text-3xl font-bold tabular-nums mt-1">{formatMoney(r.totalReceivable)}</p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">Vencido</p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <p className={`text-3xl font-bold tabular-nums ${hasOverdue ? 'text-alert-red' : ''}`}>
+                {formatMoney(overdueAmount.toFixed(2))}
+              </p>
+              <span
+                className={`text-sm font-semibold ${hasOverdue ? 'text-alert-red' : 'text-[hsl(var(--muted-foreground))]'}`}
+              >
+                {overduePct}%
+              </span>
+            </div>
+          </div>
+        </div>
 
-      {/* Body: two columns on md+ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Facturas por estado */}
-        <div className="rounded-lg border p-4 space-y-3">
-          <h2 className="text-sm font-semibold">Cuentas de cobro por estado</h2>
+        {/* Tira de aging global */}
+        <div className="space-y-2">
+          <div className="flex h-3 w-full overflow-hidden rounded-full bg-[hsl(var(--muted)/0.5)]">
+            {r.aging.map((b) => {
+              const w = width(b);
+              if (w <= 0) return null;
+              return <div key={b.bucket} className={agingBar(b.bucket)} style={{ width: `${w}%` }} />;
+            })}
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
+            {r.aging.map((b) => (
+              <div key={b.bucket} className="flex items-center gap-1.5 text-xs">
+                <span className={`inline-block h-2 w-2 rounded-full ${agingBar(b.bucket)}`} />
+                <span className="text-[hsl(var(--muted-foreground))]">{b.bucket}</span>
+                <span className="font-medium tabular-nums">{formatMoney(b.amount)}</span>
+                <span className="text-[hsl(var(--muted-foreground))]">({b.count})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Bloque 2 · Clientes ── */}
+      <section className="rounded-lg border p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Clientes por saldo</h2>
+          {r.byClient.length > 0 && (
+            <span className="text-xs text-[hsl(var(--muted-foreground))]">
+              Top {r.concentration.topN} concentran {r.concentration.pct}%
+            </span>
+          )}
+        </div>
+        {r.byClient.length === 0 ? (
+          <p className="py-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+            Sin saldos por cobrar.
+          </p>
+        ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
-                <th className="pb-2 text-left text-xs font-medium text-[hsl(var(--muted-foreground))]">Estado</th>
-                <th className="pb-2 text-right text-xs font-medium text-[hsl(var(--muted-foreground))]">Qty</th>
-                <th className="pb-2 text-right text-xs font-medium text-[hsl(var(--muted-foreground))]">Total emitido</th>
+                <th className="pb-2 text-left text-xs font-medium text-[hsl(var(--muted-foreground))]">Cliente</th>
+                <th className="pb-2 text-right text-xs font-medium text-[hsl(var(--muted-foreground))]">Facturas</th>
+                <th className="pb-2 text-right text-xs font-medium text-[hsl(var(--muted-foreground))]">Saldo</th>
               </tr>
             </thead>
             <tbody>
-              {STATUS_ORDER.map((status) => {
-                const g = s.byStatus[status];
-                if (!g) return null;
-                return (
-                  <tr key={status} className="border-b last:border-0">
-                    <td className="py-2 text-[hsl(var(--muted-foreground))]">
-                      {STATUS_LABELS[status]}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">{g.count}</td>
-                    <td className="py-2 text-right tabular-nums font-medium">
-                      {formatMoney(g.total)}
-                    </td>
-                  </tr>
-                );
-              })}
-              {Object.keys(s.byStatus).length === 0 && (
-                <tr>
-                  <td colSpan={3} className="py-4 text-center text-[hsl(var(--muted-foreground))]">
-                    Sin cuentas de cobro
-                  </td>
+              {r.byClient.map((c) => (
+                <tr key={c.clientId} className="border-b last:border-0">
+                  <td className="py-2">{c.clientName}</td>
+                  <td className="py-2 text-right tabular-nums text-[hsl(var(--muted-foreground))]">{c.count}</td>
+                  <td className="py-2 text-right tabular-nums font-medium">{formatMoney(c.amount)}</td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
-          <div className="pt-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              onClick={() => navigate('/cuentas-cobro')}
-            >
-              Ver todas las cuentas →
-            </Button>
-          </div>
-        </div>
+        )}
+      </section>
 
-        {/* Ingresos por mes */}
-        <div className="rounded-lg border p-4 space-y-3">
-          <h2 className="text-sm font-semibold">Ingresos cobrados — últimos 12 meses</h2>
-          {s.revenueByMonth.length === 0 ? (
-            <p className="text-sm text-[hsl(var(--muted-foreground))] py-4 text-center">
-              Sin pagos registrados en los últimos 12 meses
-            </p>
-          ) : (
-            <div className="space-y-1">
-              {[...s.revenueByMonth].reverse().map(({ yearMonth, amount }) => {
-                const maxAmount = Math.max(
-                  ...s.revenueByMonth.map((r) => parseFloat(r.amount)),
-                );
-                const pct =
-                  maxAmount > 0
-                    ? Math.round((parseFloat(amount) / maxAmount) * 100)
-                    : 0;
-
-                return (
-                  <div key={yearMonth} className="flex items-center gap-3">
-                    <span className="text-xs text-[hsl(var(--muted-foreground))] w-16 text-right shrink-0">
-                      {monthLabel(yearMonth)}
-                    </span>
-                    <div className="flex-1 bg-[hsl(var(--muted)/0.5)] rounded-full h-2">
-                      <div
-                        className="bg-[hsl(var(--primary))] h-2 rounded-full transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-medium tabular-nums w-24 text-right shrink-0">
-                      {formatMoney(amount)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <div className="pt-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              onClick={() => navigate('/pagos')}
-            >
-              Ver todos los pagos →
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Overdue alert */}
-      {hasOverdue && (
-        <div className="rounded-lg border border-alert-red/20 bg-alert-red/10 p-4 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-alert-red mt-0.5 shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-alert-red">
-              {s.overdue.count} cuenta{s.overdue.count !== 1 ? 's' : ''} de cobro vencida
-              {s.overdue.count !== 1 ? 's' : ''}
-            </p>
-            <p className="text-sm text-alert-red mt-0.5">
-              Total pendiente vencido: <span className="font-semibold">{formatMoney(s.overdue.total)}</span>
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-alert-red border-alert-red/30 hover:bg-alert-red/10 shrink-0"
-            onClick={() => navigate('/cuentas-cobro')}
-          >
-            Ver facturas
-          </Button>
-        </div>
-      )}
+      {/* ── Bloque 3 · Acciones ── */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button
+          onClick={() => navigate('/cuentas-cobro')}
+          className="rounded-lg border p-4 flex items-center gap-3 text-left hover:shadow-sm transition-shadow"
+        >
+          <span className="p-2 rounded-md bg-stech-blue/10 text-stech-blue">
+            <FileText className="h-5 w-5" />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-medium">Cuentas de cobro</span>
+            <span className="block text-xs text-[hsl(var(--muted-foreground))]">Gestionar y emitir</span>
+          </span>
+        </button>
+        <button
+          onClick={() => navigate('/pagos')}
+          className="rounded-lg border p-4 flex items-center gap-3 text-left hover:shadow-sm transition-shadow"
+        >
+          <span className="p-2 rounded-md bg-node-teal/10 text-node-teal">
+            <Wallet className="h-5 w-5" />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-medium">Pagos recibidos</span>
+            <span className="block text-xs text-[hsl(var(--muted-foreground))]">Registrar y consultar</span>
+          </span>
+        </button>
+      </section>
     </div>
   );
 }

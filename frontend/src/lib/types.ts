@@ -129,6 +129,34 @@ export interface FinancialSummary {
   revenueByMonth: Array<{ yearMonth: string; amount: string }>;
 }
 
+// ─── Receivable (módulo Finance · GET /finance/receivable) ────────────────────
+
+export interface ReceivableAgingBucket {
+  bucket: string; // 'No vencido' | '1-30' | '31-60' | '61-90' | '90+'
+  amount: string;
+  count: number;
+}
+
+export interface ReceivableByClient {
+  clientId: string;
+  clientName: string;
+  amount: string;
+  count: number;
+}
+
+export interface ReceivableConcentration {
+  topN: number;
+  amount: string;
+  pct: number;
+}
+
+export interface Receivable {
+  totalReceivable: string;
+  aging: ReceivableAgingBucket[];
+  byClient: ReceivableByClient[];
+  concentration: ReceivableConcentration;
+}
+
 export interface Invoice {
   id: string;
   number: string;
