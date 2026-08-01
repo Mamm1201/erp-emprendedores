@@ -290,7 +290,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** T-06
 - **Tamaño:** M · **Clasificación:** Fundación
 - **Criterio de aceptación:** cada lista contiene solo hechos en firme (vencidas ISSUED+; sin costos/margen sobre OT COMPLETED); sin borradores.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`dff983b`) — 4 listas (overdue=getSummary.overdue; completedNotInvoiced=etapa Cerrada sin facturar T-09; completedNoCost=condición T-05; negativeMargin mejor-ingreso opción b + firmness). As-of-now, sin límite. Verificado contra BD.
 
 ### T-11 — Cartera (evolución de `EstadoCuentasPage`)
 - **Objetivo:** convertir la página en el hub de cartera (titular de riesgo + cliente-first con aging embebido + concentración).
@@ -387,7 +387,7 @@ coinciden con `getSummary`/margen global.
 | T-07 | Rollup por cliente (compartido) | M | Fundación | T-06 | ✅ Completed (`fa9f5df`) |
 | T-08 | Receivable + aging + por cliente | M | Fundación | T-06 | ✅ Completed (`d3d5aed`) |
 | T-09 | Embudo + margen global (pulse) | M | Fundación | T-06 | ✅ Completed (`a36af57`) |
-| T-10 | Listas de atención | M | Fundación | T-06 | Pending |
+| T-10 | Listas de atención | M | Fundación | T-06 | ✅ Completed (`dff983b`) |
 | T-11 | Cartera (evolución EstadoCuentas) | L | UX | T-08 | Pending |
 | T-12 | Saldo + filtros en InvoicesPage | S | Feature | T-08 | Pending |
 | T-13 | Mover 12m a PaymentsPage | S | Refactor | — | Pending |
