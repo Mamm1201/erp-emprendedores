@@ -53,10 +53,19 @@ interface CostSummaryCardProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function CostSummaryCard({ workOrder, expenses }: CostSummaryCardProps) {
-  if (expenses.length === 0) return null;
-
   const { invoice, total: woTotal, status } = workOrder;
   const cycle = economicCycle(status, invoice?.status);
+
+  // Gate por estado del ciclo económico (economicCycle = fuente de verdad).
+  // Sin costos + ciclo cerrado (Cerrada sin facturar / Facturada sin cobrar /
+  // Cobrada) → se muestra el aviso de completitud. En ejecución (aún pueden
+  // registrarse costos) o Cancelada (no aporta) → la card no se renderiza.
+  const noCosts = expenses.length === 0;
+  const cycleClosed =
+    cycle.label === 'Cerrada sin facturar' ||
+    cycle.label === 'Facturada sin cobrar' ||
+    cycle.label === 'Cobrada';
+  if (noCosts && !cycleClosed) return null;
 
   // Revenue: use invoice total when available, otherwise OT total (estimated)
   const isEstimated   = !invoice || invoice.status === 'DRAFT';
@@ -125,24 +134,30 @@ export function CostSummaryCard({ workOrder, expenses }: CostSummaryCardProps) {
           )}
         </div>
 
-        {/* Cost breakdown */}
-        <div className="border-t pt-3 space-y-1.5">
-          {(Object.entries(byCategory) as [ExpenseCategory, number][])
-            .sort(([, a], [, b]) => b - a)
-            .map(([cat, amount]) => (
-              <div key={cat} className="flex justify-between text-xs text-[hsl(var(--muted-foreground))]">
-                <span>{CATEGORY_LABEL[cat]}</span>
-                <span className="font-mono tabular-nums">{formatMoney(amount)}</span>
-              </div>
-            ))}
-          <div className="flex justify-between text-sm font-medium pt-1 border-t">
-            <span>Total costos</span>
-            <span className="font-mono tabular-nums">{formatMoney(totalCost)}</span>
+        {/* Cost breakdown (oculto cuando no hay costos registrados) */}
+        {!noCosts && (
+          <div className="border-t pt-3 space-y-1.5">
+            {(Object.entries(byCategory) as [ExpenseCategory, number][])
+              .sort(([, a], [, b]) => b - a)
+              .map(([cat, amount]) => (
+                <div key={cat} className="flex justify-between text-xs text-[hsl(var(--muted-foreground))]">
+                  <span>{CATEGORY_LABEL[cat]}</span>
+                  <span className="font-mono tabular-nums">{formatMoney(amount)}</span>
+                </div>
+              ))}
+            <div className="flex justify-between text-sm font-medium pt-1 border-t">
+              <span>Total costos</span>
+              <span className="font-mono tabular-nums">{formatMoney(totalCost)}</span>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Margin (o nota de OT cancelada) */}
-        {firmness === 'na' ? (
+        {/* Aviso sin costos · o margen · o nota de OT cancelada */}
+        {noCosts ? (
+          <p className="border-t pt-3 text-xs text-amber-signal">
+            Sin costos registrados · verificar
+          </p>
+        ) : firmness === 'na' ? (
           <p className="border-t pt-3 text-xs text-[hsl(var(--muted-foreground))]">
             OT cancelada · no aplica análisis de rentabilidad.
           </p>
