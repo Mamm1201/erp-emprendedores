@@ -250,7 +250,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** —
 - **Tamaño:** XS · **Clasificación:** UX
 - **Criterio de aceptación:** OT COMPLETED sin gastos muestra el aviso; el resto conserva el comportamiento.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`7c2ddf3`) — gate por `cycle.label` (economicCycle); validado visualmente en 3 escenarios.
 
 ### T-06 — Módulo de lectura `finance` + DTO de período
 - **Objetivo:** crear el módulo NestJS de solo lectura que aloja las derivaciones analíticas, componiendo sobre repositorios existentes.
@@ -382,7 +382,7 @@ coinciden con `getSummary`/margen global.
 | T-02 | CostSummaryCard lee ingreso de factura | S | Deuda técnica | T-01 | ✅ Completed (`181d08b`) |
 | T-03 | Chip de estado del ciclo | S | UX | T-01 | ✅ Completed (`8598977`) |
 | T-04 | Cobrado + margen por estado | S | UX | T-01 | ✅ Completed (`07e19a5`) |
-| T-05 | Aviso "sin costos · verificar" | XS | UX | — | Pending |
+| T-05 | Aviso "sin costos · verificar" | XS | UX | — | ✅ Completed (`7c2ddf3`) |
 | T-06 | Módulo `finance` + DTO período | S | Fundación | — | Pending |
 | T-07 | Rollup por cliente (compartido) | M | Fundación | T-06 | Pending |
 | T-08 | Receivable + aging + por cliente | M | Fundación | T-06 | Pending |
