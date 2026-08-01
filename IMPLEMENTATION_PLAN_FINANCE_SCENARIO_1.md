@@ -282,7 +282,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** T-06
 - **Tamaño:** M · **Clasificación:** Fundación
 - **Criterio de aceptación:** las etapas suman las OT activas; margen global = Σ facturado − Σ costo del período; signos vitales cuadran con `getSummary`.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`a36af57`) — all-time; embudo lente OT (excluye canceladas, reglas = economicCycle), margen bruto (facturado firme de byStatus − costo directo), signos vitales de getSummary. SIN invariante embudo↔getSummary (contrato). Verificado contra BD.
 
 ### T-10 — Listas de atención
 - **Objetivo:** derivar las listas accionables (vencidas, terminadas sin facturar, cerradas sin costos, margen negativo).
@@ -386,7 +386,7 @@ coinciden con `getSummary`/margen global.
 | T-06 | Módulo `finance` + DTO período | S | Fundación | — | ✅ Completed (`93539d8`) |
 | T-07 | Rollup por cliente (compartido) | M | Fundación | T-06 | ✅ Completed (`fa9f5df`) |
 | T-08 | Receivable + aging + por cliente | M | Fundación | T-06 | ✅ Completed (`d3d5aed`) |
-| T-09 | Embudo + margen global (pulse) | M | Fundación | T-06 | Pending |
+| T-09 | Embudo + margen global (pulse) | M | Fundación | T-06 | ✅ Completed (`a36af57`) |
 | T-10 | Listas de atención | M | Fundación | T-06 | Pending |
 | T-11 | Cartera (evolución EstadoCuentas) | L | UX | T-08 | Pending |
 | T-12 | Saldo + filtros en InvoicesPage | S | Feature | T-08 | Pending |
