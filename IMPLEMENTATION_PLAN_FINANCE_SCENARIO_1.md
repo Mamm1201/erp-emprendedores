@@ -298,7 +298,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** T-08
 - **Tamaño:** L · **Clasificación:** UX
 - **Criterio de aceptación:** lectura <10s; jerarquía riesgo→clientes→acciones; cifras cuadran; ya no muestra cobrado/12m.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`a954629`) — frontend-only sobre `/finance/receivable` (hook `use-finance.ts`). 3 bloques (riesgo/clientes/acciones); título+menú "Cartera", ruta intacta. Opción (a): clientes por saldo sin aging por fila (incremento backend diferido). Se quitó recaudo/12m/por-estado.
 
 ### T-12 — Columna saldo + filtros en `InvoicesPage`
 - **Objetivo:** mostrar el saldo pendiente por factura y permitir filtrar por antigüedad/cliente.
@@ -388,7 +388,7 @@ coinciden con `getSummary`/margen global.
 | T-08 | Receivable + aging + por cliente | M | Fundación | T-06 | ✅ Completed (`d3d5aed`) |
 | T-09 | Embudo + margen global (pulse) | M | Fundación | T-06 | ✅ Completed (`a36af57`) |
 | T-10 | Listas de atención | M | Fundación | T-06 | ✅ Completed (`dff983b`) |
-| T-11 | Cartera (evolución EstadoCuentas) | L | UX | T-08 | Pending |
+| T-11 | Cartera (evolución EstadoCuentas) | L | UX | T-08 | ✅ Completed (`a954629`) |
 | T-12 | Saldo + filtros en InvoicesPage | S | Feature | T-08 | Pending |
 | T-13 | Mover 12m a PaymentsPage | S | Refactor | — | Pending |
 | T-14 | Ruta/shell detalle de cliente | S | Feature | — | Pending |
