@@ -3,13 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-import { useAllPayments } from '@/hooks/use-invoices';
+import { useAllPayments, useFinancialSummary } from '@/hooks/use-invoices';
 import type { PaymentMethod } from '@/lib/types';
 import { formatMoney } from '@/lib/money';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+
+// ─── Month name helper ────────────────────────────────────────────────────────
+
+function monthLabel(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-');
+  const d = new Date(parseInt(year), parseInt(month) - 1, 1);
+  return format(d, 'MMM yyyy', { locale: es });
+}
 
 const METHOD_LABELS: Record<PaymentMethod, string> = {
   CASH: 'Efectivo',
@@ -30,6 +38,7 @@ const METHOD_FILTERS: { value: PaymentMethod | ''; label: string }[] = [
 
 export function PaymentsPage() {
   const navigate = useNavigate();
+  const { data: summary } = useFinancialSummary();
   const [method, setMethod] = useState<PaymentMethod | ''>('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -64,6 +73,47 @@ export function PaymentsPage() {
           Historial de pagos registrados en todas las cuentas de cobro
         </p>
       </div>
+
+      {/* Ingresos por mes */}
+      {summary && (
+        <div className="rounded-lg border p-4 space-y-3">
+          <h2 className="text-sm font-semibold">Ingresos cobrados — últimos 12 meses</h2>
+          {summary.revenueByMonth.length === 0 ? (
+            <p className="text-sm text-[hsl(var(--muted-foreground))] py-4 text-center">
+              Sin pagos registrados en los últimos 12 meses
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {[...summary.revenueByMonth].reverse().map(({ yearMonth, amount }) => {
+                const maxAmount = Math.max(
+                  ...summary.revenueByMonth.map((r) => parseFloat(r.amount)),
+                );
+                const pct =
+                  maxAmount > 0
+                    ? Math.round((parseFloat(amount) / maxAmount) * 100)
+                    : 0;
+
+                return (
+                  <div key={yearMonth} className="flex items-center gap-3">
+                    <span className="text-xs text-[hsl(var(--muted-foreground))] w-16 text-right shrink-0">
+                      {monthLabel(yearMonth)}
+                    </span>
+                    <div className="flex-1 bg-[hsl(var(--muted)/0.5)] rounded-full h-2">
+                      <div
+                        className="bg-[hsl(var(--primary))] h-2 rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium tabular-nums w-24 text-right shrink-0">
+                      {formatMoney(amount)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="space-y-3">
