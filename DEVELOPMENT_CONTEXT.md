@@ -7,10 +7,10 @@
 
 ## Estado actual
 
-**Versión:** `v2.8.0` (Fase de validación funcional CERRADA — ERP Validation Report v1.0)
-**Rama activa:** `develop`
-**Última sesión:** 2026-07-28
-**Fase actual:** Operación real — primer cliente recurrente (Clínica Avellaneda Hernandez SAS: sede Calle 106 · Bogotá, planta eléctrica, preventivo cada 4 meses). Regla vigente: corregir en el momento solo lo que bloquee operar o dañe UX; el resto va a backlog. Ver *Hallazgos de operación real (2026-07-25)*.
+**Versión:** `v2.10.0` (Módulo Finanzas Escenario 1 CERRADO + `WorkOrderTechnician` CERRADO)
+**Rama activa:** `develop` — **29 commits adelante de `origin/develop`, sin push**
+**Última sesión:** 2026-08-02
+**Fase actual:** Cierre de bloque de trabajo — proyecto estabilizado antes de abrir el siguiente. Módulo Finanzas (T-06…T-15, solo lectura/derivado sobre Operaciones+Facturación) y `WorkOrderTechnician` (ejecutores reales de la OT) quedaron **implementados, verificados y commiteados sin push**. Ver § *Módulo Finanzas — Escenario 1* y § *WorkOrderTechnician* más abajo para el detalle completo. La fase de "Operación real — primer cliente recurrente" (progreso 2026-07-25/28, abajo) sigue vigente como contexto operativo de fondo; no fue tocada por este bloque.
 **Progreso 2026-07-25:**
 - **Avellaneda (cliente 1):** (1) Preventivo montado completo (cliente → sede → equipo/QR → cotización COT-00001 → contrato CMTO-00001 ACTIVE $2.991.888 anual → plan cada 4 meses → 3 visitas). (2) **Primer correctivo facturado de punta a punta:** cotización (visita $90.000) → OT-00001 (visita + 4 repuestos = **$405.000**, planta SN-009 anclada) → Acta Técnica → Cuenta de Cobro **CC-2026-00001 EMITIDA $405.000**. Durante el flujo se detectaron y corrigieron CE-7, OT-6, OT-7; y se topó con **OT-8 (urgente)** que exigió workaround por API.
 - **Emmanuel (cliente 2):** cliente multi-sede montado. 4 sedes: 3 bajo preventivo (Calle 126, Manzanos, Mirador) + 1 fuera de contrato (Spring, solo correctivos). **17 equipos** creados. **3 contratos independientes** (uno por sede, ANNUAL, $10.4M c/u, inicio 6-ene-2026 → 6-ene-2027, ciclo Anual, correctivo/repuestos/transporte incluidos) — decisión del usuario: contrato por sede para poder dar de baja una sin tocar las otras. **17 planes** (uno por equipo, Trimestral, por MNT-1) + **17 visitas de octubre**. Notas: (a) se corrigió un cruce de equipos entre contratos (riesgo "contratos indistinguibles"); (b) los 17 planes se crearon por API por volumen — evidencia real del costo de MNT-1 (17 planes para 3 visitas físicas).
@@ -61,10 +61,12 @@
 | v2.5.3 | Checkpoint descubrimiento | Hoja de Vida del Equipo — descubrimiento iniciado, **no congelada**. Nombre validado (renombre de "Historia Documental del Equipo"). Confirmado: `Equipment` es ficha del activo, no historial; Portal QR y Hoja de Vida son conceptos relacionados pero distintos; identificada la necesidad de un concepto de eventos del ciclo de vida (alcance pendiente). 4 preguntas abiertas para la próxima sesión. Sin cambios de código, sin entidades nuevas. | 🔍 En curso — ver `docs/domain/domain-model-v1.0.md` §5.5 (v1.3) |
 | v2.6.0 | Modelo de Dominio v1.4 | **Hoja de Vida del Equipo congelada** como **registro técnico integral del activo** (expediente que reúne, sin poseer, identificación, información técnica, estado, cronograma vigente, historial de intervenciones y soportes). Corrección de dominio clave: no es una línea de tiempo de intervenciones sino un expediente completo. Sustentada en el problema/solución de Fondo Emprender, la experiencia en IPS y la entrevista al líder administrativo. Los **hitos del ciclo de vida del activo** quedan como **hipótesis de diseño diferida (no validada)**, fuera del alcance congelado. **Fin de la fase de descubrimiento documental del dominio.** Sin cambios de código. | ✅ Cerrado — `docs/domain/domain-model-v1.0.md` v1.4 |
 | v2.7.0 | Validación — Equipos | Inicio de la **fase de validación de producto**. Auditoría funcional (ejecución real) de Clientes/Sedes/Equipos con lente de migración de datos reales → hallazgos CE-1 a CE-6. Corrección de **CE-1** (`warrantyExpiresAt` incapturable pese a que el QR lo usa — contradicción interna) y **CE-2** (`criticality` clavada en MEDIUM): ambos campos ya existían en el modelo, expuestos en DTOs/service/select + tipos/hook/formulario. Re-ejecutada la prueba API que detectó el bug → 201/200 OK. | 🟡 Implementado, **pendiente validación visual** (fricción del arnés, no defecto) |
+| v2.9.0 | Módulo Finanzas — Escenario 1 (Fundación) | Contexto Finanzas **derivado y de solo lectura** sobre Operaciones/Facturación. Backend (`finance` module, T-06…T-10): rollup por cliente, receivable+aging, pulse/embudo, atención. Frontend (T-05, T-11…T-15): aviso "sin costos" en OT, Cartera, saldo/filtros en Cuentas de Cobro, histórico en Pagos, detalle+rentabilidad de cliente. 10 tareas, ciclo disciplinado análisis→validación→implementación→autoauditoría→commit en cada una. Ver § *Módulo Finanzas — Escenario 1* para el detalle completo. | ✅ Cerrado — `IMPLEMENTATION_PLAN_FINANCE_SCENARIO_1.md` (T-06…T-15 Completed) |
+| v2.10.0 | `WorkOrderTechnician` — Ejecutores reales de la OT | La OT es la fuente de verdad de la ejecución (coherente con §5.2 del Modelo de Dominio, ya congelado: "Quién la ejecutó o gestionó"); el Acta Técnica y su PDF son evidencia derivada, solo leen. Relación N:N `WorkOrder↔User` (tabla `work_order_technicians`, minimalista, sin `role`/`isLead` por falta de evidencia de negocio). `assignedToId` (responsable/asignado) no cambia de semántica. Ejecutores opcionales — advertencia no bloqueante si la OT se completa sin ninguno. Ver § *WorkOrderTechnician*. | ✅ Cerrado y verificado (`nest build`/`tsc -b` limpios, migración 100% aditiva) |
 
-**Versión:** `v2.7.0` (Fase de validación de producto — módulo Equipos: CE-1/CE-2 corregidos)
+**Versión:** `v2.10.0` (Módulo Finanzas Escenario 1 CERRADO + `WorkOrderTechnician` CERRADO)
 
-**Estado general:** Build limpio · TypeScript 0 errores · **Fase de validación de producto en curso** (ver § Tablero de validación) · Modelo de Dominio v1.4 congelado (5 definiciones) · QR Fase 1 operativo · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado
+**Estado general:** Build limpio · TypeScript 0 errores nuevos (baseline heredado de 9 errores pre-existentes, no relacionados con Finanzas/Técnicos — ver deuda registrada) · Módulo Finanzas Escenario 1 (Fundación) **CERRADO** · `WorkOrderTechnician` **CERRADO** · **Fase de validación de producto** (módulos previos) sin cambios desde 2026-07-16 · Modelo de Dominio v1.4 congelado (5 definiciones) · QR Fase 1 operativo · Asociación Equipos↔Contratos↔Planes operativa (DT-06-B Etapa 1) · Identidad STECH NODES v1.0 integrada · Auth fullstack congelada · Motor Documental congelado · Incremento Utilización→Preparación→Cuenta de Cobro cerrado (2026-07-28)
 
 ---
 
@@ -322,6 +324,77 @@ Primer montaje de un cliente recurrente real (Clínica Avellaneda Hernandez SAS 
 
 ---
 
+## Módulo Finanzas — Escenario 1 (Fundación) — ✅ CERRADO (2026-08-02)
+
+> Plan detallado tarea por tarea: `IMPLEMENTATION_PLAN_FINANCE_SCENARIO_1.md` (raíz del repo, T-06…T-15 todas `✅ Completed` con hash de commit). Diseño funcional previo: `docs/functional/finanzas-escenario-1-design-v1.0.md`. Este apartado resume el estado final para quien no quiera leer el plan completo.
+
+**Principio rector (congelado, no reabrir sin evidencia real):** Finanzas es un contexto **derivado y de solo lectura** — nunca una segunda fuente de verdad. Source of truth único: **ingreso = `Invoice`**, **cobro = `Payment`**, **costo directo = `Expense`**. `ResourceUtilization` es hecho técnico, nunca fuente de costo. Reutiliza y complementa lo existente (`InvoicesService.getSummary()` sigue siendo la fuente única del receivable global); nunca duplica.
+
+**Backend — módulo `finance` (T-06…T-10), 100% nuevo, sin tocar `InvoicesService`:**
+
+| Endpoint | Tarea | Qué expone |
+|---|---|---|
+| `GET /finance/ping` | T-06 | Andamiaje/verificación del módulo (sin consumidor en frontend hoy — ver deuda) |
+| `GET /finance/clients/:clientId` | T-07 | Rollup económico por cliente: facturado, costo, margen, nº OT. Fuente única que reutilizan T-08 (faceta cartera) y T-15 (faceta rentabilidad) |
+| `GET /finance/receivable` | T-08 | Receivable con aging (5 tramos sobre `dueDate`), cartera por cliente, concentración Top 5. Opción C: titular tomado de `getSummary()` (intacto), detalle protegido por invariantes `Decimal.equals()` |
+| `GET /finance/pulse` | T-09 | Embudo del ciclo económico de las OT + margen bruto global. **Sin consumidor en frontend hoy** (`PulsoPage` no se implementó en este escenario) |
+| `GET /finance/attention` | T-10 | 4 listas de atención (vencidas, sin facturar, sin costos, margen negativo), reutilizando criterios ya definidos. **Sin consumidor en frontend hoy** |
+
+**Frontend (T-05, T-11…T-15):**
+- **T-05** — `CostSummaryCard` (OT): aviso "Sin costos registrados · verificar" en OT cerrada sin gastos, en vez de ocultar la card.
+- **T-11** — **Cartera** reemplaza "Estado de cuentas" (`/estado-cuentas`, ruta intacta): riesgo → clientes → acciones, sobre `/finance/receivable`.
+- **T-12** — Columna Saldo + filtros Cliente/Antigüedad en `InvoicesPage` (dominio Facturación, no Finance — autorizado modificar `InvoicesService`/DTO para esto).
+- **T-13** — Histórico "Ingresos cobrados 12m" movido de Cartera a `PaymentsPage`.
+- **T-14** — Ruta `/clientes/:id`: identidad de solo lectura + shell de economía.
+- **T-15** — Vista de rentabilidad del cliente: margen héroe + facturado histórico + nº OT, consumiendo **exclusivamente** `GET /finance/clients/:clientId`, sin recalcular ni mezclar endpoints.
+
+**Decisiones arquitectónicas adoptadas en este escenario:**
+- Cada concepto económico tiene una única lógica de negocio autorizada; las superficies que lo necesitan la reutilizan (pueden presentarla distinto según contexto, pero no duplicarla).
+- Todo el escenario opera **all-time** — `FinancePeriodQueryDto` (T-06) quedó preparado pero sin consumidor real; el filtrado por período se difirió explícitamente.
+- Invariantes de suma (`Decimal.equals()`, T-08) como mecanismo para tolerar duplicación de fórmula mientras no haya evidencia suficiente para extraer una abstracción compartida.
+
+### Deudas técnicas del escenario (NO implementar sin abrir tarea)
+
+| Deuda | Detalle |
+|---|---|
+| `/finance/pulse` y `/finance/attention` sin consumidor | T-09/T-10 completos en backend; `PulsoPage` (consumidor natural) no se construyó en este escenario — es el próximo bloque candidato (`T-16`/`T-17` en el plan original). |
+| `FinancePeriodQueryDto` sin uso | Ningún controlador lo usa. Consumirlo de verdad exigiría modificar las firmas ya cerradas de T-07/T-08/T-09/T-10. |
+| Duplicación de "saldo = total − pagos válidos" (5 implementaciones) | `invoices.service.ts` (×2: `recalculateInvoiceStatus`, `findAll`), `work-orders.service.ts` (`findOne`), `finance.service.ts` (`getReceivable`), y **recálculo en frontend** en `InvoiceDetailPage.tsx` (`parseFloat`/`reduce`, no Decimal). Evidencia suficiente para extraer un helper único del dominio Facturación — no extraído todavía. |
+| `overdueAmount` sin clamp de sobrepagos en Cartera | Inconsistente con `width()`/`barBase` del mismo archivo (`EstadoCuentasPage.tsx`), que sí clampan negativos. Bug latente, sin caso vivo en BD hoy. |
+| Filtros incompatibles en `InvoicesPage` sin feedback claro | Combinar un estado no-cartera (p. ej. `PAID`) con un tramo de antigüedad da lista vacía a propósito, pero la UI no distingue esa combinación de un vacío real. |
+| Aging por cliente en `/finance/receivable` | Cartera (Bloque 2) muestra clientes por saldo sin distribución por antigüedad por fila (decisión T-11: no extender el contrato de T-08). |
+| Duplicación de `economicCycle` (frontend↔backend) | Misma clasificación de 4 etapas del ciclo implementada en `CostSummaryCard` (frontend, T-03) y `FinanceService.getPulse` (backend, T-09). |
+| Identificador estable de etapa del ciclo | `economicCycle`/`CycleBadge` solo expone `{label,variant}` (presentación); el gate de T-05 compara por texto. |
+| Navegación a `/clientes/:id` solo desde Cartera | No se agregó desde `ClientsPage` (alcance explícito del usuario en T-14). |
+| Autenticación con token solo en memoria (frontend) | `_accessToken` en `api.ts` se pierde en cada recarga/navegación de la SPA — dificulta E2E y recuperación de sesión. |
+| **Frontend build baseline: 9 errores TypeScript heredados** | `InvoicesPage.tsx`(1)·`LoginPage.tsx`(1)·`MaintenanceContractsPage.tsx`(3)·`MaintenancePlanDetailPage.tsx`(3)·`UsersPage.tsx`(1). **No pertenecen a Finanzas** ni fueron introducidos por este escenario — verificados como baseline constante en cada tarea (T-05…T-15). Resolver en una tarea de estabilización dedicada, separada de cualquier roadmap funcional. |
+
+### Incrementos deliberadamente diferidos (línea base, no bugs)
+
+Decisiones explícitas de alcance — no ausencias accidentales: **recurrencia** del cliente (nunca entró al contrato de T-07) · **cualificador de salud de cobro** en la ficha de cliente (solo enlace de navegación a Cartera, sin dato derivado) · **estado "tensión rentable-pero-mal-pagador"** (exigiría cruzar T-07 con T-08) · **estado "salvedad por contrato"** (el DTO de T-07 no distingue origen de factura, OT vs. contrato) · **filtro de OT por cliente** en el enlace "sus OT" desde la ficha de cliente (`WorkOrdersPage` no soporta ese query param hoy).
+
+---
+
+## WorkOrderTechnician — Ejecutores reales de la OT — ✅ CERRADO (2026-08-02)
+
+**Principio de dominio (coherente con §5.2 del Modelo de Dominio, ya congelado 2026-07-15, que dice explícitamente que a la OT le corresponde documentar "quién la ejecutó o gestionó"):** la Orden de Trabajo es la fuente de verdad de la ejecución. El Acta Técnica y su PDF son evidencia derivada — **nunca almacenan ejecutores de forma independiente**, solo los leen desde la OT.
+
+**Separación de conceptos (ambos en `WorkOrder`, sin fusionarse):**
+- `assignedToId` (preexistente) = responsable/asignado en **planeación**. Semántica sin cambios.
+- `WorkOrderTechnician` (nuevo, N:N `WorkOrder↔User`) = ejecutores reales de la intervención — quiénes estuvieron ahí, potencialmente varios, potencialmente distintos del asignado.
+
+**Modelo de datos:** tabla `work_order_technicians` minimalista a propósito — `id`, `workOrderId`, `userId`, `createdAt`, `@@unique([workOrderId, userId])`. **Sin** `role`/`isLead` — sin evidencia de negocio que lo justifique (el "quién firma" ya lo resuelve `assignedToId`; no hay precedente de diferenciar actores por rol en ningún registro técnico del dominio, incl. `ChecklistItem`). Migración 100% aditiva — verificado que el SQL generado es solo `CREATE TABLE`/`CreateIndex`/`AddForeignKey`, sin `ALTER` sobre tablas existentes.
+
+**Backend:** `WorkOrdersService.findOne` expone `technicians` (detalle únicamente — no entra a `WORK_ORDER_SELECT` del listado, mismo patrón que `invoice.paidTotal`). Endpoint `PATCH /work-orders/:id/technicians` reemplaza el conjunto completo (sin add/remove incremental). PDF (`documents.service.ts`/`ServiceRecordDocument.tsx`): nuevo campo `technicianNames: string[]` leído desde la OT, renderiza "Técnicos que intervinieron" en el cuerpo del informe solo si la lista no está vacía; el bloque de firma sigue usando el `technicianName` singular existente (de `assignedTo`). `ServiceRecord` no ganó ninguna columna.
+
+**Frontend:** `TechniciansCard` (nuevo, en el detalle de OT) — checklist de técnicos reutilizando `useTechnicians()` ya existente (cero endpoint nuevo para el selector). Muestra advertencia (no bloqueante) cuando la OT está `COMPLETED` sin ejecutores registrados.
+
+**Comportamiento (decisión explícita):** ejecutores **opcionales** en esta iteración — no bloquean la transición a `COMPLETED`. Si la operación demuestra que debe ser obligatorio, se abrirá una tarea específica para convertir la advertencia en regla de negocio.
+
+**Deuda heredada (NO introducida por este cambio — verificada por historial de git antes de implementar):** el catálogo de usuarios con rol `TECHNICIAN` está vacío desde el origen del sistema (`findTechnicians()` con ese filtro existe desde el commit `aaef93b`, 2026-07-07; el único usuario real, Mario Márquez, tiene rol `ADMIN`, creado 2026-07-16). El selector de ejecutores aparece vacío en la práctica — **misma limitación preexistente** que ya tenía el selector de "Técnico asignado" (comparten `useTechnicians()`/`GET /users/technicians`). No es una regresión de este cambio; es falta de datos operativos (crear usuarios con rol técnico), no de arquitectura.
+
+---
+
 ## Resumen ejecutivo del backlog — por impacto (referencia de priorización)
 
 > Se actualiza al cierre de cada módulo. Ordena todos los hallazgos abiertos según su impacto en los objetivos del proyecto (migración histórica → salida comercial → UX → mejora futura), no por módulo. Cobertura actual: Clientes/Sedes/Equipos, Portal QR, Cotización, Orden de Trabajo, Acta Técnica, Cuenta de Cobro, Contratos/Planes/Visitas. *(Pendiente: Dashboard, Hoja de Vida.)*
@@ -443,12 +516,15 @@ Al terminar la validación del último módulo se generará **`docs/validation/e
 | `files` | Polimórfico `entityType + entityId` |
 | `documents` | PDF on-demand: Cotización, Acta Técnica, Cuenta de Cobro. Congelado. |
 | `public` | Portal QR público — `GET /public/equipment/:qrCode`. Sin JWT (`@Public()`). Throttle 30 req/min. DTO de salida explícito. |
+| `resource-utilizations` | Sub-recurso de `work-orders` (2026-07-28). Entity local del agregado OT — hecho técnico sin economía. |
+| `billing-preparations` | Aggregate Root propio (2026-07-28). Decisión económica por elemento de la OT (cobrar/absorber); resultado derivado, no persistido. |
+| `finance` | **Nuevo (2026-08-02).** Solo lectura/derivado sobre Operaciones+Facturación. `GET /finance/{ping,receivable,pulse,attention,clients/:id}`. Ver § *Módulo Finanzas — Escenario 1*. |
 
 ### Infraestructura
 
 - **NestJS v11** · **Prisma ORM v7** · PostgreSQL `localhost:5433` / `erp_emprendedores`
 - Cliente Prisma en `src/generated/prisma/`; `moduleFormat = "cjs"`
-- **12 migraciones aplicadas**; última: `20260708000001_hito_qr_phase1_qrcode_on_equipment`
+- **16 migraciones aplicadas**; última: `20260802061236_add_work_order_technicians`
 - **Cadena de guards (congelada):** `ThrottlerGuard` → `JwtAuthGuard` → `RolesGuard`
 - `PublicModule` usa `@Public()` a nivel de controlador — exento de `JwtAuthGuard` y `RolesGuard`; sujeto a `ThrottlerGuard` con override `30 req/min`
 - **CORS multi-origen:** `CORS_ORIGIN` (ERP, default `localhost:5173`) + `PORTAL_ORIGIN` (portal QR, default `localhost:5174`). Función de validación — orígenes no listados son rechazados.
@@ -879,6 +955,8 @@ Lista de verificación obligatoria antes de cualquier presentación a clientes, 
 | Decisión | Justificación |
 |----------|---------------|
 | FK circular `WorkOrder ↔ MaintenanceVisit` resuelta unidireccionalmente | Solo `MaintenanceVisit.workOrderId @unique`. WorkOrder recibe back-reference Prisma sin columna extra. |
+| Finanzas nunca recalcula: `InvoicesService.getSummary()` como fuente única del receivable global | `finance.service.ts` (T-08) lee `getSummary()` para el titular y solo deriva el detalle (aging/por-cliente), protegido por invariantes `Decimal.equals()` — evita una segunda fórmula de negocio para el mismo concepto. |
+| `WorkOrderTechnician`: la OT es la fuente de verdad de la ejecución; el Acta/PDF solo leen | Evita que un hecho de accountability (quién ejecutó) dependa de un documento opcional (el Acta no es obligatoria para completar una OT). Coherente con §5.2 del Modelo de Dominio, ya congelado. |
 | `OVERDUE` computado, no persistido | Evita estado desincronizado y jobs de actualización. |
 | `ServiceRecord.equipmentId` eliminado | Con `WorkOrder.equipmentId` era redundante y fuente de inconsistencia. |
 | `Invoice.workOrderId` nullable + CHECK constraint | Hito 13 requiere facturas por contrato. El CHECK garantiza siempre una referencia. No expresable en Prisma — añadida como SQL raw en migración. |
@@ -948,3 +1026,9 @@ Ejemplo: `https://portal.stechnodes.com/e/d1Fiqw8QJzBS`
 *Actualizado: 2026-07-16 — v2.8.0 — Fase de validación funcional CERRADA (`docs/validation/erp-validation-report-v1.0.md`). **En curso: fase de OPERACIÓN REAL.** Base limpiada y numeraciones reiniciadas; admin definitivo único `mario@stechnodes.com` (bootstrap OK); Postgres `restart=always`. El operador comenzó a poblar datos maestros — hoy en BD: 1 cliente (Emmanuel), 0 sedes, 0 equipos. Plan: poblar maestros de Emmanuel → operar hacia adelante → organizar en paralelo la documentación histórica. **Migración histórica de Emmanuel diferida** a fase posterior basada en evidencia (se diseñará un cargador acotado que resuelve OT-4/MNT-1 solo para migración, sin tocar la operación en vivo). OT-4, MNT-1 y RFC-4 congelados como backlog de arquitectura. Workaround MNT-1: un plan por equipo.*
 
 **⏸️ PAUSA 2026-07-16 ~15:45 — retomar en ~3h.** Punto exacto: el operador está poblando los datos maestros de Emmanuel (creado el cliente; faltan sedes, equipos, contrato, plan). Al retomar: continuar la carga de maestros y comenzar a operar hacia adelante; Claude actúa como auditor de producto (corrige en el momento lo que bloquee operación/UX, el resto al backlog). Respaldos en scratchpad de la sesión (`erp_operacion_*.sql`). Servidores los gestiona el operador.
+
+---
+
+*Actualizado: 2026-08-02 — v2.10.0 — **Cierre de bloque de trabajo: Módulo Finanzas Escenario 1 (Fundación) CERRADO + `WorkOrderTechnician` CERRADO.** Ver § *Módulo Finanzas — Escenario 1* y § *WorkOrderTechnician* (arriba, antes de § Resumen ejecutivo del backlog) para el detalle completo — arquitectura, decisiones, deudas técnicas registradas e incrementos deliberadamente diferidos. `develop` queda **29 commits adelante de `origin/develop`, sin push**. Backend: `nest build` limpio en cada tarea. Frontend: `tsc -b` sin errores nuevos (baseline heredado de 9 errores, no relacionado, registrado como deuda de estabilización separada — no mezclar con roadmap funcional). Ambos bloques quedan tratados como incrementos cerrados: no se reabren salvo apertura explícita de una tarea nueva (mismo criterio que el incremento Utilización→Preparación→Cuenta de Cobro).*
+
+**⏸️ CIERRE 2026-08-02 — proyecto estabilizado, sin trabajo en curso.** No hay ningún punto exacto de "continuar aquí": T-06…T-15 (Finanzas) y `WorkOrderTechnician` quedaron implementados, verificados y commiteados de punta a punta, sin tareas a medias. Antes de retomar: (1) decidir si se hace `git push` de los 29 commits pendientes de `develop`; (2) revisar si conviene abrir la tarea de estabilización del baseline TypeScript (9 errores heredados, independiente de Finanzas); (3) si el próximo bloque es `PulsoPage` (consumir `/finance/pulse` y `/finance/attention`, hoy sin UI), o crear usuarios con rol `TECHNICIAN` (el selector de ejecutores/asignado está vacío en la práctica), o un tema nuevo — ninguno de los tres está iniciado.

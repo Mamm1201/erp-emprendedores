@@ -4,6 +4,61 @@
 
 ---
 
+## v2.10.0 — `WorkOrderTechnician`: ejecutores reales de la OT (2026-08-02)
+
+La Orden de Trabajo es la fuente de verdad de la ejecución (coherente con §5.2 del Modelo de Dominio, ya congelado: "quién la ejecutó o gestionó"); el Acta Técnica y su PDF son evidencia derivada — nunca almacenan ejecutores de forma independiente.
+
+### Contexto
+Las OT y Actas Técnicas no registraban quién ejecutó realmente la intervención — solo existía `assignedToId` (responsable/asignado en planeación, singular). Análisis de dominio (sin código) determinó: anclar los ejecutores a la OT, no al Acta, porque el Acta es opcional (una OT puede completarse sin ella) y el historial del activo debe sobrevivir independientemente de la existencia del documento.
+
+### Backend
+- `prisma/schema.prisma` — nuevo modelo `WorkOrderTechnician` (N:N `WorkOrder↔User`): `id`/`workOrderId`/`userId`/`createdAt`, `@@unique([workOrderId,userId])`. Sin `role`/`isLead` (sin evidencia de negocio). Migración `20260802061236_add_work_order_technicians`, 100% aditiva (verificado: solo `CREATE TABLE`, sin `ALTER`).
+- `work-orders.service.ts` — `findOne` expone `technicians` (detalle únicamente, mismo patrón que `invoice.paidTotal`); nuevo `setTechnicians()` reemplaza el conjunto completo en transacción.
+- `work-orders.controller.ts` — `PATCH /work-orders/:id/technicians`.
+- `dto/update-work-order-technicians.dto.ts` — nuevo, `technicianIds: string[]`.
+- `documents.service.ts` / `service-record-pdf.dto.ts` — `technicianNames: string[]` leído desde la OT.
+- `templates/ServiceRecordDocument.tsx` — línea "Técnicos que intervinieron" en el cuerpo del informe, solo si la lista no está vacía. El bloque de firma sigue usando el `technicianName` singular (`assignedTo`), sin cambio.
+
+### Frontend
+- `TechniciansCard.tsx` (nuevo) — checklist de técnicos en el detalle de OT, reutilizando `useTechnicians()` ya existente (cero endpoint nuevo para el selector). Advertencia no bloqueante cuando la OT está `COMPLETED` sin ejecutores.
+- `use-work-orders.ts` — `useSetWorkOrderTechnicians()`.
+- `lib/types.ts` — `WorkOrder.technicians?: {id,name}[]`.
+
+### Verificación
+- Migración verificada transaccionalmente contra Postgres real (constraint `@@unique` probado).
+- `nest build` y `tsc -b` limpios (baseline de 9 errores heredados sin cambio).
+- `assignedToId` sin cambios de semántica; `ServiceRecord`/Finanzas intactos.
+- Deuda heredada verificada por historial de git (no introducida por este cambio): el catálogo de usuarios con rol `TECHNICIAN` está vacío desde el origen del sistema.
+
+---
+
+## v2.9.0 — Módulo Finanzas — Escenario 1 (Fundación) (2026-07-30 a 2026-08-02)
+
+Contexto Finanzas **derivado y de solo lectura** sobre Operaciones/Facturación. 10 tareas (T-06…T-15), cada una con ciclo disciplinado análisis→validación→implementación→autoauditoría→commit, autorizada individualmente. Detalle completo en `IMPLEMENTATION_PLAN_FINANCE_SCENARIO_1.md` y en `DEVELOPMENT_CONTEXT.md` § *Módulo Finanzas — Escenario 1*.
+
+### Backend — módulo `finance` (T-06…T-10)
+- `GET /finance/ping` — andamiaje del módulo.
+- `GET /finance/clients/:clientId` — rollup económico por cliente (facturado/costo/margen/nº OT), fuente única reutilizada por T-08 y T-15.
+- `GET /finance/receivable` — aging (5 tramos) + cartera por cliente + concentración; titular tomado de `InvoicesService.getSummary()` (intacto), detalle protegido por invariantes `Decimal.equals()`.
+- `GET /finance/pulse` — embudo del ciclo económico + margen bruto global.
+- `GET /finance/attention` — 4 listas de atención (vencidas/sin facturar/sin costos/margen negativo).
+
+### Frontend
+- T-05 — aviso "sin costos" en `CostSummaryCard`.
+- T-11 — **Cartera** reemplaza Estado de cuentas sobre `/finance/receivable`.
+- T-12 — columna Saldo + filtros Cliente/Antigüedad en `InvoicesPage` (dominio Facturación).
+- T-13 — histórico 12m movido a `PaymentsPage`.
+- T-14 — ruta `/clientes/:id` (identidad + shell de economía).
+- T-15 — vista de rentabilidad del cliente, exclusivamente sobre `GET /finance/clients/:clientId`.
+
+### Verificación
+- `nest build` y `tsc -b` limpios en cada una de las 10 tareas (baseline de 9 errores heredados, no relacionado con Finanzas, sin cambio).
+- Lógica verificada contra datos reales de la BD en cada tarea (no solo contra el código).
+- `InvoicesService.getSummary()` nunca modificado; contratos de T-07/T-08 intactos en todas las tareas posteriores que los consumieron.
+- `GET /finance/pulse` y `GET /finance/attention` quedan sin consumidor en frontend (documentado como roadmap pendiente, no como bug).
+
+---
+
 ## v2.7.0 — Validación: Equipos CE-1/CE-2 (criticality + warrantyExpiresAt) (2026-07-16)
 
 Inicio de la fase de validación de producto. Primera corrección de código de la fase.
