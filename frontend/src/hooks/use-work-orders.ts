@@ -83,6 +83,18 @@ export function useUpdateWorkOrderStatus() {
   });
 }
 
+export function useSetWorkOrderTechnicians() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, technicianIds }: { id: string; technicianIds: string[] }) =>
+      api.patch<WorkOrder>(`/work-orders/${id}/technicians`, { technicianIds }),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['work-orders', id] });
+      qc.invalidateQueries({ queryKey: ['work-orders'] });
+    },
+  });
+}
+
 export function useDeleteWorkOrder() {
   const qc = useQueryClient();
   return useMutation({

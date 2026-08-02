@@ -99,6 +99,10 @@ export class DocumentsService {
         client: { select: { legalName: true, taxId: true } },
         branch: { select: { name: true, address: true, city: true } },
         assignedTo: { select: { name: true } },
+        technicians: {
+          select: { user: { select: { name: true } } },
+          orderBy: { createdAt: 'asc' },
+        },
         serviceRecord: {
           include: {
             checklistItems: { orderBy: { createdAt: 'asc' } },
@@ -130,6 +134,7 @@ export class DocumentsService {
       branchCity: wo.branch?.city ?? null,
 
       technicianName: wo.assignedTo?.name ?? null,
+      technicianNames: wo.technicians.map((t) => t.user.name),
 
       findings: sr.findings,
       activitiesPerformed: sr.activitiesPerformed,

@@ -200,6 +200,7 @@ model User {
   workOrdersCreated  WorkOrder[]           @relation("WorkOrderCreatedBy")
   workOrdersUpdated  WorkOrder[]           @relation("WorkOrderUpdatedBy")
   workOrdersAssigned WorkOrder[]           @relation("WorkOrderAssignedTo")
+  workOrdersExecuted WorkOrderTechnician[] @relation("WorkOrderTechnician")
   invoicesCreated    Invoice[]             @relation("InvoiceCreatedBy")
   paymentsCreated    Payment[]             @relation("PaymentCreatedBy")
   expensesCreated    Expense[]             @relation("ExpenseCreatedBy")
@@ -374,12 +375,34 @@ model WorkOrder {
   updatedBy        User?             @relation("WorkOrderUpdatedBy", fields: [updatedById], references: [id])
   serviceRecord    ServiceRecord?
   maintenanceVisit MaintenanceVisit?
+  technicians      WorkOrderTechnician[]
 
   @@index([clientId, status])
   @@index([assignedToId])
   @@index([completedAt])
   @@index([equipmentId])
   @@map("work_orders")
+}
+
+// ─── Ejecutores de la OT (contexto Operaciones) ────────────────────────────────
+// La OT es la fuente de verdad de la ejecución. Registra quién ejecutó
+// realmente la intervención — distinto de `WorkOrder.assignedToId`
+// (responsable/asignado en planeación). El Acta Técnica y su PDF son evidencia
+// derivada: leen esta relación, nunca la almacenan de forma independiente.
+
+model WorkOrderTechnician {
+  id          String   @id @default(cuid())
+  workOrderId String
+  userId      String
+  createdAt   DateTime @default(now())
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  user      User      @relation("WorkOrderTechnician", fields: [userId], references: [id])
+
+  @@unique([workOrderId, userId])
+  @@index([workOrderId])
+  @@index([userId])
+  @@map("work_order_technicians")
 }
 
 model WorkOrderItem {

@@ -520,6 +520,7 @@ export interface WorkOrder {
   invoice: { id: string; number: string; status: string; total?: string; paidTotal?: string } | null;
   quotation: { id: string; number: string } | null;
   items?: WorkOrderItem[];
+  technicians?: { id: string; name: string }[];
 }
 
 export type ChecklistResult = 'OK' | 'WARNING' | 'FAIL' | 'NA';

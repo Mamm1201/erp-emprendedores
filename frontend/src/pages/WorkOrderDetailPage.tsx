@@ -7,6 +7,7 @@ import { WorkOrderHeader }    from '@/components/work-orders/WorkOrderHeader';
 import { WorkOrderInfoCard }  from '@/components/work-orders/WorkOrderInfoCard';
 import { WorkOrderItemsCard } from '@/components/work-orders/WorkOrderItemsCard';
 import { ResourceUtilizationsCard } from '@/components/work-orders/ResourceUtilizationsCard';
+import { TechniciansCard } from '@/components/work-orders/TechniciansCard';
 import { ServiceRecordCard }  from '@/components/work-orders/ServiceRecordCard';
 import { BillingPreparationCard } from '@/components/work-orders/BillingPreparationCard';
 import { ExpensesCard }       from '@/components/work-orders/ExpensesCard';
@@ -89,6 +90,11 @@ export function WorkOrderDetailPage() {
             workOrderStatus={workOrder.status}
           />
           <EvidencesCard workOrderId={workOrder.id} />
+          <TechniciansCard
+            workOrderId={workOrder.id}
+            workOrderStatus={workOrder.status}
+            technicians={workOrder.technicians ?? []}
+          />
           <ServiceRecordCard workOrderId={workOrder.id} />
           <BillingPreparationCard workOrder={workOrder} />
           <ExpensesCard workOrderId={workOrder.id} workOrderStatus={workOrder.status} />

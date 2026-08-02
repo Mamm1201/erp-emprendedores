@@ -17,6 +17,7 @@ import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { QueryWorkOrdersDto } from './dto/query-work-orders.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { UpdateWorkOrderStatusDto } from './dto/update-work-order-status.dto';
+import { UpdateWorkOrderTechniciansDto } from './dto/update-work-order-technicians.dto';
 
 @Controller('work-orders')
 export class WorkOrdersController {
@@ -49,6 +50,14 @@ export class WorkOrdersController {
   @Patch(':id/status')
   updateStatus(@Param('id') id: string, @Body() dto: UpdateWorkOrderStatusDto) {
     return this.workOrdersService.updateStatus(id, dto);
+  }
+
+  @Patch(':id/technicians')
+  setTechnicians(
+    @Param('id') id: string,
+    @Body() dto: UpdateWorkOrderTechniciansDto,
+  ) {
+    return this.workOrdersService.setTechnicians(id, dto);
   }
 
   @Delete(':id')

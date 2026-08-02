@@ -185,6 +185,13 @@ export function ServiceRecordDocument({ data }: { data: ServiceRecordPdfDto }) {
 
       <ChecklistSection items={data.checklistItems} />
 
+      {data.technicianNames.length > 0 && (
+        <NarrativeField
+          label="Técnicos que intervinieron"
+          value={data.technicianNames.join(', ')}
+        />
+      )}
+
       {/* Firma */}
       <View style={s.signatureBlock}>
         <View style={s.signatureBox}>

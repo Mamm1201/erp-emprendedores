@@ -23,6 +23,7 @@ import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { QueryWorkOrdersDto } from './dto/query-work-orders.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { UpdateWorkOrderStatusDto } from './dto/update-work-order-status.dto';
+import { UpdateWorkOrderTechniciansDto } from './dto/update-work-order-technicians.dto';
 import { WorkOrderItemDto } from './dto/work-order-item.dto';
 
 const ALLOWED_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
@@ -89,6 +90,10 @@ export class WorkOrdersService {
           },
         },
         serviceRecord: { select: { id: true } },
+        technicians: {
+          select: { user: { select: { id: true, name: true } } },
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
 
@@ -96,13 +101,47 @@ export class WorkOrdersService {
       throw new NotFoundException(`WorkOrder with id "${id}" not found`);
     }
 
+    const technicians = workOrder.technicians.map((t) => t.user);
+
     if (workOrder.invoice) {
       const { payments, ...invoice } = workOrder.invoice;
       const paidTotal = sumMoney(payments.map((p) => toMoney(p.amount)));
-      return { ...workOrder, invoice: { ...invoice, paidTotal } };
+      return { ...workOrder, technicians, invoice: { ...invoice, paidTotal } };
     }
 
-    return workOrder;
+    return { ...workOrder, technicians };
+  }
+
+  // Reemplaza el conjunto completo de ejecutores de la OT. La OT es la fuente
+  // de verdad de la ejecución (distinta de assignedToId, el responsable
+  // asignado en planeación); el Acta Técnica y su PDF solo leen esta relación.
+  async setTechnicians(id: string, dto: UpdateWorkOrderTechniciansDto) {
+    const workOrder = await this.prisma.workOrder.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true },
+    });
+    if (!workOrder) {
+      throw new NotFoundException(`WorkOrder with id "${id}" not found`);
+    }
+
+    const technicianIds = [...new Set(dto.technicianIds)];
+    if (technicianIds.length > 0) {
+      const count = await this.prisma.user.count({
+        where: { id: { in: technicianIds } },
+      });
+      if (count !== technicianIds.length) {
+        throw new BadRequestException('One or more technicianIds are invalid');
+      }
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.workOrderTechnician.deleteMany({ where: { workOrderId: id } }),
+      this.prisma.workOrderTechnician.createMany({
+        data: technicianIds.map((userId) => ({ workOrderId: id, userId })),
+      }),
+    ]);
+
+    return this.findOne(id);
   }
 
   async create(dto: CreateWorkOrderDto, userId: string) {
