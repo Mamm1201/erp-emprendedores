@@ -7,6 +7,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ClientsPage } from '@/pages/ClientsPage';
+import { ClientDetailPage } from '@/pages/ClientDetailPage';
 import { WorkOrdersPage } from '@/pages/WorkOrdersPage';
 import { WorkOrderDetailPage } from '@/pages/WorkOrderDetailPage';
 import { MaintenancePlansPage } from '@/pages/MaintenancePlansPage';
@@ -37,6 +38,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: 'clientes', element: <ClientsPage /> },
+          { path: 'clientes/:id', element: <ClientDetailPage /> },
           { path: 'cotizaciones', element: <QuotationsPage /> },
           { path: 'cotizaciones/nueva', element: <QuotationFormPage /> },
           { path: 'cotizaciones/:id', element: <QuotationFormPage /> },

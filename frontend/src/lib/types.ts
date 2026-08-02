@@ -157,6 +157,15 @@ export interface Receivable {
   concentration: ReceivableConcentration;
 }
 
+// Rollup económico por cliente (módulo Finance · GET /finance/clients/:clientId)
+export interface ClientFinance {
+  clientId: string;
+  invoicedTotal: string;
+  expenseTotal: string;
+  grossMargin: string;
+  workOrderCount: number;
+}
+
 export interface Invoice {
   id: string;
   number: string;

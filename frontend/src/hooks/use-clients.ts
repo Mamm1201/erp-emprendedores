@@ -12,6 +12,15 @@ export interface ClientFormData {
   type?: ClientType;
 }
 
+export function useClient(id: string | null) {
+  return useQuery({
+    queryKey: ['client', id],
+    queryFn: () => api.get<Client>(`/clients/${id}`),
+    enabled: !!id,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
 export function useClients(search = '', page = 1) {
   const params = new URLSearchParams({ page: String(page) });
   if (search.trim()) params.set('search', search.trim());

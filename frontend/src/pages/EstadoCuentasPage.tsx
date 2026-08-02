@@ -136,7 +136,14 @@ export function EstadoCuentasPage() {
             <tbody>
               {r.byClient.map((c) => (
                 <tr key={c.clientId} className="border-b last:border-0">
-                  <td className="py-2">{c.clientName}</td>
+                  <td className="py-2">
+                    <button
+                      className="text-[hsl(var(--primary))] hover:underline text-left"
+                      onClick={() => navigate(`/clientes/${c.clientId}`)}
+                    >
+                      {c.clientName}
+                    </button>
+                  </td>
                   <td className="py-2 text-right tabular-nums text-[hsl(var(--muted-foreground))]">{c.count}</td>
                   <td className="py-2 text-right tabular-nums font-medium">{formatMoney(c.amount)}</td>
                 </tr>
