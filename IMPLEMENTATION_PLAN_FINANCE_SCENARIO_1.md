@@ -314,7 +314,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** —
 - **Tamaño:** S · **Clasificación:** Refactor
 - **Criterio de aceptación:** el histórico ya no aparece en Cartera y sí en Pagos; usa `revenueByMonth` de `getSummary`.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`3d469ff`) — solo PaymentsPage.tsx; EstadoCuentasPage.tsx no requería cambios (T-11 ya lo había quitado). Reutiliza useFinancialSummary() y el render tal cual, sin endpoint nuevo.
 
 ### T-14 — Ruta y shell de detalle de cliente (`/clientes/:id`)
 - **Objetivo:** crear la ruta/página de detalle con facetas identidad (CRUD) + economía.
@@ -390,7 +390,7 @@ coinciden con `getSummary`/margen global.
 | T-10 | Listas de atención | M | Fundación | T-06 | ✅ Completed (`dff983b`) |
 | T-11 | Cartera (evolución EstadoCuentas) | L | UX | T-08 | ✅ Completed (`a954629`) |
 | T-12 | Saldo + filtros en InvoicesPage | S | Feature | T-08 | ✅ Completed (`b9a5d3b`) |
-| T-13 | Mover 12m a PaymentsPage | S | Refactor | — | Pending |
+| T-13 | Mover 12m a PaymentsPage | S | Refactor | — | ✅ Completed (`3d469ff`) |
 | T-14 | Ruta/shell detalle de cliente | S | Feature | — | Pending |
 | T-15 | Vista rentabilidad del cliente | M | Feature | T-07, T-14 | Pending |
 | T-16 | PulsoPage | L | Feature | T-09, T-10 | Pending |
