@@ -330,7 +330,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** T-07, T-14
 - **Tamaño:** M · **Clasificación:** Feature
 - **Criterio de aceptación:** jerarquía margen→sustento→salud; consume el rollup único; no re-muestra la cartera.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`5736fb4`) — margen héroe + facturado histórico + nº OT, estados sin-actividad/provisional/margen-negativo/normal (excluyentes por construcción), enlaces a Cartera/OT sin cualificador. Contrato de T-07 intacto. **CIERRA EL ESCENARIO 1 (T-06..T-15).**
 
 ### T-16 — `PulsoPage` (vista nueva)
 - **Objetivo:** la entrada de Finanzas: signos vitales + embudo del ciclo + preview de atención.
@@ -392,7 +392,7 @@ coinciden con `getSummary`/margen global.
 | T-12 | Saldo + filtros en InvoicesPage | S | Feature | T-08 | ✅ Completed (`b9a5d3b`) |
 | T-13 | Mover 12m a PaymentsPage | S | Refactor | — | ✅ Completed (`3d469ff`) |
 | T-14 | Ruta/shell detalle de cliente | S | Feature | — | ✅ Completed (`135a8b9`) |
-| T-15 | Vista rentabilidad del cliente | M | Feature | T-07, T-14 | Pending |
+| T-15 | Vista rentabilidad del cliente | M | Feature | T-07, T-14 | ✅ Completed (`5736fb4`) |
 | T-16 | PulsoPage | L | Feature | T-09, T-10 | Pending |
 | T-17 | Firmeza + período en Pulso | S | UX | T-16 | Pending |
 | T-18 | AtencionPage | M | Feature | T-10 | Pending |
