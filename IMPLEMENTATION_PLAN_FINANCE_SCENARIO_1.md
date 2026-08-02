@@ -306,7 +306,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** T-08
 - **Tamaño:** S · **Clasificación:** Feature
 - **Criterio de aceptación:** columna saldo = total − pagado; filtro por antigüedad y cliente funciona.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`b9a5d3b`) — dominio Facturación (autorizado); paidTotal en findAll + filtro aging (5 tramos, solo ISSUED/PARTIALLY_PAID). Verificado: nest build, tsc -b sin errores nuevos, lógica contra BD real. Validación visual no ejecutada (limitación de herramienta, no bloqueante).
 
 ### T-13 — Mover histórico 12 meses a `PaymentsPage`
 - **Objetivo:** reubicar la tendencia de ingresos cobrados 12m (recaudo) a su superficie.
@@ -389,7 +389,7 @@ coinciden con `getSummary`/margen global.
 | T-09 | Embudo + margen global (pulse) | M | Fundación | T-06 | ✅ Completed (`a36af57`) |
 | T-10 | Listas de atención | M | Fundación | T-06 | ✅ Completed (`dff983b`) |
 | T-11 | Cartera (evolución EstadoCuentas) | L | UX | T-08 | ✅ Completed (`a954629`) |
-| T-12 | Saldo + filtros en InvoicesPage | S | Feature | T-08 | Pending |
+| T-12 | Saldo + filtros en InvoicesPage | S | Feature | T-08 | ✅ Completed (`b9a5d3b`) |
 | T-13 | Mover 12m a PaymentsPage | S | Refactor | — | Pending |
 | T-14 | Ruta/shell detalle de cliente | S | Feature | — | Pending |
 | T-15 | Vista rentabilidad del cliente | M | Feature | T-07, T-14 | Pending |
