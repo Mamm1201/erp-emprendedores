@@ -322,7 +322,7 @@ coinciden con `getSummary`/margen global.
 - **Dependencias:** —
 - **Tamaño:** S · **Clasificación:** Feature
 - **Criterio de aceptación:** `/clientes/:id` navegable; muestra identidad y un contenedor para economía.
-- **Estado:** Pending
+- **Estado:** ✅ Completed (`135a8b9`) — identidad solo lectura (GET /clients/:id existente) + contenedor de economía conectado a GET /finance/clients/:clientId (T-07) que solo verifica disponibilidad (loading/vacío/error), sin métricas. Navegación desde Cartera. Backend intacto.
 
 ### T-15 — Vista de rentabilidad del cliente
 - **Objetivo:** la lectura económica del cliente (margen héroe → sustento → salud de cobro → acciones).
@@ -391,7 +391,7 @@ coinciden con `getSummary`/margen global.
 | T-11 | Cartera (evolución EstadoCuentas) | L | UX | T-08 | ✅ Completed (`a954629`) |
 | T-12 | Saldo + filtros en InvoicesPage | S | Feature | T-08 | ✅ Completed (`b9a5d3b`) |
 | T-13 | Mover 12m a PaymentsPage | S | Refactor | — | ✅ Completed (`3d469ff`) |
-| T-14 | Ruta/shell detalle de cliente | S | Feature | — | Pending |
+| T-14 | Ruta/shell detalle de cliente | S | Feature | — | ✅ Completed (`135a8b9`) |
 | T-15 | Vista rentabilidad del cliente | M | Feature | T-07, T-14 | Pending |
 | T-16 | PulsoPage | L | Feature | T-09, T-10 | Pending |
 | T-17 | Firmeza + período en Pulso | S | UX | T-16 | Pending |
