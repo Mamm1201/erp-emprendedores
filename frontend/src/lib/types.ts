@@ -171,6 +171,7 @@ export interface Invoice {
   discountTotal: string;
   taxTotal: string;
   total: string;
+  paidTotal?: string; // Σ pagos no anulados (expuesto por el listado y el detalle)
   voidedAt: string | null;
   voidReason: string | null;
   createdAt: string;

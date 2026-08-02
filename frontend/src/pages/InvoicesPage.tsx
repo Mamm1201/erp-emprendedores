@@ -4,7 +4,8 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Plus, Search, Eye } from 'lucide-react';
 
-import { useInvoices } from '@/hooks/use-invoices';
+import { useInvoices, type InvoiceAging } from '@/hooks/use-invoices';
+import { useClients } from '@/hooks/use-clients';
 import type { InvoiceStatus } from '@/lib/types';
 import { formatMoney } from '@/lib/money';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,18 @@ const STATUS_FILTERS: { value: InvoiceStatus | ''; label: string }[] = [
   { value: 'VOID', label: 'Anuladas' },
 ];
 
+const AGING_OPTIONS: { value: InvoiceAging | ''; label: string }[] = [
+  { value: '', label: 'Toda antigüedad' },
+  { value: 'NOT_DUE', label: 'No vencido' },
+  { value: 'D1_30', label: '1–30 días' },
+  { value: 'D31_60', label: '31–60 días' },
+  { value: 'D61_90', label: '61–90 días' },
+  { value: 'D90_PLUS', label: '90+ días' },
+];
+
+const SELECT_CLASS =
+  'h-9 rounded-md border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]';
+
 
 
 export function InvoicesPage() {
@@ -47,6 +60,8 @@ export function InvoicesPage() {
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('');
+  const [clientFilter, setClientFilter] = useState('');
+  const [agingFilter, setAgingFilter] = useState<InvoiceAging | ''>('');
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -54,7 +69,16 @@ export function InvoicesPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const { data, isLoading, isError } = useInvoices({ search, status: statusFilter, page });
+  const { data: clientsData } = useClients('', 1);
+  const clients = clientsData?.data ?? [];
+
+  const { data, isLoading, isError } = useInvoices({
+    search,
+    status: statusFilter,
+    clientId: clientFilter,
+    aging: agingFilter,
+    page,
+  });
   const invoices = data?.data ?? [];
   const meta = data?.meta;
 
@@ -103,6 +127,29 @@ export function InvoicesPage() {
         </div>
       </div>
 
+      {/* Filtros: cliente + antigüedad */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <select
+          className={SELECT_CLASS}
+          value={clientFilter}
+          onChange={(e) => { setClientFilter(e.target.value); setPage(1); }}
+        >
+          <option value="">Todos los clientes</option>
+          {clients.map((c) => (
+            <option key={c.id} value={c.id}>{c.tradeName ?? c.legalName}</option>
+          ))}
+        </select>
+        <select
+          className={SELECT_CLASS}
+          value={agingFilter}
+          onChange={(e) => { setAgingFilter(e.target.value as InvoiceAging | ''); setPage(1); }}
+        >
+          {AGING_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Table */}
       <div className="rounded-md border overflow-x-auto">
         <table className="w-full text-sm">
@@ -114,20 +161,21 @@ export function InvoicesPage() {
               <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))] hidden md:table-cell whitespace-nowrap">Emisión</th>
               <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))] hidden lg:table-cell whitespace-nowrap">Vencimiento</th>
               <th className="px-4 py-3 text-right font-medium text-[hsl(var(--muted-foreground))] whitespace-nowrap">Total</th>
+              <th className="px-4 py-3 text-right font-medium text-[hsl(var(--muted-foreground))] whitespace-nowrap">Saldo</th>
               <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))]">Estado</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {isLoading && (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">Cargando…</td></tr>
+              <tr><td colSpan={9} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">Cargando…</td></tr>
             )}
             {isError && (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-[hsl(var(--destructive))]">Error al cargar las cuentas de cobro.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-10 text-center text-[hsl(var(--destructive))]">Error al cargar las cuentas de cobro.</td></tr>
             )}
             {!isLoading && !isError && invoices.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">
+                <td colSpan={9} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">
                   No hay cuentas de cobro para los filtros aplicados
                 </td>
               </tr>
@@ -165,6 +213,9 @@ export function InvoicesPage() {
                   </td>
                   <td className="px-4 py-3 text-right font-medium tabular-nums whitespace-nowrap">
                     {formatMoney(inv.total)}
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                    {formatMoney((parseFloat(inv.total) - parseFloat(inv.paidTotal ?? '0')).toFixed(2))}
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={STATUS_BADGE[inv.status]}>

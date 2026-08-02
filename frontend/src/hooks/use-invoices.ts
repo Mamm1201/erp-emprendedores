@@ -41,11 +41,14 @@ export interface CreatePaymentData {
   notes?: string;
 }
 
+export type InvoiceAging = 'NOT_DUE' | 'D1_30' | 'D31_60' | 'D61_90' | 'D90_PLUS';
+
 interface InvoiceFilters {
   search?: string;
   status?: InvoiceStatus | '';
   clientId?: string;
   contractId?: string;
+  aging?: InvoiceAging | '';
   page?: number;
 }
 
@@ -55,6 +58,7 @@ export function useInvoices(filters: InvoiceFilters = {}) {
   if (filters.status) params.set('status', filters.status);
   if (filters.clientId) params.set('clientId', filters.clientId);
   if (filters.contractId) params.set('contractId', filters.contractId);
+  if (filters.aging) params.set('aging', filters.aging);
 
   return useQuery({
     queryKey: ['invoices', filters],

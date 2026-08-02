@@ -29,7 +29,7 @@ import {
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { CreateInvoiceFromPreparationDto } from './dto/create-invoice-from-preparation.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import { QueryInvoicesDto } from './dto/query-invoices.dto';
+import { InvoiceAging, QueryInvoicesDto } from './dto/query-invoices.dto';
 import { UpdateInvoiceStatusDto } from './dto/update-invoice-status.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { VoidPaymentDto } from './dto/void-payment.dto';
@@ -68,7 +68,10 @@ export class InvoicesService {
     const [data, total] = await Promise.all([
       this.prisma.invoice.findMany({
         where,
-        select: INVOICE_SELECT,
+        select: {
+          ...INVOICE_SELECT,
+          payments: { where: { voidedAt: null }, select: { amount: true } },
+        },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -76,8 +79,15 @@ export class InvoicesService {
       this.prisma.invoice.count({ where }),
     ]);
 
+    // paidTotal por factura (mismo criterio que T-01: Σ pagos no anulados). La
+    // colección payments no forma parte del contrato de la lista.
+    const dataWithPaid = data.map(({ payments, ...invoice }) => ({
+      ...invoice,
+      paidTotal: sumMoney(payments.map((p) => toMoney(p.amount))),
+    }));
+
     return {
-      data,
+      data: dataWithPaid,
       meta: {
         page,
         limit,
@@ -536,8 +546,26 @@ export class InvoicesService {
     const where: Prisma.InvoiceWhereInput = {};
 
     if (query.clientId) where.clientId = query.clientId;
-    if (query.status) where.status = query.status;
     if (query.contractId) where.contractId = query.contractId;
+
+    if (query.aging) {
+      // La antigüedad solo aplica a cartera (ISSUED/PARTIALLY_PAID); DRAFT/PAID/
+      // VOID no participan y quedan fuera. Si el estado pedido es incompatible,
+      // la lista queda vacía a propósito.
+      const agingStatuses: InvoiceStatus[] = [
+        InvoiceStatus.ISSUED,
+        InvoiceStatus.PARTIALLY_PAID,
+      ];
+      where.status =
+        query.status && agingStatuses.includes(query.status)
+          ? query.status
+          : query.status
+            ? { in: [] }
+            : { in: agingStatuses };
+      where.dueDate = this.agingDueDateRange(query.aging);
+    } else if (query.status) {
+      where.status = query.status;
+    }
 
     if (query.fromDate || query.toDate) {
       where.issueDate = {
@@ -557,6 +585,31 @@ export class InvoicesService {
     }
 
     return where;
+  }
+
+  // Traduce un tramo de antigüedad a un rango de dueDate relativo a hoy.
+  private agingDueDateRange(aging: InvoiceAging): Prisma.DateTimeFilter {
+    const now = new Date();
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const minus = (days: number) =>
+      new Date(startOfToday.getTime() - days * 24 * 60 * 60 * 1000);
+
+    switch (aging) {
+      case InvoiceAging.NOT_DUE:
+        return { gte: startOfToday };
+      case InvoiceAging.D1_30:
+        return { gte: minus(30), lt: startOfToday };
+      case InvoiceAging.D31_60:
+        return { gte: minus(60), lt: minus(30) };
+      case InvoiceAging.D61_90:
+        return { gte: minus(90), lt: minus(60) };
+      case InvoiceAging.D90_PLUS:
+        return { lt: minus(90) };
+    }
   }
 
   private buildItemsPayload(items: InvoiceItemDto[]) {

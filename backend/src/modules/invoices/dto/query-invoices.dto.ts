@@ -15,6 +15,16 @@ import {
   INVOICE_MAX_LIMIT,
 } from '../invoices.constants';
 
+// Tramos de antigüedad (sobre dueDate). Solo aplican a cartera (ISSUED /
+// PARTIALLY_PAID); el resto de estados quedan fuera al filtrar por antigüedad.
+export enum InvoiceAging {
+  NOT_DUE = 'NOT_DUE',
+  D1_30 = 'D1_30',
+  D31_60 = 'D31_60',
+  D61_90 = 'D61_90',
+  D90_PLUS = 'D90_PLUS',
+}
+
 export class QueryInvoicesDto {
   @IsOptional()
   @Type(() => Number)
@@ -52,4 +62,8 @@ export class QueryInvoicesDto {
   @IsOptional()
   @IsString()
   contractId?: string;
+
+  @IsOptional()
+  @IsEnum(InvoiceAging)
+  aging?: InvoiceAging;
 }
