@@ -9,6 +9,8 @@ export const CLIENT_SELECT = {
   email: true,
   phone: true,
   notes: true,
+  isIncomeTaxRetentionAgent: true,
+  isIcaRetentionAgent: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.ClientSelect;

@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsNotEmpty,
   IsOptional,
@@ -39,4 +40,10 @@ export class CreateQuotationDto {
   @ValidateNested({ each: true })
   @Type(() => QuotationItemDto)
   items: QuotationItemDto[];
+
+  // Activación manual/opcional del dominio de Retenciones (RETE FUENTE/ICA).
+  // No modifica total/taxTotal — ver QuotationRetentionLine.
+  @IsOptional()
+  @IsBoolean()
+  retentionsApplied?: boolean;
 }

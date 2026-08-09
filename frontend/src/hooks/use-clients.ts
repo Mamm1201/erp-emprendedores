@@ -10,6 +10,8 @@ export interface ClientFormData {
   phone?: string;
   notes?: string;
   type?: ClientType;
+  isIncomeTaxRetentionAgent?: boolean;
+  isIcaRetentionAgent?: boolean;
 }
 
 export function useClient(id: string | null) {

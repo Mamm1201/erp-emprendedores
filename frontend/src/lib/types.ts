@@ -214,6 +214,38 @@ export interface QuotationItem {
   lineTotal: string;
 }
 
+// ─── Retenciones (RETE FUENTE / RETE ICA) ──────────────────────────────────────
+
+export type RetentionConcept = 'RETE_FUENTE' | 'RETE_ICA';
+export type RetentionJurisdiction = 'NACIONAL' | 'BOGOTA' | 'FACATATIVA';
+
+// Espejo de RETENTION_RATE_SELECT (backend) — configuración, GET /retention-rates
+export interface RetentionRate {
+  id: string;
+  concept: RetentionConcept;
+  jurisdiction: RetentionJurisdiction;
+  taxpayerConditionNote: string | null;
+  rate: string;
+  minimumBaseUvt: string | null;
+  uvtValueSnapshot: string | null;
+  legalSource: string;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+}
+
+// Espejo de QUOTATION_RETENTION_LINE_SELECT (backend) — snapshot persistido
+export interface QuotationRetentionLine {
+  id: string;
+  quotationId: string;
+  concept: RetentionConcept;
+  jurisdictionSnapshot: RetentionJurisdiction | null;
+  taxpayerConditionSnapshot: string | null;
+  rateSnapshot: string;
+  legalSourceSnapshot: string;
+  estimatedAmount: string;
+  createdAt: string;
+}
+
 export interface Quotation {
   id: string;
   number: string;
@@ -228,6 +260,7 @@ export interface Quotation {
   discountTotal: string;
   taxTotal: string;
   total: string;
+  retentionsApplied: boolean;
   clientLegalName: string | null;
   clientTaxId: string | null;
   branchName: string | null;
@@ -244,6 +277,7 @@ export interface Quotation {
   client: { id: string; legalName: string; tradeName: string | null };
   branch: { id: string; name: string; city: string | null } | null;
   items?: QuotationItem[];
+  retentionLines?: QuotationRetentionLine[];
   workOrder?: { id: string; number: string; status: string } | null;
 }
 
@@ -288,6 +322,8 @@ export interface Client {
   email: string | null;
   phone: string | null;
   notes: string | null;
+  isIncomeTaxRetentionAgent: boolean;
+  isIcaRetentionAgent: boolean;
   createdAt: string;
   updatedAt: string;
 }

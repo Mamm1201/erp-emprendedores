@@ -32,6 +32,8 @@ const clientSchema = z.object({
   phone:     z.string().max(50).optional().or(z.literal('')),
   notes:     z.string().max(2000).optional().or(z.literal('')),
   type:      z.enum(['COMPANY', 'PERSON']).optional(),
+  isIncomeTaxRetentionAgent: z.boolean().optional(),
+  isIcaRetentionAgent:       z.boolean().optional(),
 });
 
 type ClientSchema = z.infer<typeof clientSchema>;
@@ -45,6 +47,8 @@ function toClientDto(values: ClientSchema): ClientFormData {
     phone:     values.phone     || undefined,
     notes:     values.notes     || undefined,
     type:      values.type,
+    isIncomeTaxRetentionAgent: values.isIncomeTaxRetentionAgent,
+    isIcaRetentionAgent:       values.isIcaRetentionAgent,
   };
 }
 
@@ -77,8 +81,14 @@ function ClientFormModal({ open, onOpenChange, editing }: ClientFormModalProps) 
             phone:     editing.phone     ?? '',
             notes:     editing.notes     ?? '',
             type:      editing.type,
+            isIncomeTaxRetentionAgent: editing.isIncomeTaxRetentionAgent,
+            isIcaRetentionAgent:       editing.isIcaRetentionAgent,
           }
-        : { legalName: '', tradeName: '', taxId: '', email: '', phone: '', notes: '', type: 'COMPANY' },
+        : {
+            legalName: '', tradeName: '', taxId: '', email: '', phone: '', notes: '', type: 'COMPANY',
+            isIncomeTaxRetentionAgent: false,
+            isIcaRetentionAgent: false,
+          },
     );
   }, [open, editing, reset]);
 
@@ -142,6 +152,20 @@ function ClientFormModal({ open, onOpenChange, editing }: ClientFormModalProps) 
             {errors.email && (
               <p className="text-xs text-[hsl(var(--destructive))]">{errors.email.message}</p>
             )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Retenciones</Label>
+            <div className="flex flex-col gap-1.5">
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" {...register('isIncomeTaxRetentionAgent')} className="rounded accent-[hsl(var(--primary))]" />
+                Agente retenedor de RETE FUENTE
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" {...register('isIcaRetentionAgent')} className="rounded accent-[hsl(var(--primary))]" />
+                Agente retenedor de RETE ICA
+              </label>
+            </div>
           </div>
 
           <div className="space-y-1.5">

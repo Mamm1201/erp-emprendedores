@@ -14,6 +14,7 @@ export const QUOTATION_SELECT = {
   discountTotal: true,
   taxTotal: true,
   total: true,
+  retentionsApplied: true,
   clientLegalName: true,
   clientTaxId: true,
   branchName: true,
@@ -34,6 +35,18 @@ export const QUOTATION_SELECT = {
   client: { select: { id: true, legalName: true, tradeName: true } },
   branch: { select: { id: true, name: true, city: true } },
 } satisfies Prisma.QuotationSelect;
+
+export const QUOTATION_RETENTION_LINE_SELECT = {
+  id: true,
+  quotationId: true,
+  concept: true,
+  jurisdictionSnapshot: true,
+  taxpayerConditionSnapshot: true,
+  rateSnapshot: true,
+  legalSourceSnapshot: true,
+  estimatedAmount: true,
+  createdAt: true,
+} satisfies Prisma.QuotationRetentionLineSelect;
 
 export const QUOTATION_ITEM_SELECT = {
   id: true,

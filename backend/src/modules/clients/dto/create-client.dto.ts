@@ -1,5 +1,6 @@
 import { ClientType } from '../../../generated/prisma/client';
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -43,4 +44,14 @@ export class CreateClientDto {
   @IsOptional()
   @IsEnum(ClientType)
   type?: ClientType;
+
+  // Condición de agente retenedor (dominio Retenciones). Opcional, default
+  // false — nunca se asume que un cliente retiene por defecto.
+  @IsOptional()
+  @IsBoolean()
+  isIncomeTaxRetentionAgent?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isIcaRetentionAgent?: boolean;
 }

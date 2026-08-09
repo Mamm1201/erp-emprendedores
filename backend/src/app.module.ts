@@ -18,6 +18,7 @@ import { BillingPreparationsModule } from './modules/billing-preparations/billin
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { FinanceModule } from './modules/finance/finance.module';
+import { RetentionRatesModule } from './modules/retention-rates/retention-rates.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { FilesModule } from './modules/files/files.module';
 import { DocumentsModule } from './modules/documents/documents.module';
@@ -48,6 +49,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     ExpensesModule,
     DashboardModule,
     FinanceModule,
+    RetentionRatesModule,
     FilesModule,
     DocumentsModule,
     MaintenanceContractsModule,

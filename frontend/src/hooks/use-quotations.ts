@@ -17,6 +17,7 @@ export interface QuotationFormData {
   validUntil?: string;
   notes?: string;
   terms?: string;
+  retentionsApplied?: boolean;
   items: QuotationItemFormData[];
 }
 

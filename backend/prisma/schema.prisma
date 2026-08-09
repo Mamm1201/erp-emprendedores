@@ -170,6 +170,19 @@ enum BillingResolutionSource {
   DISCRETIONARY
 }
 
+// ─── Retenciones (RETE FUENTE / RETE ICA) — dominio independiente de IVA ──────
+
+enum RetentionConcept {
+  RETE_FUENTE
+  RETE_ICA
+}
+
+enum RetentionJurisdiction {
+  NACIONAL
+  BOGOTA
+  FACATATIVA
+}
+
 // ─── Secuencias comerciales ──────────────────────────────────────────────────
 
 model DocumentSequence {
@@ -224,6 +237,8 @@ model Client {
   email     String?
   phone     String?
   notes     String?
+  isIncomeTaxRetentionAgent Boolean @default(false)
+  isIcaRetentionAgent       Boolean @default(false)
   deletedAt DateTime?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -280,6 +295,7 @@ model Quotation {
   discountTotal       Decimal         @default(0) @db.Decimal(12, 2)
   taxTotal            Decimal         @default(0) @db.Decimal(12, 2)
   total               Decimal         @default(0) @db.Decimal(12, 2)
+  retentionsApplied   Boolean         @default(false)
   clientLegalName     String?
   clientTaxId         String?
   branchName          String?
@@ -306,6 +322,7 @@ model Quotation {
   workOrder           WorkOrder?
   maintenanceContract MaintenanceContract?
   items               QuotationItem[]
+  retentionLines      QuotationRetentionLine[]
   createdBy           User?               @relation("QuotationCreatedBy", fields: [createdById], references: [id])
   updatedBy           User?               @relation("QuotationUpdatedBy", fields: [updatedById], references: [id])
 
@@ -332,6 +349,50 @@ model QuotationItem {
 
   @@index([quotationId])
   @@map("quotation_items")
+}
+
+// Líneas de retención estimadas de la cotización. Snapshot de RetentionRate en
+// el momento del cálculo — no referencia viva. Se recrea en cada guardado
+// mientras la cotización está en DRAFT; se congela definitivamente al pasar a
+// SENT (junto con clientLegalName/branchCity en buildCommercialSnapshotData).
+model QuotationRetentionLine {
+  id                        String                 @id @default(cuid())
+  quotationId               String
+  concept                   RetentionConcept
+  jurisdictionSnapshot      RetentionJurisdiction?
+  taxpayerConditionSnapshot String?
+  rateSnapshot              Decimal                @db.Decimal(5, 3)
+  legalSourceSnapshot       String
+  estimatedAmount           Decimal                @db.Decimal(12, 2)
+  createdAt                 DateTime               @default(now())
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+  @@map("quotation_retention_lines")
+}
+
+// Configuración de tarifas de retención (RETE FUENTE / RETE ICA). Tabla de
+// configuración pura, sin FK hacia Quotation — se consulta por fecha vigente y
+// se copia (snapshot) a QuotationRetentionLine, nunca se referencia en vivo
+// desde un documento ya generado. Ningún porcentaje se codifica en la
+// aplicación; toda tarifa debe existir aquí con su fuente normativa.
+model RetentionRate {
+  id                    String                @id @default(cuid())
+  concept               RetentionConcept
+  jurisdiction          RetentionJurisdiction
+  taxpayerConditionNote String?
+  rate                  Decimal               @db.Decimal(5, 3)
+  minimumBaseUvt        Decimal?              @db.Decimal(6, 2)
+  uvtValueSnapshot      Decimal?              @db.Decimal(10, 2)
+  legalSource           String
+  effectiveFrom         DateTime              @db.Date
+  effectiveTo           DateTime?             @db.Date
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([concept, jurisdiction])
+  @@map("retention_rates")
 }
 
 // ─── Orden de trabajo ────────────────────────────────────────────────────────

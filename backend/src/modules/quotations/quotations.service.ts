@@ -3,17 +3,25 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, QuotationStatus } from '../../generated/prisma/client';
+import {
+  Prisma,
+  QuotationStatus,
+  RetentionConcept,
+  RetentionJurisdiction,
+} from '../../generated/prisma/client';
 import {
   calculateLineTotals,
+  roundMoney,
   sumMoney,
   toMoney,
 } from '../../common/utils/money.util';
 import { PrismaService } from '../../prisma/prisma.service';
+import { RetentionRatesService } from '../retention-rates/retention-rates.service';
 import {
   QUOTATION_DEFAULT_LIMIT,
   QUOTATION_DEFAULT_PAGE,
   QUOTATION_ITEM_SELECT,
+  QUOTATION_RETENTION_LINE_SELECT,
   QUOTATION_SELECT,
 } from './quotations.constants';
 import { nextQuotationNumber } from './quotations-document.service';
@@ -24,9 +32,20 @@ import { QuotationItemDto } from './dto/quotation-item.dto';
 import { UpdateQuotationDto } from './dto/update-quotation.dto';
 import { UpdateQuotationStatusDto } from './dto/update-quotation-status.dto';
 
+// Ciudad de Branch (texto libre) → jurisdicción de retención (valor
+// controlado). Cualquier ciudad no listada aquí queda sin RETE ICA aplicable
+// — nunca se asume una tarifa por defecto.
+const CITY_TO_JURISDICTION: Record<string, RetentionJurisdiction> = {
+  Bogotá: RetentionJurisdiction.BOGOTA,
+  Facatativá: RetentionJurisdiction.FACATATIVA,
+};
+
 @Injectable()
 export class QuotationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly retentionRatesService: RetentionRatesService,
+  ) {}
 
   async findAll(query: QueryQuotationsDto) {
     const page = query.page ?? QUOTATION_DEFAULT_PAGE;
@@ -65,6 +84,7 @@ export class QuotationsService {
           select: QUOTATION_ITEM_SELECT,
           orderBy: { lineOrder: 'asc' },
         },
+        retentionLines: { select: QUOTATION_RETENTION_LINE_SELECT },
         workOrder: { select: { id: true, number: true, status: true } },
       },
     });
@@ -78,8 +98,18 @@ export class QuotationsService {
 
   async create(dto: CreateQuotationDto, userId: string) {
     await this.ensureActiveClient(dto.clientId);
-    await this.resolveBranch(dto.clientId, dto.branchId);
+    const branch = await this.resolveBranch(dto.clientId, dto.branchId);
     const { items, totals } = this.buildItemsPayload(dto.items);
+
+    const retentionsApplied = dto.retentionsApplied ?? false;
+    const retentionLines = retentionsApplied
+      ? await this.buildRetentionLinesPayload({
+          subtotal: totals.subtotal,
+          discountTotal: totals.discountTotal,
+          branchCity: branch?.city ?? null,
+          asOf: new Date(),
+        })
+      : [];
 
     return this.prisma.$transaction(async (tx) => {
       const number = await nextQuotationNumber(tx);
@@ -97,8 +127,10 @@ export class QuotationsService {
           discountTotal: totals.discountTotal,
           taxTotal: totals.taxTotal,
           total: totals.total,
+          retentionsApplied,
           createdById: userId,
           items: { create: items },
+          retentionLines: { create: retentionLines },
         },
         select: {
           ...QUOTATION_SELECT,
@@ -106,6 +138,7 @@ export class QuotationsService {
             select: QUOTATION_ITEM_SELECT,
             orderBy: { lineOrder: 'asc' },
           },
+          retentionLines: { select: QUOTATION_RETENTION_LINE_SELECT },
         },
       });
     });
@@ -114,18 +147,41 @@ export class QuotationsService {
   async update(id: string, dto: UpdateQuotationDto, userId: string) {
     const quotation = await this.findEditableQuotation(id);
 
+    let branchCity = quotation.branch?.city ?? null;
     if (dto.branchId) {
-      await this.resolveBranch(quotation.clientId, dto.branchId);
+      const branch = await this.resolveBranch(quotation.clientId, dto.branchId);
+      branchCity = branch?.city ?? null;
+    } else if (dto.branchId === null) {
+      branchCity = null;
     }
 
     const itemsPayload = dto.items
       ? this.buildItemsPayload(dto.items)
       : null;
 
+    // Retenciones: recalculables mientras la cotización sigue en DRAFT — no
+    // son un snapshot definitivo todavía (eso ocurre solo al pasar a SENT).
+    const retentionsApplied = dto.retentionsApplied ?? quotation.retentionsApplied;
+    const effectiveSubtotal = itemsPayload
+      ? itemsPayload.totals.subtotal
+      : toMoney(quotation.subtotal);
+    const effectiveDiscountTotal = itemsPayload
+      ? itemsPayload.totals.discountTotal
+      : toMoney(quotation.discountTotal);
+    const retentionLines = retentionsApplied
+      ? await this.buildRetentionLinesPayload({
+          subtotal: effectiveSubtotal,
+          discountTotal: effectiveDiscountTotal,
+          branchCity,
+          asOf: new Date(),
+        })
+      : [];
+
     return this.prisma.$transaction(async (tx) => {
       if (itemsPayload) {
         await tx.quotationItem.deleteMany({ where: { quotationId: id } });
       }
+      await tx.quotationRetentionLine.deleteMany({ where: { quotationId: id } });
 
       return tx.quotation.update({
         where: { id },
@@ -146,6 +202,8 @@ export class QuotationsService {
             total: itemsPayload.totals.total,
             items: { create: itemsPayload.items },
           }),
+          ...(dto.retentionsApplied !== undefined && { retentionsApplied }),
+          retentionLines: { create: retentionLines },
         },
         select: {
           ...QUOTATION_SELECT,
@@ -153,6 +211,7 @@ export class QuotationsService {
             select: QUOTATION_ITEM_SELECT,
             orderBy: { lineOrder: 'asc' },
           },
+          retentionLines: { select: QUOTATION_RETENTION_LINE_SELECT },
         },
       });
     });
@@ -200,6 +259,46 @@ export class QuotationsService {
           )
         : {};
 
+    const selectPayload = {
+      ...QUOTATION_SELECT,
+      items: {
+        select: QUOTATION_ITEM_SELECT,
+        orderBy: { lineOrder: 'asc' as const },
+      },
+      retentionLines: { select: QUOTATION_RETENTION_LINE_SELECT },
+    };
+
+    // Congelamiento definitivo de las retenciones al pasar a SENT: mismo
+    // instante y mecanismo que ya congela clientLegalName/branchCity
+    // (buildCommercialSnapshotData). A partir de aquí la cotización deja de
+    // ser editable (isEditableStatus), así que estas líneas quedan aisladas
+    // de cualquier cambio posterior en RetentionRate.
+    if (dto.status === QuotationStatus.SENT && quotation.retentionsApplied) {
+      const branchCity =
+        'branchCity' in snapshotData ? (snapshotData.branchCity as string | null) : null;
+      const retentionLines = await this.buildRetentionLinesPayload({
+        subtotal: toMoney(quotation.subtotal),
+        discountTotal: toMoney(quotation.discountTotal),
+        branchCity,
+        asOf: new Date(),
+      });
+
+      return this.prisma.$transaction(async (tx) => {
+        await tx.quotationRetentionLine.deleteMany({ where: { quotationId: id } });
+
+        return tx.quotation.update({
+          where: { id },
+          data: {
+            status: dto.status,
+            ...lifecycleData,
+            ...snapshotData,
+            retentionLines: { create: retentionLines },
+          },
+          select: selectPayload,
+        });
+      });
+    }
+
     return this.prisma.quotation.update({
       where: { id },
       data: {
@@ -207,13 +306,7 @@ export class QuotationsService {
         ...lifecycleData,
         ...snapshotData,
       },
-      select: {
-        ...QUOTATION_SELECT,
-        items: {
-          select: QUOTATION_ITEM_SELECT,
-          orderBy: { lineOrder: 'asc' },
-        },
-      },
+      select: selectPayload,
     });
   }
 
@@ -307,6 +400,60 @@ export class QuotationsService {
     };
   }
 
+  // Dominio Retenciones (independiente del cálculo de IVA de arriba). Base de
+  // retención = subtotal − descuentos, SIN IVA. RETE FUENTE es siempre
+  // NACIONAL; RETE ICA depende exclusivamente de la jurisdicción de la sede
+  // (CITY_TO_JURISDICTION). Si no hay tarifa vigente para un concepto (p. ej.
+  // Facatativá hoy), esa línea simplemente no se genera — nunca 0% asumido.
+  private async buildRetentionLinesPayload(params: {
+    subtotal: Prisma.Decimal;
+    discountTotal: Prisma.Decimal;
+    branchCity: string | null;
+    asOf: Date;
+  }): Promise<Prisma.QuotationRetentionLineCreateWithoutQuotationInput[]> {
+    const base = roundMoney(params.subtotal.sub(params.discountTotal));
+    if (base.lte(0)) return [];
+
+    const targets: { concept: RetentionConcept; jurisdiction: RetentionJurisdiction | null }[] = [
+      { concept: RetentionConcept.RETE_FUENTE, jurisdiction: RetentionJurisdiction.NACIONAL },
+      {
+        concept: RetentionConcept.RETE_ICA,
+        jurisdiction: params.branchCity ? (CITY_TO_JURISDICTION[params.branchCity] ?? null) : null,
+      },
+    ];
+
+    const lines: Prisma.QuotationRetentionLineCreateWithoutQuotationInput[] = [];
+
+    for (const target of targets) {
+      if (!target.jurisdiction) continue; // sin jurisdicción determinable (sede no seleccionada o ciudad no soportada)
+
+      const rate = await this.retentionRatesService.resolveRate(
+        target.concept,
+        target.jurisdiction,
+        params.asOf,
+      );
+      if (!rate) continue; // sin tarifa vigente configurada — no se asume 0%
+
+      if (rate.minimumBaseUvt && rate.uvtValueSnapshot) {
+        const minimumBase = toMoney(rate.minimumBaseUvt).mul(toMoney(rate.uvtValueSnapshot));
+        if (base.lt(minimumBase)) continue; // bajo la base mínima — no se practica retención
+      }
+
+      const estimatedAmount = roundMoney(base.mul(toMoney(rate.rate)).div(100));
+
+      lines.push({
+        concept: target.concept,
+        jurisdictionSnapshot: target.jurisdiction,
+        taxpayerConditionSnapshot: rate.taxpayerConditionNote,
+        rateSnapshot: rate.rate,
+        legalSourceSnapshot: rate.legalSource,
+        estimatedAmount,
+      });
+    }
+
+    return lines;
+  }
+
   private async ensureActiveClient(clientId: string) {
     const client = await this.prisma.client.findFirst({
       where: { id: clientId, deletedAt: null },
@@ -372,7 +519,16 @@ export class QuotationsService {
   private async findEditableQuotation(id: string) {
     const quotation = await this.prisma.quotation.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, status: true, clientId: true, branchId: true },
+      select: {
+        id: true,
+        status: true,
+        clientId: true,
+        branchId: true,
+        subtotal: true,
+        discountTotal: true,
+        retentionsApplied: true,
+        branch: { select: { city: true } },
+      },
     });
 
     if (!quotation) {

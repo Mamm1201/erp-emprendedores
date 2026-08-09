@@ -66,6 +66,8 @@ export class ClientsService {
         phone: dto.phone,
         notes: dto.notes,
         type: dto.type,
+        isIncomeTaxRetentionAgent: dto.isIncomeTaxRetentionAgent,
+        isIcaRetentionAgent: dto.isIcaRetentionAgent,
       },
       select: CLIENT_SELECT,
     });

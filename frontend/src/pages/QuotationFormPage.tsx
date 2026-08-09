@@ -18,7 +18,9 @@ import {
 import { useCreateWorkOrder } from '@/hooks/use-work-orders';
 import { useClients } from '@/hooks/use-clients';
 import { useBranches } from '@/hooks/use-branches';
+import { useRetentionRates } from '@/hooks/use-retention-rates';
 import { calcLineTotal, formatMoney } from '@/lib/money';
+import { RetentionsEstimateSection } from '@/components/quotations/RetentionsEstimateSection';
 import type { QuotationStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -72,6 +74,7 @@ const formSchema = z.object({
   validUntil: z.string().optional().or(z.literal('')),
   notes: z.string().max(5000).optional().or(z.literal('')),
   terms: z.string().max(5000).optional().or(z.literal('')),
+  retentionsApplied: z.boolean().optional().default(false),
   items: z.array(itemSchema).min(1, 'Agrega al menos un ítem'),
 });
 
@@ -302,16 +305,36 @@ export function QuotationFormPage() {
       validUntil: '',
       notes: '',
       terms: '',
+      retentionsApplied: false,
       items: [DEFAULT_ITEM],
     },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
   const watchedClientId = watch('clientId');
+  const watchedBranchId = watch('branchId');
+  const watchedRetentionsApplied = watch('retentionsApplied');
   const watchedItems = useWatch({ control, name: 'items' });
   const { data: branches } = useBranches(watchedClientId || null);
+  const { data: retentionRates, isLoading: retentionRatesLoading } = useRetentionRates();
 
   const isReadOnly = isEditing && existing && existing.status !== 'DRAFT';
+
+  const selectedBranch = (branches ?? []).find((b) => b.id === watchedBranchId);
+  const branchCity = selectedBranch?.city ?? (isEditing ? existing?.branchCity ?? null : null);
+
+  let retSubtotal = 0, retDiscountTotal = 0, retTotal = 0;
+  for (const item of watchedItems ?? []) {
+    const { lineSubtotal, lineTotal } = calcLineTotal(
+      item.quantity ?? 0,
+      item.unitPrice ?? 0,
+      item.discountAmount ?? 0,
+      item.taxRate ?? 0,
+    );
+    retSubtotal += lineSubtotal;
+    retDiscountTotal += item.discountAmount ?? 0;
+    retTotal += lineTotal;
+  }
 
   useEffect(() => {
     if (existing) {
@@ -321,6 +344,7 @@ export function QuotationFormPage() {
         validUntil: existing.validUntil ? existing.validUntil.slice(0, 10) : '',
         notes: existing.notes ?? '',
         terms: existing.terms ?? '',
+        retentionsApplied: existing.retentionsApplied,
         items: existing.items?.map((i) => ({
           description: i.description,
           quantity: parseFloat(i.quantity),
@@ -339,6 +363,7 @@ export function QuotationFormPage() {
       validUntil: values.validUntil || undefined,
       notes: values.notes || undefined,
       terms: values.terms || undefined,
+      retentionsApplied: values.retentionsApplied ?? false,
       items: values.items.map((item, idx) => ({
         description: item.description,
         quantity: item.quantity,
@@ -573,6 +598,30 @@ export function QuotationFormPage() {
           </div>
 
           <TotalsFooter items={watchedItems ?? []} />
+        </div>
+
+        {/* Retenciones (RETE FUENTE / RETE ICA) — estimado informativo, no afecta el total */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+            <input
+              type="checkbox"
+              {...register('retentionsApplied')}
+              disabled={!!isReadOnly}
+              className="h-4 w-4 rounded border-[hsl(var(--input))]"
+            />
+            Aplicar retenciones (estimado)
+          </label>
+
+          {watchedRetentionsApplied && (
+            <RetentionsEstimateSection
+              rates={retentionRates ?? []}
+              ratesLoading={retentionRatesLoading}
+              branchCity={branchCity}
+              subtotal={retSubtotal}
+              discountTotal={retDiscountTotal}
+              total={retTotal}
+            />
+          )}
         </div>
 
         {/* Notes + Terms */}
