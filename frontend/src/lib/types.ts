@@ -217,15 +217,18 @@ export interface QuotationItem {
 // ─── Retenciones (RETE FUENTE / RETE ICA) ──────────────────────────────────────
 
 export type RetentionConcept = 'RETE_FUENTE' | 'RETE_ICA';
-export type RetentionJurisdiction = 'NACIONAL' | 'BOGOTA' | 'FACATATIVA';
 
-// Espejo de RETENTION_RATE_SELECT (backend) — configuración, GET /retention-rates
+// Espejo de RETENTION_RATE_SELECT (backend) — configuración, GET /retention-rates.
+// cityLabel es el texto de Branch.city ya resuelto por el backend (null para
+// RETE_FUENTE, nacional); el DIVIPOLA nunca se serializa hacia el frontend.
 export interface RetentionRate {
   id: string;
   concept: RetentionConcept;
-  jurisdiction: RetentionJurisdiction;
+  cityLabel: string | null;
   taxpayerConditionNote: string | null;
-  rate: string;
+  rate: string | null;
+  rateMin: string | null;
+  rateMax: string | null;
   minimumBaseUvt: string | null;
   uvtValueSnapshot: string | null;
   legalSource: string;
@@ -238,11 +241,14 @@ export interface QuotationRetentionLine {
   id: string;
   quotationId: string;
   concept: RetentionConcept;
-  jurisdictionSnapshot: RetentionJurisdiction | null;
   taxpayerConditionSnapshot: string | null;
-  rateSnapshot: string;
+  rateSnapshot: string | null;
+  rateMinSnapshot: string | null;
+  rateMaxSnapshot: string | null;
   legalSourceSnapshot: string;
-  estimatedAmount: string;
+  estimatedAmount: string | null;
+  estimatedAmountMin: string | null;
+  estimatedAmountMax: string | null;
   createdAt: string;
 }
 

@@ -177,12 +177,6 @@ enum RetentionConcept {
   RETE_ICA
 }
 
-enum RetentionJurisdiction {
-  NACIONAL
-  BOGOTA
-  FACATATIVA
-}
-
 // ─── Secuencias comerciales ──────────────────────────────────────────────────
 
 model DocumentSequence {
@@ -356,15 +350,19 @@ model QuotationItem {
 // mientras la cotización está en DRAFT; se congela definitivamente al pasar a
 // SENT (junto con clientLegalName/branchCity en buildCommercialSnapshotData).
 model QuotationRetentionLine {
-  id                        String                 @id @default(cuid())
+  id                        String            @id @default(cuid())
   quotationId               String
   concept                   RetentionConcept
-  jurisdictionSnapshot      RetentionJurisdiction?
+  municipalityCodeSnapshot  String?
   taxpayerConditionSnapshot String?
-  rateSnapshot              Decimal                @db.Decimal(5, 3)
+  rateSnapshot              Decimal?          @db.Decimal(5, 3)
+  rateMinSnapshot           Decimal?          @db.Decimal(5, 3)
+  rateMaxSnapshot           Decimal?          @db.Decimal(5, 3)
   legalSourceSnapshot       String
-  estimatedAmount           Decimal                @db.Decimal(12, 2)
-  createdAt                 DateTime               @default(now())
+  estimatedAmount           Decimal?          @db.Decimal(12, 2)
+  estimatedAmountMin        Decimal?          @db.Decimal(12, 2)
+  estimatedAmountMax        Decimal?          @db.Decimal(12, 2)
+  createdAt                 DateTime          @default(now())
 
   quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
 
@@ -377,22 +375,43 @@ model QuotationRetentionLine {
 // se copia (snapshot) a QuotationRetentionLine, nunca se referencia en vivo
 // desde un documento ya generado. Ningún porcentaje se codifica en la
 // aplicación; toda tarifa debe existir aquí con su fuente normativa.
+// municipalityCode = código DIVIPOLA (DANE); null cuando concept=RETE_FUENTE
+// (retención nacional), obligatorio cuando concept=RETE_ICA (municipal).
+// rate = tarifa puntual; rateMin/rateMax = rango cuando la norma no permite
+// fijar un único valor. Uno u otro, nunca ambos (invariante en CHECK de BD).
 model RetentionRate {
-  id                    String                @id @default(cuid())
+  id                    String            @id @default(cuid())
   concept               RetentionConcept
-  jurisdiction          RetentionJurisdiction
+  municipalityCode      String?
   taxpayerConditionNote String?
-  rate                  Decimal               @db.Decimal(5, 3)
-  minimumBaseUvt        Decimal?              @db.Decimal(6, 2)
-  uvtValueSnapshot      Decimal?              @db.Decimal(10, 2)
+  rate                  Decimal?          @db.Decimal(5, 3)
+  rateMin               Decimal?          @db.Decimal(5, 3)
+  rateMax               Decimal?          @db.Decimal(5, 3)
+  minimumBaseUvt        Decimal?          @db.Decimal(6, 2)
+  uvtValueSnapshot      Decimal?          @db.Decimal(10, 2)
   legalSource           String
-  effectiveFrom         DateTime              @db.Date
-  effectiveTo           DateTime?             @db.Date
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
+  effectiveFrom         DateTime          @db.Date
+  effectiveTo           DateTime?         @db.Date
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
 
-  @@index([concept, jurisdiction])
+  @@index([concept, municipalityCode])
   @@map("retention_rates")
+}
+
+// Alias de resolución ciudad (Branch.city, texto libre) → código DIVIPOLA
+// (DANE). Uso exclusivamente interno del backend — el DIVIPOLA nunca se
+// serializa hacia el frontend; GET /retention-rates devuelve `cityLabel` ya
+// resuelto en su lugar. Agregar una ciudad nueva es una fila aquí + una fila
+// en RetentionRate, sin migración ni redeploy.
+model MunicipalityAlias {
+  id           String   @id @default(cuid())
+  cityLabel    String   @unique
+  divipolaCode String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("municipality_aliases")
 }
 
 // ─── Orden de trabajo ────────────────────────────────────────────────────────

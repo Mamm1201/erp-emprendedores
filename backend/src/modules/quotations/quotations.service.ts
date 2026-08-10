@@ -7,7 +7,6 @@ import {
   Prisma,
   QuotationStatus,
   RetentionConcept,
-  RetentionJurisdiction,
 } from '../../generated/prisma/client';
 import {
   calculateLineTotals,
@@ -31,14 +30,6 @@ import { QueryQuotationsDto } from './dto/query-quotations.dto';
 import { QuotationItemDto } from './dto/quotation-item.dto';
 import { UpdateQuotationDto } from './dto/update-quotation.dto';
 import { UpdateQuotationStatusDto } from './dto/update-quotation-status.dto';
-
-// Ciudad de Branch (texto libre) → jurisdicción de retención (valor
-// controlado). Cualquier ciudad no listada aquí queda sin RETE ICA aplicable
-// — nunca se asume una tarifa por defecto.
-const CITY_TO_JURISDICTION: Record<string, RetentionJurisdiction> = {
-  Bogotá: RetentionJurisdiction.BOGOTA,
-  Facatativá: RetentionJurisdiction.FACATATIVA,
-};
 
 @Injectable()
 export class QuotationsService {
@@ -402,9 +393,11 @@ export class QuotationsService {
 
   // Dominio Retenciones (independiente del cálculo de IVA de arriba). Base de
   // retención = subtotal − descuentos, SIN IVA. RETE FUENTE es siempre
-  // NACIONAL; RETE ICA depende exclusivamente de la jurisdicción de la sede
-  // (CITY_TO_JURISDICTION). Si no hay tarifa vigente para un concepto (p. ej.
-  // Facatativá hoy), esa línea simplemente no se genera — nunca 0% asumido.
+  // nacional (municipalityCode null); RETE ICA depende exclusivamente del
+  // DIVIPOLA resuelto vía MunicipalityAlias a partir de la ciudad de la sede.
+  // Si no hay alias configurado para esa ciudad, o no hay tarifa vigente para
+  // un concepto (p. ej. Facatativá hoy), esa línea simplemente no se genera
+  // — nunca se asume una jurisdicción ni una tarifa por defecto.
   private async buildRetentionLinesPayload(params: {
     subtotal: Prisma.Decimal;
     discountTotal: Prisma.Decimal;
@@ -414,22 +407,25 @@ export class QuotationsService {
     const base = roundMoney(params.subtotal.sub(params.discountTotal));
     if (base.lte(0)) return [];
 
-    const targets: { concept: RetentionConcept; jurisdiction: RetentionJurisdiction | null }[] = [
-      { concept: RetentionConcept.RETE_FUENTE, jurisdiction: RetentionJurisdiction.NACIONAL },
-      {
-        concept: RetentionConcept.RETE_ICA,
-        jurisdiction: params.branchCity ? (CITY_TO_JURISDICTION[params.branchCity] ?? null) : null,
-      },
+    const icaMunicipalityCode = params.branchCity
+      ? await this.retentionRatesService.resolveMunicipalityCode(params.branchCity)
+      : null;
+
+    const targets: { concept: RetentionConcept; municipalityCode: string | null }[] = [
+      { concept: RetentionConcept.RETE_FUENTE, municipalityCode: null },
+      { concept: RetentionConcept.RETE_ICA, municipalityCode: icaMunicipalityCode },
     ];
 
     const lines: Prisma.QuotationRetentionLineCreateWithoutQuotationInput[] = [];
 
     for (const target of targets) {
-      if (!target.jurisdiction) continue; // sin jurisdicción determinable (sede no seleccionada o ciudad no soportada)
+      if (target.concept === RetentionConcept.RETE_ICA && !target.municipalityCode) {
+        continue; // sin jurisdicción determinable (sede no seleccionada o ciudad sin alias configurado)
+      }
 
       const rate = await this.retentionRatesService.resolveRate(
         target.concept,
-        target.jurisdiction,
+        target.municipalityCode,
         params.asOf,
       );
       if (!rate) continue; // sin tarifa vigente configurada — no se asume 0%
@@ -439,16 +435,33 @@ export class QuotationsService {
         if (base.lt(minimumBase)) continue; // bajo la base mínima — no se practica retención
       }
 
-      const estimatedAmount = roundMoney(base.mul(toMoney(rate.rate)).div(100));
-
-      lines.push({
+      const common = {
         concept: target.concept,
-        jurisdictionSnapshot: target.jurisdiction,
+        municipalityCodeSnapshot: target.municipalityCode,
         taxpayerConditionSnapshot: rate.taxpayerConditionNote,
-        rateSnapshot: rate.rate,
         legalSourceSnapshot: rate.legalSource,
-        estimatedAmount,
-      });
+      };
+
+      if (rate.rate !== null) {
+        // Tarifa puntual — caso hoy vigente (RETE FUENTE 6%, RETE ICA Bogotá 9,66‰).
+        lines.push({
+          ...common,
+          rateSnapshot: rate.rate,
+          estimatedAmount: roundMoney(base.mul(toMoney(rate.rate)).div(100)),
+        });
+      } else if (rate.rateMin !== null && rate.rateMax !== null) {
+        // Rango — cuando la norma municipal no permite fijar un único valor.
+        lines.push({
+          ...common,
+          rateMinSnapshot: rate.rateMin,
+          rateMaxSnapshot: rate.rateMax,
+          estimatedAmountMin: roundMoney(base.mul(toMoney(rate.rateMin)).div(100)),
+          estimatedAmountMax: roundMoney(base.mul(toMoney(rate.rateMax)).div(100)),
+        });
+      }
+      // Si ninguna rama aplica, la fila de RetentionRate viola el invariante
+      // punto-o-rango protegido por CHECK en BD — no debería ocurrir; se
+      // ignora defensivamente sin generar una línea inconsistente.
     }
 
     return lines;

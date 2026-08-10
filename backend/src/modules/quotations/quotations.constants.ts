@@ -40,11 +40,15 @@ export const QUOTATION_RETENTION_LINE_SELECT = {
   id: true,
   quotationId: true,
   concept: true,
-  jurisdictionSnapshot: true,
+  municipalityCodeSnapshot: true,
   taxpayerConditionSnapshot: true,
   rateSnapshot: true,
+  rateMinSnapshot: true,
+  rateMaxSnapshot: true,
   legalSourceSnapshot: true,
   estimatedAmount: true,
+  estimatedAmountMin: true,
+  estimatedAmountMax: true,
   createdAt: true,
 } satisfies Prisma.QuotationRetentionLineSelect;
 
