@@ -38,33 +38,40 @@ const s = StyleSheet.create({
   },
 });
 
-const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Borrador',
-  SENT: 'Enviada',
-  APPROVED: 'Aprobada',
-  REJECTED: 'Rechazada',
-  EXPIRED: 'Vencida',
-  CONVERTED: 'Convertida a OT',
-  CANCELLED: 'Cancelada',
-};
+// Distrito Capital escrito de forma inconsistente en los datos (p. ej.
+// "Bogota. DC") se normaliza componiendo "<Ciudad> D.C." a partir del nombre
+// de ciudad ya correcto — nunca se hardcodea un departamento o ciudad
+// específico, solo se reconoce el patrón "DC" como sufijo.
+function isDistritoCapitalLabel(value: string): boolean {
+  const tokens = value.toLowerCase().replace(/\./g, '').trim().split(/\s+/);
+  return tokens[tokens.length - 1] === 'dc';
+}
+
+function formatDepartment(
+  department: string | null | undefined,
+  city: string | null | undefined,
+): string | null | undefined {
+  if (!department) return department;
+  const trimmed = department.trim();
+  if (city && isDistritoCapitalLabel(trimmed)) {
+    return `${city} D.C.`;
+  }
+  return trimmed;
+}
 
 export function QuotationDocument({ data }: { data: QuotationPdfDto }) {
   const clientLeft = [
     { label: 'Cliente', value: data.clientLegalName },
     { label: 'NIT / RUT', value: data.clientTaxId },
+    ...(data.branchAddress ? [{ label: 'Dirección', value: data.branchAddress }] : []),
+    ...(data.branchName ? [{ label: 'Sede', value: data.branchName }] : []),
   ];
 
   const clientRight = [
-    { label: 'Sede', value: data.branchName },
     { label: 'Ciudad', value: data.branchCity },
-    { label: 'Departamento', value: data.branchDepartment },
+    { label: 'Departamento', value: formatDepartment(data.branchDepartment, data.branchCity) },
     { label: 'Contacto', value: data.branchContactName },
     { label: 'Teléfono', value: data.branchContactPhone },
-  ].filter((f) => f.value);
-
-  const docRight = [
-    { label: 'Estado', value: STATUS_LABEL[data.status] ?? data.status },
-    { label: 'Dirección', value: data.branchAddress },
   ].filter((f) => f.value);
 
   return (
@@ -80,7 +87,7 @@ export function QuotationDocument({ data }: { data: QuotationPdfDto }) {
 
       <InfoGrid
         title="Información del cliente"
-        left={[...clientLeft, ...docRight]}
+        left={clientLeft}
         right={clientRight.length > 0 ? clientRight : [{ label: 'Sede', value: 'Sin sede específica' }]}
       />
 
