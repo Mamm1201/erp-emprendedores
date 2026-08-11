@@ -43,7 +43,7 @@ export const COMPANY = {
   tagline: 'Operaciones técnicas, bajo control.',
   city:    'Bogotá D.C.',
   country: 'Colombia',
-  phone:   '+57 (601) 000-0000',
+  phone:   '+57 320 584 1112',
   website: 'www.stechnodes.com',
 
   // Correos por área — usar el específico en cada tipo de documento

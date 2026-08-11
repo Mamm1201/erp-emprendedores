@@ -39,8 +39,8 @@ export function NotFoundPage({ isNetworkError }: Props) {
             </div>
             <div className="contact-row">
               <div className="contact-icon" aria-hidden="true" />
-              <a href="tel:+576010000000" className="contact-link">
-                +57 (601) 000-0000
+              <a href="tel:+573205841112" className="contact-link">
+                +57 320 584 1112
               </a>
             </div>
           </div>
