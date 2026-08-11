@@ -48,7 +48,7 @@ function BrandHeader({ productName }: { productName: string }) {
   return (
     <div className="px-5 py-5 border-b border-[hsl(var(--sidebar-border))]">
       <div className="flex items-center gap-3">
-        <NodeMark className="text-[hsl(var(--sidebar-accent-foreground))] shrink-0" />
+        <NodeMark className="h-10 w-10 text-[hsl(var(--sidebar-accent-foreground))] shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-extrabold tracking-widest uppercase text-[hsl(var(--sidebar-foreground))] leading-none">
             {COMPANY.name}
