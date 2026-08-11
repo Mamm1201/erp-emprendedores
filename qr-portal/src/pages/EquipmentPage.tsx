@@ -167,19 +167,39 @@ function EquipmentView({ equipment }: { equipment: EquipmentPublicDto }) {
               <SectionBlock label="Mantenimiento" rows={maintenanceRows} />
             )}
 
-            {/* Last maintenance (D-4 / D-4.1) */}
+            {/* Last maintenance (D-4 / D-4.1 + distinción preventivo/correctivo) */}
             {state !== 'decommissioned' && (
               equipment.lastMaintenance ? (
-                <SectionBlock
-                  label="Último mantenimiento"
-                  rows={[
-                    { field: 'Fecha', value: formatDate(equipment.lastMaintenance.date) },
-                    {
-                      field: 'Tipo',
-                      value: MAINTENANCE_TYPE_LABEL[equipment.lastMaintenance.type] ?? equipment.lastMaintenance.type,
-                    },
-                  ]}
-                />
+                <>
+                  <SectionBlock
+                    label={
+                      equipment.lastMaintenance.type === 'CORRECTIVE' && equipment.lastPreventiveMaintenance
+                        ? 'Último mantenimiento correctivo'
+                        : 'Último mantenimiento'
+                    }
+                    rows={[
+                      { field: 'Fecha', value: formatDate(equipment.lastMaintenance.date) },
+                      {
+                        field: 'Tipo',
+                        value: MAINTENANCE_TYPE_LABEL[equipment.lastMaintenance.type] ?? equipment.lastMaintenance.type,
+                      },
+                    ]}
+                  />
+                  {equipment.lastMaintenance.type === 'CORRECTIVE' && equipment.lastPreventiveMaintenance && (
+                    <SectionBlock
+                      label="Último mantenimiento preventivo"
+                      rows={[
+                        { field: 'Fecha', value: formatDate(equipment.lastPreventiveMaintenance.date) },
+                        {
+                          field: 'Tipo',
+                          value:
+                            MAINTENANCE_TYPE_LABEL[equipment.lastPreventiveMaintenance.type] ??
+                            equipment.lastPreventiveMaintenance.type,
+                        },
+                      ]}
+                    />
+                  )}
+                </>
               ) : (
                 <section className="section-block">
                   <div className="section-block-label">Último mantenimiento</div>
@@ -191,7 +211,7 @@ function EquipmentView({ equipment }: { equipment: EquipmentPublicDto }) {
             {/* Contact */}
             <ContactCard
               email={contactEmail}
-              phone="+57 (601) 000-0000"
+              phone="+57 320 584 1112"
               label={state === 'contract_expired' ? 'Renovar contrato' : 'Soporte técnico'}
             />
           </div>

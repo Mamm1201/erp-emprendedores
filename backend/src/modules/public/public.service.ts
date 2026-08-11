@@ -13,6 +13,7 @@ interface LastWorkOrderRow {
 }
 
 interface EquipmentPublicRow {
+  id: string;
   qrCode: string | null;
   type: EquipmentType;
   brand: string | null;
@@ -45,6 +46,7 @@ export class PublicService {
     const equipment = await this.prisma.equipment.findUnique({
       where: { qrCode, deletedAt: null },
       select: {
+        id: true,
         qrCode: true,
         type: true,
         brand: true,
@@ -79,19 +81,45 @@ export class PublicService {
       throw new NotFoundException('Equipment not found');
     }
 
-    return this.toPublicDto(equipment);
-  }
-
-  private toPublicDto(equipment: EquipmentPublicRow): EquipmentPublicDto {
     const lastWo = equipment.workOrders[0] ?? null;
 
-    const lastMaintenance: LastMaintenanceDto | null =
-      lastWo?.completedAt
-        ? {
-            date: lastWo.completedAt.toISOString().split('T')[0],
-            type: lastWo.type as 'PREVENTIVE' | 'CORRECTIVE',
-          }
+    // Cuando el último mantenimiento fue correctivo, se busca además el
+    // último preventivo del mismo equipo: mostrar solo el correctivo podría
+    // sugerir que el activo no tiene plan preventivo vigente cuando sí lo
+    // tiene. En los demás casos (preventivo ya es el último, o no hay
+    // ninguno) no hace falta esta segunda consulta.
+    const lastPreventiveWo: LastWorkOrderRow | null =
+      lastWo?.type === WorkOrderType.CORRECTIVE
+        ? await this.prisma.workOrder.findFirst({
+            where: {
+              equipmentId: equipment.id,
+              status: 'COMPLETED',
+              type: WorkOrderType.PREVENTIVE,
+              deletedAt: null,
+            },
+            orderBy: { completedAt: 'desc' },
+            select: { completedAt: true, type: true },
+          })
         : null;
+
+    return this.toPublicDto(equipment, lastPreventiveWo);
+  }
+
+  private toMaintenanceDto(wo: LastWorkOrderRow | null): LastMaintenanceDto | null {
+    return wo?.completedAt
+      ? {
+          date: wo.completedAt.toISOString().split('T')[0],
+          type: wo.type as 'PREVENTIVE' | 'CORRECTIVE',
+        }
+      : null;
+  }
+
+  private toPublicDto(
+    equipment: EquipmentPublicRow,
+    lastPreventiveWo: LastWorkOrderRow | null,
+  ): EquipmentPublicDto {
+    const lastMaintenance = this.toMaintenanceDto(equipment.workOrders[0] ?? null);
+    const lastPreventiveMaintenance = this.toMaintenanceDto(lastPreventiveWo);
 
     return {
       qrCode: equipment.qrCode as string,
@@ -112,6 +140,7 @@ export class PublicService {
         city: equipment.branch.city,
       },
       lastMaintenance,
+      lastPreventiveMaintenance,
     };
   }
 }

@@ -22,6 +22,7 @@ export interface EquipmentPublicDto {
   warrantyExpiresAt: string | null;
   branch: BranchPublicDto;
   lastMaintenance: LastMaintenanceDto | null;
+  lastPreventiveMaintenance: LastMaintenanceDto | null;
 }
 
 export type PortalState =
