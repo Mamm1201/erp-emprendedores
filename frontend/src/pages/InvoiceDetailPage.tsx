@@ -16,6 +16,7 @@ import {
 import type { InvoiceStatus, Payment, PaymentMethod } from '@/lib/types';
 import { formatMoney } from '@/lib/money';
 import { getApiToken } from '@/lib/api';
+import { ShareDocumentButton } from '@/components/shared/ShareDocumentButton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -411,6 +412,7 @@ export function InvoiceDetailPage() {
             <FileDown className="h-4 w-4" />
             Descargar CC
           </Button>
+          <ShareDocumentButton key={invoice.id} type="INVOICE" documentId={invoice.id} documentNumber={invoice.number} />
         </div>
       </div>
 

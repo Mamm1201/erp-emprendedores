@@ -22,6 +22,7 @@ import { RetentionRatesModule } from './modules/retention-rates/retention-rates.
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { FilesModule } from './modules/files/files.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { DocumentSharesModule } from './modules/document-shares/document-shares.module';
 import { MaintenanceContractsModule } from './modules/maintenance-contracts/maintenance-contracts.module';
 import { MaintenanceVisitsModule } from './modules/maintenance-visits/maintenance-visits.module';
 import { PublicModule } from './modules/public/public.module';
@@ -52,6 +53,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     RetentionRatesModule,
     FilesModule,
     DocumentsModule,
+    DocumentSharesModule,
     MaintenanceContractsModule,
     MaintenanceVisitsModule,
     PublicModule,

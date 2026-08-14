@@ -29,6 +29,7 @@ import {
   type UpdateServiceRecordData,
 } from '@/hooks/use-service-records';
 import type { WorkOrder, ChecklistResult, ChecklistItem } from '@/lib/types';
+import { ShareDocumentButton } from '@/components/shared/ShareDocumentButton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -419,6 +420,14 @@ function ViewServiceRecordModal({
                     <FileDown className="h-3.5 w-3.5" />
                     Descargar PDF
                   </Button>
+                )}
+                {workOrder && (
+                  <ShareDocumentButton
+                    key={workOrder.id}
+                    type="SERVICE_RECORD"
+                    documentId={workOrder.id}
+                    documentNumber={workOrder.number}
+                  />
                 )}
               </div>
             )}

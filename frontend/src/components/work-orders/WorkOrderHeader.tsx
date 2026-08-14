@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, Pencil, FileDown, CalendarClock } from 'lucide-reac
 import type { WorkOrder, WorkOrderStatus } from '@/lib/types';
 import { useUpdateWorkOrderStatus, useUpdateWorkOrder } from '@/hooks/use-work-orders';
 import { getApiToken } from '@/lib/api';
+import { ShareDocumentButton } from '@/components/shared/ShareDocumentButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -207,6 +208,9 @@ export function WorkOrderHeader({ workOrder, onCreateInvoice, onViewInvoice, onE
             <FileDown className="h-3.5 w-3.5" />
             Descargar Acta
           </Button>
+        )}
+        {workOrder.serviceRecord && (
+          <ShareDocumentButton key={workOrder.id} type="SERVICE_RECORD" documentId={workOrder.id} documentNumber={number} />
         )}
 
         {/* Cancel */}

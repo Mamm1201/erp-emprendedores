@@ -8,5 +8,6 @@ import { FilesModule } from '../files/files.module';
   imports: [PrismaModule, FilesModule],
   controllers: [DocumentsController],
   providers: [DocumentsService],
+  exports: [DocumentsService],
 })
 export class DocumentsModule {}

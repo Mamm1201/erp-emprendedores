@@ -650,3 +650,14 @@ export interface FileAttachment {
   createdAt: string;
   url: string;
 }
+
+export type DocumentShareType = 'QUOTATION' | 'INVOICE' | 'SERVICE_RECORD';
+
+export interface DocumentShareResult {
+  url: string;
+  expiresAt: string;
+  contact: {
+    email: string | null;
+    phone: string | null;
+  };
+}

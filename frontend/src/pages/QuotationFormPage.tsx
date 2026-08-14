@@ -22,6 +22,7 @@ import { useRetentionRates } from '@/hooks/use-retention-rates';
 import { calcLineTotal, formatMoney } from '@/lib/money';
 import { RetentionsEstimateSection } from '@/components/quotations/RetentionsEstimateSection';
 import type { QuotationStatus } from '@/lib/types';
+import { ShareDocumentButton } from '@/components/shared/ShareDocumentButton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -519,6 +520,7 @@ export function QuotationFormPage() {
               <FileDown className="h-4 w-4" />
               PDF
             </Button>
+            <ShareDocumentButton key={existing.id} type="QUOTATION" documentId={existing.id} documentNumber={existing.number} />
           </div>
         )}
       </div>

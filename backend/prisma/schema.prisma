@@ -212,6 +212,7 @@ model User {
   paymentsCreated    Payment[]             @relation("PaymentCreatedBy")
   expensesCreated    Expense[]             @relation("ExpenseCreatedBy")
   fileAttachments    FileAttachment[]
+  documentShares     DocumentShare[]
   contractsSigned    MaintenanceContract[] @relation("ContractSignedBy")
   resourceUtilizations ResourceUtilization[] @relation("ResourceUtilizationCreatedBy")
   billingPreparationsCreated   BillingPreparation[] @relation("BillingPreparationCreatedBy")
@@ -900,4 +901,38 @@ model FileAttachment {
 
   @@index([entityType, entityId])
   @@map("file_attachments")
+}
+
+// ─── Enlaces públicos de documentos compartidos ────────────────────────────────
+// Snapshot inmutable del PDF al momento de compartir. El endpoint público solo
+// lee storagePath — nunca vuelve a consultar el documento origen, por lo que un
+// share ya emitido nunca cambia aunque el origen se modifique, cambie de estado
+// o se elimine logicamente despues.
+
+enum DocumentShareType {
+  QUOTATION
+  INVOICE
+  SERVICE_RECORD
+}
+
+model DocumentShare {
+  id             String            @id @default(cuid())
+  token          String            @unique
+  type           DocumentShareType
+  sourceId       String
+  sourceNumber   String
+  storagePath    String
+  mimeType       String            @default("application/pdf")
+  sizeBytes      Int
+  createdById    String
+  createdAt      DateTime          @default(now())
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  lastAccessedAt DateTime?
+  accessCount    Int               @default(0)
+
+  createdBy User @relation(fields: [createdById], references: [id])
+
+  @@index([type, sourceId])
+  @@map("document_shares")
 }
