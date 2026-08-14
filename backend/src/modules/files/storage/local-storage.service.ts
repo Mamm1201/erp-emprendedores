@@ -33,4 +33,9 @@ export class LocalStorageService implements IStorageService {
       fs.unlinkSync(fullPath);
     }
   }
+
+  async read(storagePath: string): Promise<Buffer> {
+    const fullPath = path.join(this.baseDir, storagePath);
+    return fs.readFileSync(fullPath);
+  }
 }

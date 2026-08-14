@@ -12,5 +12,6 @@ import { PrismaModule } from '../../prisma/prisma.module';
     FilesService,
     { provide: STORAGE_SERVICE, useClass: LocalStorageService },
   ],
+  exports: [STORAGE_SERVICE],
 })
 export class FilesModule {}

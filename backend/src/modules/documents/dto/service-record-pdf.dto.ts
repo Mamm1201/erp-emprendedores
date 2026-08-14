@@ -4,6 +4,14 @@ export interface ChecklistItemPdfDto {
   notes: string | null;
 }
 
+// Evidencia fotografica de la intervencion (WORK_ORDER + SERVICE_RECORD,
+// deduplicada). Solo el binario necesario para incrustar la imagen — sin
+// nombre de archivo, enlaces ni metadatos adicionales.
+export interface ServiceRecordPhotoDto {
+  data: Buffer;
+  format: 'jpg' | 'png';
+}
+
 export interface ServiceRecordPdfDto {
   // Identificación del documento
   workOrderNumber: string;
@@ -37,4 +45,5 @@ export interface ServiceRecordPdfDto {
   activitiesPerformed: string | null;
   recommendations: string | null;
   checklistItems: ChecklistItemPdfDto[];
+  photos: ServiceRecordPhotoDto[];
 }

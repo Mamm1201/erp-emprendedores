@@ -148,6 +148,12 @@ export function FileAttachmentSection({
         </p>
       )}
 
+      {remove.isError && (
+        <p className="text-destructive text-xs">
+          {(remove.error as Error)?.message ?? 'Error al eliminar el archivo'}
+        </p>
+      )}
+
       {isLoading && <p className="text-muted-foreground text-xs">Cargando…</p>}
 
       {!isLoading && files.length === 0 && (

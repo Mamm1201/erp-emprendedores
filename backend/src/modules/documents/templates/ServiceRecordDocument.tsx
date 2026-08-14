@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet } from '@react-pdf/renderer';
+import { View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { PageLayout } from '../base/PageLayout';
 import { DocumentHeader } from '../base/DocumentHeader';
 import { DocumentFooter } from '../base/DocumentFooter';
 import { InfoGrid } from '../base/InfoGrid';
 import { SectionTitle } from '../base/SectionTitle';
 import { palette, sp, fs, COMPANY } from '../base/styles';
-import type { ServiceRecordPdfDto, ChecklistItemPdfDto } from '../dto/service-record-pdf.dto';
+import type { ServiceRecordPdfDto, ChecklistItemPdfDto, ServiceRecordPhotoDto } from '../dto/service-record-pdf.dto';
 
 const RESULT_LABEL: Record<string, string> = {
   OK: 'OK',
@@ -78,42 +78,58 @@ const s = StyleSheet.create({
     marginTop: 2,
     fontStyle: 'italic',
   },
-  signatureBlock: {
-    marginTop: sp.md,
-    flexDirection: 'row',
-    gap: sp.xl,
-  },
-  signatureBox: {
-    flex: 1,
-    borderTopWidth: 1,
-    borderTopColor: palette.dark,
-    paddingTop: sp.xs,
-  },
-  signatureLabel: {
-    fontSize: fs.xs,
-    color: palette.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  signatureValue: {
-    fontSize: fs.sm,
-    color: palette.text,
-    marginTop: sp.xs,
-  },
   otTitle: {
     fontSize: fs.md,
     fontFamily: 'Helvetica-Bold',
     color: palette.dark,
     marginBottom: sp.xs,
   },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: sp.sm,
+  },
+  photoCell: {
+    width: '48%',
+    marginBottom: sp.sm,
+    aspectRatio: 4 / 3,
+    borderWidth: 0.5,
+    borderColor: palette.border,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  photoCellLeft: {
+    marginRight: '4%',
+  },
+  photoImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
 });
 
 function NarrativeField({ label, value }: { label: string; value: string | null }) {
+  // Un solo <Text> con parrafos largos separados por linea en blanco es
+  // dificil de medir con precision para el paginador automatico de
+  // react-pdf cerca del limite de una pagina (causa raiz de la
+  // superposicion con el footer). Partir por parrafo en nodos <Text>
+  // independientes le da al paginador bloques mas chicos y predecibles
+  // para decidir el corte de pagina, sin cambiar el aspecto visual.
+  const paragraphs = value
+    ? value.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+    : [];
   return (
     <View style={s.narrativeBlock}>
       <Text style={s.narrativeLabel}>{label}</Text>
-      {value ? (
-        <Text style={s.narrativeText}>{value}</Text>
+      {paragraphs.length > 0 ? (
+        paragraphs.map((p, i) => (
+          <Text
+            key={i}
+            style={[s.narrativeText, i < paragraphs.length - 1 ? { marginBottom: sp.sm } : {}]}
+          >
+            {p}
+          </Text>
+        ))
       ) : (
         <Text style={s.narrativeEmpty}>Sin información registrada</Text>
       )}
@@ -136,6 +152,39 @@ function ChecklistSection({ items }: { items: ChecklistItemPdfDto[] }) {
             <Text style={[s.checklistBadge, { color: RESULT_COLOR[item.result] ?? palette.muted }]}>
               {RESULT_LABEL[item.result] ?? item.result}
             </Text>
+          </View>
+        ))}
+      </View>
+    </>
+  );
+}
+
+// Evidencia fotografica — cierra el documento, siempre despues del
+// contenido tecnico. El Acta no incluye constancia/firma (eso ya se
+// resuelve en el formato fisico firmado en sitio); sin fotos, no se
+// renderiza nada — ni titulo ni espacio reservado, y el documento termina
+// justo despues del ultimo bloque de contenido tecnico. Cada celda es de
+// altura fija (no depende del contenido) para que la paginacion automatica
+// sea predecible.
+function PhotoEvidenceSection({ photos }: { photos: ServiceRecordPhotoDto[] }) {
+  if (photos.length === 0) return null;
+  return (
+    <>
+      {/* minPresenceAhead evita que el titulo quede huerfano al pie de una
+          pagina (sin esto, react-pdf lo renderiza igual aunque no quede
+          espacio real antes del footer). Solo el titulo esta protegido —
+          las fotos siguen fluyendo libremente a paginas adicionales. */}
+      <View wrap={false} minPresenceAhead={40}>
+        <SectionTitle>Evidencia fotográfica</SectionTitle>
+      </View>
+      <View style={s.photoGrid}>
+        {photos.map((photo, i) => (
+          <View
+            key={i}
+            style={[s.photoCell, i % 2 === 0 ? s.photoCellLeft : {}]}
+            wrap={false}
+          >
+            <Image src={{ data: photo.data, format: photo.format }} style={s.photoImage} />
           </View>
         ))}
       </View>
@@ -192,19 +241,7 @@ export function ServiceRecordDocument({ data }: { data: ServiceRecordPdfDto }) {
         />
       )}
 
-      {/* Firma */}
-      <View style={s.signatureBlock}>
-        <View style={s.signatureBox}>
-          <Text style={s.signatureLabel}>Técnico responsable</Text>
-          <Text style={s.signatureValue}>{data.technicianName ?? '___________________________'}</Text>
-        </View>
-        <View style={s.signatureBox}>
-          <Text style={s.signatureLabel}>Firma del cliente</Text>
-          <Text style={s.signatureValue}>
-            {data.clientSignedAt ? `Firmado digitalmente\n${data.clientSignedAt}` : '___________________________'}
-          </Text>
-        </View>
-      </View>
+      <PhotoEvidenceSection photos={data.photos} />
 
       <DocumentFooter generatedAt={data.generatedAt} />
     </PageLayout>

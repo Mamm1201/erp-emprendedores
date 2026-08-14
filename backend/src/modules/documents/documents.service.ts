@@ -1,14 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { renderToBuffer } from '@react-pdf/renderer';
 import React from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { PrismaService } from '../../prisma/prisma.service';
+import { STORAGE_SERVICE, IStorageService } from '../files/storage/storage.interface';
 import { QuotationDocument } from './templates/QuotationDocument';
 import { ServiceRecordDocument } from './templates/ServiceRecordDocument';
 import { InvoiceDocument } from './templates/InvoiceDocument';
 import type { QuotationPdfDto } from './dto/quotation-pdf.dto';
-import type { ServiceRecordPdfDto } from './dto/service-record-pdf.dto';
+import type { ServiceRecordPdfDto, ServiceRecordPhotoDto } from './dto/service-record-pdf.dto';
 import type { InvoicePdfDto } from './dto/invoice-pdf.dto';
 
 function fmtDate(d: Date | string | null | undefined): string {
@@ -24,9 +25,63 @@ function decStr(v: unknown): string {
   return v != null ? String(v) : '0';
 }
 
+// Solo estos dos formatos son soportados nativamente por el motor de PDF
+// (react-pdf/pdfkit). webp/heic (permitidos en la carga general de archivos)
+// se omiten aqui de forma defensiva, nunca rompen la generacion del acta.
+const SUPPORTED_PHOTO_FORMAT: Record<string, 'jpg' | 'png'> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+};
+
 @Injectable()
 export class DocumentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(STORAGE_SERVICE) private readonly storage: IStorageService,
+  ) {}
+
+  // Evidencia fotografica de una intervencion: fotos ligadas a la OT y al
+  // Acta (WORK_ORDER + SERVICE_RECORD), nunca al Equipo (historial
+  // acumulado, no evidencia de esta visita puntual). Deduplicada por id de
+  // FileAttachment. Si un archivo no existe en disco o su formato no es
+  // soportado, se omite esa foto puntual sin afectar el resto del documento.
+  private async loadServiceRecordPhotos(
+    workOrderId: string,
+    serviceRecordId: string,
+  ): Promise<ServiceRecordPhotoDto[]> {
+    const [woPhotos, srPhotos] = await Promise.all([
+      this.prisma.fileAttachment.findMany({
+        where: { entityType: 'WORK_ORDER', entityId: workOrderId, category: 'PHOTO' },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true, storagePath: true, mimeType: true, createdAt: true },
+      }),
+      this.prisma.fileAttachment.findMany({
+        where: { entityType: 'SERVICE_RECORD', entityId: serviceRecordId, category: 'PHOTO' },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true, storagePath: true, mimeType: true, createdAt: true },
+      }),
+    ]);
+
+    const byId = new Map<string, (typeof woPhotos)[number]>();
+    for (const p of [...woPhotos, ...srPhotos]) byId.set(p.id, p);
+    const attachments = [...byId.values()].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+    );
+
+    const photos: ServiceRecordPhotoDto[] = [];
+    for (const a of attachments) {
+      const photoFormat = SUPPORTED_PHOTO_FORMAT[a.mimeType];
+      if (!photoFormat) continue;
+      try {
+        const data = await this.storage.read(a.storagePath);
+        photos.push({ data, format: photoFormat });
+      } catch {
+        continue;
+      }
+    }
+    return photos;
+  }
 
   // ─── Cotización ─────────────────────────────────────────────────────────────
 
@@ -115,6 +170,7 @@ export class DocumentsService {
     if (!wo.serviceRecord) throw new NotFoundException(`La OT "${wo.number}" no tiene acta técnica`);
 
     const sr = wo.serviceRecord;
+    const photos = await this.loadServiceRecordPhotos(wo.id, sr.id);
 
     const dto: ServiceRecordPdfDto = {
       workOrderNumber: wo.number,
@@ -145,6 +201,7 @@ export class DocumentsService {
         result: item.result as 'OK' | 'WARNING' | 'FAIL' | 'NA',
         notes: item.notes,
       })),
+      photos,
     };
 
     const element = React.createElement(ServiceRecordDocument, { data: dto }) as any;

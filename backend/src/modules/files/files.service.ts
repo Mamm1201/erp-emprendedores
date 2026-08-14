@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { IStorageService, STORAGE_SERVICE } from './storage/storage.interface';
 import { UploadFileDto } from './dto/upload-file.dto';
-import { FileEntityType } from '../../generated/prisma/client';
+import { FileEntityType, WorkOrderStatus } from '../../generated/prisma/client';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
@@ -50,6 +50,7 @@ export class FilesService {
     }
 
     await this.validateEntityExists(dto.entityType, dto.entityId);
+    await this.assertWorkOrderMutable(dto.entityType, dto.entityId);
 
     const ext = path.extname(file.originalname).toLowerCase();
     const uniqueName = `${crypto.randomUUID()}${ext}`;
@@ -103,9 +104,44 @@ export class FilesService {
       where: { id },
     });
     if (!attachment) throw new NotFoundException('Archivo no encontrado');
+    await this.assertWorkOrderMutable(attachment.entityType, attachment.entityId);
 
     await this.storage.delete(attachment.storagePath);
     await this.prisma.fileAttachment.delete({ where: { id } });
+  }
+
+  // Evidencia de OT/Acta (fotos, documentos) inmutable una vez la
+  // intervencion esta cerrada o cancelada. WORK_ORDER se valida contra su
+  // propio estado; SERVICE_RECORD contra el estado de la OT a la que
+  // pertenece. Otros tipos de entidad (EQUIPMENT, CLIENT, QUOTATION,
+  // INVOICE) no tienen este ciclo de vida y no se restringen aqui.
+  private async assertWorkOrderMutable(
+    entityType: FileEntityType,
+    entityId: string,
+  ): Promise<void> {
+    let status: WorkOrderStatus | undefined;
+
+    if (entityType === FileEntityType.WORK_ORDER) {
+      const wo = await this.prisma.workOrder.findFirst({
+        where: { id: entityId },
+        select: { status: true },
+      });
+      status = wo?.status;
+    } else if (entityType === FileEntityType.SERVICE_RECORD) {
+      const sr = await this.prisma.serviceRecord.findFirst({
+        where: { id: entityId },
+        select: { workOrder: { select: { status: true } } },
+      });
+      status = sr?.workOrder.status;
+    } else {
+      return;
+    }
+
+    if (status === WorkOrderStatus.COMPLETED || status === WorkOrderStatus.CANCELLED) {
+      throw new BadRequestException(
+        'No se pueden agregar ni eliminar adjuntos: la orden de trabajo ya está cerrada o cancelada',
+      );
+    }
   }
 
   private async validateEntityExists(
