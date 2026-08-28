@@ -39,12 +39,21 @@ function SaveableTextarea({
   const [value, setValue]     = useState(initialValue);
   const [dirty, setDirty]     = useState(false);
   const [saving, setSaving]   = useState(false);
+  const [error, setError]     = useState<string | null>(null);
 
   async function handleSave() {
     setSaving(true);
-    await onSave(value);
-    setDirty(false);
-    setSaving(false);
+    setError(null);
+    try {
+      await onSave(value);
+      setDirty(false);
+    } catch (err) {
+      // No limpiamos `dirty` — el texto sigue sin guardarse y el botón
+      // "Guardar" debe seguir visible para que el usuario pueda reintentar.
+      setError((err as Error)?.message ?? 'No se pudo guardar. Intenta de nuevo.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -68,11 +77,14 @@ function SaveableTextarea({
       <textarea
         className="w-full min-h-[80px] rounded-md border bg-transparent px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] disabled:opacity-50"
         value={value}
-        onChange={(e) => { setValue(e.target.value); setDirty(true); }}
+        onChange={(e) => { setValue(e.target.value); setDirty(true); setError(null); }}
         disabled={disabled}
         placeholder={`Ingresa ${label.toLowerCase()}…`}
         rows={3}
       />
+      {error && (
+        <p className="text-xs text-[hsl(var(--destructive))]">{error}</p>
+      )}
     </div>
   );
 }
