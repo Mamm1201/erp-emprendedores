@@ -213,6 +213,7 @@ model User {
   expensesCreated    Expense[]             @relation("ExpenseCreatedBy")
   fileAttachments    FileAttachment[]
   documentShares     DocumentShare[]
+  interventionsAsPrimaryTechnician Intervention[] @relation("InterventionPrimaryTechnician")
   contractsSigned    MaintenanceContract[] @relation("ContractSignedBy")
   resourceUtilizations ResourceUtilization[] @relation("ResourceUtilizationCreatedBy")
   billingPreparationsCreated   BillingPreparation[] @relation("BillingPreparationCreatedBy")
@@ -438,6 +439,10 @@ model WorkOrder {
   assignedToId  String?
   createdById   String?
   updatedById   String?
+  // Firma de conformidad del Acta — hito de ciclo de vida de la OT, misma
+  // naturaleza que scheduledAt/startedAt/completedAt. Reemplaza a
+  // ServiceRecord.clientSignedAt (ver Intervention mas abajo).
+  clientSignedAt DateTime?
   deletedAt     DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -457,6 +462,7 @@ model WorkOrder {
   serviceRecord    ServiceRecord?
   maintenanceVisit MaintenanceVisit?
   technicians      WorkOrderTechnician[]
+  interventions    Intervention[]
 
   @@index([clientId, status])
   @@index([assignedToId])
@@ -711,6 +717,7 @@ model Equipment {
   workOrders        WorkOrder[]
   contractEquipment ContractEquipment[]
   planEquipment     MaintenancePlanEquipment[]
+  interventions     Intervention[]
 
   @@index([branchId])
   @@index([type])
@@ -859,10 +866,16 @@ model ChecklistItem {
   notes           String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  // Migracion hacia Intervention (aditivo): serviceRecordId se conserva sin
+  // cambios; interventionId es el nuevo destino, nullable mientras convive
+  // con ServiceRecord durante la transicion.
+  interventionId  String?
 
   serviceRecord ServiceRecord @relation(fields: [serviceRecordId], references: [id], onDelete: Cascade)
+  intervention  Intervention? @relation(fields: [interventionId], references: [id])
 
   @@index([serviceRecordId])
+  @@index([interventionId])
   @@map("checklist_items")
 }
 
@@ -875,6 +888,7 @@ enum FileEntityType {
   CLIENT
   QUOTATION
   INVOICE
+  INTERVENTION
 }
 
 enum FileCategory {
@@ -935,4 +949,61 @@ model DocumentShare {
 
   @@index([type, sourceId])
   @@map("document_shares")
+}
+
+// ─── Trazabilidad por activo ────────────────────────────────────────────────
+// Intervention = registro tecnico de una intervencion concreta sobre UN
+// Equipment. WorkOrder es el contenedor administrativo/comercial (1..N
+// Intervention). equipmentId es obligatorio: es la garantia central de que
+// ninguna intervencion tecnica queda sin activo asociado.
+
+enum InterventionStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Intervention {
+  id                         String              @id @default(cuid())
+  workOrderId                 String
+  equipmentId                 String
+  type                        WorkOrderType
+  status                       InterventionStatus @default(IN_PROGRESS)
+  findings                    String?
+  activitiesPerformed          String?
+  recommendations             String?
+  occurredAt                  DateTime?
+  primaryTechnicianId          String?
+  // Auditoria de migracion: solo poblado en Intervention creadas por la
+  // migracion automatica desde ServiceRecord — null para las nativas.
+  migratedFromServiceRecordId  String?            @unique
+  createdAt                   DateTime            @default(now())
+  updatedAt                   DateTime            @updatedAt
+
+  workOrder         WorkOrder       @relation(fields: [workOrderId], references: [id])
+  equipment          Equipment       @relation(fields: [equipmentId], references: [id])
+  primaryTechnician   User?           @relation("InterventionPrimaryTechnician", fields: [primaryTechnicianId], references: [id])
+  checklistItems     ChecklistItem[]
+
+  @@index([workOrderId])
+  @@index([equipmentId])
+  @@map("interventions")
+}
+
+// Bitacora de auditoria de la migracion ServiceRecord → Intervention.
+// Permanente: permite reconstruir, para cualquier dato migrado, exactamente
+// de donde vino y que registro nuevo lo representa.
+model MigrationLog {
+  id          String   @id @default(cuid())
+  operation   String
+  sourceTable String
+  sourceId    String
+  targetTable String
+  targetId    String
+  detail      Json?
+  migratedAt  DateTime @default(now())
+
+  @@index([sourceTable, sourceId])
+  @@index([targetTable, targetId])
+  @@map("migration_log")
 }

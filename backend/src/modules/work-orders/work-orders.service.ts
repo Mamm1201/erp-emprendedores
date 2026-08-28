@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, WorkOrderStatus } from '../../generated/prisma/client';
+import { Prisma, WorkOrderStatus, InterventionStatus } from '../../generated/prisma/client';
 import {
   calculateLineTotals,
   sumMoney,
@@ -271,6 +271,32 @@ export class WorkOrdersService {
       throw new BadRequestException(
         `Cannot transition WorkOrder from ${workOrder.status} to ${dto.status}`,
       );
+    }
+
+    // Regla de integridad de trazabilidad: no puede existir una OT
+    // COMPLETED sin al menos una Intervention, y ninguna puede quedar
+    // IN_PROGRESS al momento de cerrar la OT — evita que una intervencion
+    // tecnica quede huerfana o a medio documentar.
+    if (dto.status === WorkOrderStatus.COMPLETED) {
+      const interventions = await this.prisma.intervention.findMany({
+        where: { workOrderId: id },
+        select: { status: true },
+      });
+
+      if (interventions.length === 0) {
+        throw new BadRequestException(
+          'No se puede completar la OT: debe registrarse al menos una intervención técnica (Acta con equipo asociado).',
+        );
+      }
+
+      const notTerminal = interventions.filter(
+        (i) => i.status !== InterventionStatus.COMPLETED && i.status !== InterventionStatus.CANCELLED,
+      );
+      if (notTerminal.length > 0) {
+        throw new BadRequestException(
+          `No se puede completar la OT: ${notTerminal.length} intervención(es) siguen en estado IN_PROGRESS. Cierra o cancela cada intervención antes de completar la OT.`,
+        );
+      }
     }
 
     const timestamps: Prisma.WorkOrderUpdateInput = {};

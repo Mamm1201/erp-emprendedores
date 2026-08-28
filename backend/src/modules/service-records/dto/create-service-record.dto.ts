@@ -10,6 +10,14 @@ import {
 import { ChecklistItemDto } from './checklist-item.dto';
 
 export class CreateServiceRecordDto {
+  // Equipo intervenido (selector "Equipo intervenido" del formulario). Si se
+  // provee, crea/gestiona la Intervention correspondiente ademas del Acta —
+  // ver ServiceRecordsService.create(). Opcional: mantiene compatibilidad
+  // con OTs sin equipo identificado (historicas y futuras).
+  @IsOptional()
+  @IsString()
+  equipmentId?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(4000)

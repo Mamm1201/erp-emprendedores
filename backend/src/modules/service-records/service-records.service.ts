@@ -74,7 +74,7 @@ export class ServiceRecordsService {
   async create(workOrderId: string, dto: CreateServiceRecordDto) {
     const workOrder = await this.prisma.workOrder.findFirst({
       where: { id: workOrderId, deletedAt: null },
-      select: { id: true, equipmentId: true },
+      select: { id: true, equipmentId: true, type: true },
     });
 
     if (!workOrder) {
@@ -92,29 +92,70 @@ export class ServiceRecordsService {
       );
     }
 
+    // dto.equipmentId (lo que el usuario elige en el selector "Equipo
+    // intervenido") tiene prioridad sobre workOrder.equipmentId para elegir
+    // el checklist por defecto — antes se ignoraba por completo.
     const checklistItems = await this.resolveChecklistItems(
       dto.checklistItems,
-      workOrder.equipmentId ?? undefined,
+      dto.equipmentId ?? workOrder.equipmentId ?? undefined,
     );
 
-    return this.prisma.serviceRecord.create({
-      data: {
-        workOrderId,
-        findings: dto.findings ?? null,
-        activitiesPerformed: dto.activitiesPerformed ?? null,
-        recommendations: dto.recommendations ?? null,
-        clientSignedAt: dto.clientSignedAt ? new Date(dto.clientSignedAt) : null,
-        checklistItems: {
-          create: checklistItems,
+    return this.prisma.$transaction(async (tx) => {
+      const record = await tx.serviceRecord.create({
+        data: {
+          workOrderId,
+          findings: dto.findings ?? null,
+          activitiesPerformed: dto.activitiesPerformed ?? null,
+          recommendations: dto.recommendations ?? null,
+          clientSignedAt: dto.clientSignedAt ? new Date(dto.clientSignedAt) : null,
+          checklistItems: {
+            create: checklistItems,
+          },
         },
-      },
-      select: {
-        ...SERVICE_RECORD_SELECT,
-        checklistItems: {
-          select: CHECKLIST_ITEM_SELECT,
-          orderBy: { createdAt: 'asc' },
+        select: {
+          ...SERVICE_RECORD_SELECT,
+          checklistItems: {
+            select: CHECKLIST_ITEM_SELECT,
+            orderBy: { createdAt: 'asc' },
+          },
         },
-      },
+      });
+
+      // Fix del selector "Equipo intervenido": si se eligio un equipo, crea
+      // la Intervention correspondiente — la fuente de verdad de
+      // trazabilidad por activo (Intervention.equipmentId es obligatorio a
+      // nivel de schema). Sin equipo elegido, no se crea nada — mantiene
+      // compatibilidad exacta con el comportamiento historico (OTs sin
+      // equipo identificado, hoy y en el futuro).
+      if (dto.equipmentId) {
+        const intervention = await tx.intervention.create({
+          data: {
+            workOrderId,
+            equipmentId: dto.equipmentId,
+            type: workOrder.type,
+            // Nace COMPLETED: este formulario ya provee hallazgos/
+            // actividades/checklist en un solo paso, igual que ServiceRecord
+            // ya se crea "completo" hoy. Necesario para que la regla de
+            // integridad "COMPLETED requiere Intervention en estado
+            // terminal" no bloquee el cierre de la OT sin un mecanismo de
+            // gestion de Intervention (fuera de alcance de este paso).
+            status: 'COMPLETED',
+            findings: dto.findings ?? null,
+            activitiesPerformed: dto.activitiesPerformed ?? null,
+            recommendations: dto.recommendations ?? null,
+            occurredAt: new Date(),
+          },
+        });
+
+        // Un solo set de ChecklistItem, vinculado a ambos padres — no se
+        // duplica: serviceRecordId (sin cambios) + interventionId (nuevo).
+        await tx.checklistItem.updateMany({
+          where: { id: { in: record.checklistItems.map((i) => i.id) } },
+          data: { interventionId: intervention.id },
+        });
+      }
+
+      return record;
     });
   }
 
