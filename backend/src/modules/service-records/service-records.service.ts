@@ -7,11 +7,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   CHECKLIST_ITEM_SELECT,
   DEFAULT_CHECKLIST,
+  INTERVENTION_SELECT,
+  INTERVENTION_WITH_WORK_ORDER_SELECT,
   SERVICE_RECORD_SELECT,
 } from './service-records.constants';
 import { CreateServiceRecordDto } from './dto/create-service-record.dto';
 import { UpdateServiceRecordDto } from './dto/update-service-record.dto';
 import { UpdateChecklistItemDto } from './dto/checklist-item.dto';
+import { UpdateInterventionDto } from './dto/intervention.dto';
 
 @Injectable()
 export class ServiceRecordsService {
@@ -43,7 +46,13 @@ export class ServiceRecordsService {
       );
     }
 
-    return record;
+    const interventions = await this.prisma.intervention.findMany({
+      where: { workOrderId },
+      select: INTERVENTION_SELECT,
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return { ...record, interventions };
   }
 
   async findByEquipment(equipmentId: string) {
@@ -56,15 +65,12 @@ export class ServiceRecordsService {
       throw new NotFoundException(`Equipment with id "${equipmentId}" not found`);
     }
 
-    const data = await this.prisma.serviceRecord.findMany({
-      where: { workOrder: { equipmentId } },
-      select: {
-        ...SERVICE_RECORD_SELECT,
-        checklistItems: {
-          select: CHECKLIST_ITEM_SELECT,
-          orderBy: { createdAt: 'asc' },
-        },
-      },
+    // Trazabilidad por activo: lee directamente Intervention.equipmentId,
+    // no WorkOrder.equipmentId (ese campo queda null en la mayoria de OT
+    // de sede/multi-equipo — ver auditoria 2026-08-28).
+    const data = await this.prisma.intervention.findMany({
+      where: { equipmentId },
+      select: INTERVENTION_WITH_WORK_ORDER_SELECT,
       orderBy: { createdAt: 'desc' },
     });
 
@@ -74,7 +80,7 @@ export class ServiceRecordsService {
   async create(workOrderId: string, dto: CreateServiceRecordDto) {
     const workOrder = await this.prisma.workOrder.findFirst({
       where: { id: workOrderId, deletedAt: null },
-      select: { id: true, equipmentId: true, type: true },
+      select: { id: true, type: true },
     });
 
     if (!workOrder) {
@@ -92,70 +98,92 @@ export class ServiceRecordsService {
       );
     }
 
-    // dto.equipmentId (lo que el usuario elige en el selector "Equipo
-    // intervenido") tiene prioridad sobre workOrder.equipmentId para elegir
-    // el checklist por defecto — antes se ignoraba por completo.
-    const checklistItems = await this.resolveChecklistItems(
-      dto.checklistItems,
-      dto.equipmentId ?? workOrder.equipmentId ?? undefined,
-    );
-
-    return this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
+      // ServiceRecord es la entidad documental del Acta (identidad del
+      // documento/PDF, fecha de firma) — el contenido tecnico nuevo vive
+      // en Intervention, una por cada equipo realmente intervenido.
       const record = await tx.serviceRecord.create({
         data: {
           workOrderId,
-          findings: dto.findings ?? null,
-          activitiesPerformed: dto.activitiesPerformed ?? null,
-          recommendations: dto.recommendations ?? null,
           clientSignedAt: dto.clientSignedAt ? new Date(dto.clientSignedAt) : null,
-          checklistItems: {
-            create: checklistItems,
-          },
         },
-        select: {
-          ...SERVICE_RECORD_SELECT,
-          checklistItems: {
-            select: CHECKLIST_ITEM_SELECT,
-            orderBy: { createdAt: 'asc' },
-          },
-        },
+        select: { id: true },
       });
 
-      // Fix del selector "Equipo intervenido": si se eligio un equipo, crea
-      // la Intervention correspondiente — la fuente de verdad de
-      // trazabilidad por activo (Intervention.equipmentId es obligatorio a
-      // nivel de schema). Sin equipo elegido, no se crea nada — mantiene
-      // compatibilidad exacta con el comportamiento historico (OTs sin
-      // equipo identificado, hoy y en el futuro).
-      if (dto.equipmentId) {
+      for (const item of dto.interventions ?? []) {
+        const checklistItems = await this.resolveChecklistItems(
+          item.checklistItems,
+          item.equipmentId,
+        );
+
         const intervention = await tx.intervention.create({
           data: {
             workOrderId,
-            equipmentId: dto.equipmentId,
+            equipmentId: item.equipmentId,
             type: workOrder.type,
             // Nace COMPLETED: este formulario ya provee hallazgos/
-            // actividades/checklist en un solo paso, igual que ServiceRecord
-            // ya se crea "completo" hoy. Necesario para que la regla de
-            // integridad "COMPLETED requiere Intervention en estado
-            // terminal" no bloquee el cierre de la OT sin un mecanismo de
-            // gestion de Intervention (fuera de alcance de este paso).
+            // actividades/checklist en un solo paso. Necesario para que la
+            // regla de integridad "COMPLETED requiere Intervention en
+            // estado terminal" no bloquee el cierre de la OT sin un
+            // mecanismo de gestion de Intervention (fuera de alcance).
             status: 'COMPLETED',
-            findings: dto.findings ?? null,
-            activitiesPerformed: dto.activitiesPerformed ?? null,
-            recommendations: dto.recommendations ?? null,
+            findings: item.findings ?? null,
+            activitiesPerformed: item.activitiesPerformed ?? null,
+            recommendations: item.recommendations ?? null,
+            primaryTechnicianId: item.primaryTechnicianId ?? null,
             occurredAt: new Date(),
           },
+          select: { id: true },
         });
 
-        // Un solo set de ChecklistItem, vinculado a ambos padres — no se
-        // duplica: serviceRecordId (sin cambios) + interventionId (nuevo).
-        await tx.checklistItem.updateMany({
-          where: { id: { in: record.checklistItems.map((i) => i.id) } },
-          data: { interventionId: intervention.id },
-        });
+        if (checklistItems.length > 0) {
+          await tx.checklistItem.createMany({
+            data: checklistItems.map((ci) => ({
+              ...ci,
+              serviceRecordId: record.id,
+              interventionId: intervention.id,
+            })),
+          });
+        }
       }
 
-      return record;
+      return record.id;
+    });
+
+    return this.findByWorkOrder(workOrderId);
+  }
+
+  async updateIntervention(
+    workOrderId: string,
+    interventionId: string,
+    dto: UpdateInterventionDto,
+  ) {
+    const intervention = await this.prisma.intervention.findFirst({
+      where: { id: interventionId, workOrderId },
+      select: { id: true },
+    });
+
+    if (!intervention) {
+      throw new NotFoundException(
+        `Intervention "${interventionId}" not found for work order "${workOrderId}"`,
+      );
+    }
+
+    return this.prisma.intervention.update({
+      where: { id: interventionId },
+      data: {
+        ...(dto.findings !== undefined && { findings: dto.findings }),
+        ...(dto.activitiesPerformed !== undefined && {
+          activitiesPerformed: dto.activitiesPerformed,
+        }),
+        ...(dto.recommendations !== undefined && {
+          recommendations: dto.recommendations,
+        }),
+        ...(dto.primaryTechnicianId !== undefined && {
+          primaryTechnicianId: dto.primaryTechnicianId,
+        }),
+      },
+      select: INTERVENTION_SELECT,
     });
   }
 

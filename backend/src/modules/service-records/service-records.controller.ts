@@ -10,6 +10,7 @@ import { ServiceRecordsService } from './service-records.service';
 import { CreateServiceRecordDto } from './dto/create-service-record.dto';
 import { UpdateServiceRecordDto } from './dto/update-service-record.dto';
 import { UpdateChecklistItemDto } from './dto/checklist-item.dto';
+import { UpdateInterventionDto } from './dto/intervention.dto';
 
 @Controller()
 export class ServiceRecordsController {
@@ -54,5 +55,18 @@ export class ServiceRecordsController {
   @Get('equipment/:equipmentId/service-records')
   findByEquipment(@Param('equipmentId') equipmentId: string) {
     return this.serviceRecordsService.findByEquipment(equipmentId);
+  }
+
+  @Patch('work-orders/:workOrderId/interventions/:interventionId')
+  updateIntervention(
+    @Param('workOrderId') workOrderId: string,
+    @Param('interventionId') interventionId: string,
+    @Body() dto: UpdateInterventionDto,
+  ) {
+    return this.serviceRecordsService.updateIntervention(
+      workOrderId,
+      interventionId,
+      dto,
+    );
   }
 }

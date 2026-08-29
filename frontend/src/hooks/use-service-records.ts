@@ -1,12 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { ServiceRecord, ChecklistResult } from '@/lib/types';
+import type { ServiceRecord, Intervention, ChecklistResult } from '@/lib/types';
 
-export interface CreateServiceRecordData {
-  equipmentId?: string;
+// Un equipo realmente intervenido durante la visita — solo estos deben
+// enviarse aqui. Equipos programados/asociados que no se intervinieron no
+// van en esta lista.
+export interface InterventionInputData {
+  equipmentId: string;
   findings?: string;
   activitiesPerformed?: string;
   recommendations?: string;
+  primaryTechnicianId?: string;
+}
+
+export interface CreateServiceRecordData {
+  interventions?: InterventionInputData[];
   clientSignedAt?: string;
 }
 
@@ -15,6 +23,13 @@ export interface UpdateServiceRecordData {
   activitiesPerformed?: string;
   recommendations?: string;
   clientSignedAt?: string;
+}
+
+export interface UpdateInterventionData {
+  findings?: string;
+  activitiesPerformed?: string;
+  recommendations?: string;
+  primaryTechnicianId?: string;
 }
 
 export function useServiceRecord(workOrderId: string | null) {
@@ -57,6 +72,28 @@ export function useUpdateServiceRecord() {
       data: UpdateServiceRecordData;
     }) =>
       api.patch<ServiceRecord>(`/work-orders/${workOrderId}/service-record`, data),
+    onSuccess: (_r, vars) => {
+      qc.invalidateQueries({ queryKey: ['service-record', vars.workOrderId] });
+    },
+  });
+}
+
+export function useUpdateIntervention() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      workOrderId,
+      interventionId,
+      data,
+    }: {
+      workOrderId: string;
+      interventionId: string;
+      data: UpdateInterventionData;
+    }) =>
+      api.patch<Intervention>(
+        `/work-orders/${workOrderId}/interventions/${interventionId}`,
+        data,
+      ),
     onSuccess: (_r, vars) => {
       qc.invalidateQueries({ queryKey: ['service-record', vars.workOrderId] });
     },

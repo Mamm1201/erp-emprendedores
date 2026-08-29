@@ -12,6 +12,16 @@ export interface ServiceRecordPhotoDto {
   format: 'jpg' | 'png';
 }
 
+// Una intervencion = un equipo realmente intervenido durante la visita, con
+// su propio informe tecnico. Fuente: Intervention (trazabilidad por activo).
+export interface InterventionPdfDto {
+  equipmentLabel: string;
+  findings: string | null;
+  activitiesPerformed: string | null;
+  recommendations: string | null;
+  checklistItems: ChecklistItemPdfDto[];
+}
+
 export interface ServiceRecordPdfDto {
   // Identificación del documento
   workOrderNumber: string;
@@ -40,7 +50,13 @@ export interface ServiceRecordPdfDto {
   // independiente.
   technicianNames: string[];
 
-  // Contenido técnico
+  // Informe técnico por equipo intervenido. Reemplaza al bloque plano
+  // findings/activitiesPerformed/recommendations para actas nuevas.
+  interventions: InterventionPdfDto[];
+
+  // Contenido técnico legacy — solo poblado para actas que no tienen
+  // ninguna Intervention (historicas, previas a este modelo). Si
+  // `interventions` tiene elementos, estos campos no se renderizan.
   findings: string | null;
   activitiesPerformed: string | null;
   recommendations: string | null;

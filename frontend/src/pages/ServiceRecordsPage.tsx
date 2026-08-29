@@ -19,17 +19,16 @@ import {
 import { getApiToken } from '@/lib/api';
 
 import { useWorkOrders } from '@/hooks/use-work-orders';
-import { useEquipment } from '@/hooks/use-equipment';
 import {
   useServiceRecord,
-  useCreateServiceRecord,
   useUpdateServiceRecord,
   useUpdateChecklistItem,
-  type CreateServiceRecordData,
   type UpdateServiceRecordData,
 } from '@/hooks/use-service-records';
 import type { WorkOrder, ChecklistResult, ChecklistItem } from '@/lib/types';
 import { ShareDocumentButton } from '@/components/shared/ShareDocumentButton';
+import { CreateServiceRecordModal } from '@/components/work-orders/CreateServiceRecordModal';
+import { InterventionSection } from '@/components/work-orders/InterventionSection';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -41,8 +40,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -214,15 +211,6 @@ function ChecklistRow({
 
 // ─── Zod schemas ──────────────────────────────────────────────────────────────
 
-const createSchema = z.object({
-  equipmentId: z.string().optional(),
-  findings: z.string().max(4000).optional().or(z.literal('')),
-  activitiesPerformed: z.string().max(4000).optional().or(z.literal('')),
-  recommendations: z.string().max(4000).optional().or(z.literal('')),
-  clientSignedAt: z.string().optional().or(z.literal('')),
-});
-type CreateSchema = z.infer<typeof createSchema>;
-
 const updateSchema = z.object({
   findings: z.string().max(4000).optional().or(z.literal('')),
   activitiesPerformed: z.string().max(4000).optional().or(z.literal('')),
@@ -230,118 +218,6 @@ const updateSchema = z.object({
   clientSignedAt: z.string().optional().or(z.literal('')),
 });
 type UpdateSchema = z.infer<typeof updateSchema>;
-
-// ─── CreateServiceRecordModal ─────────────────────────────────────────────────
-
-function CreateServiceRecordModal({
-  workOrder,
-  onOpenChange,
-}: {
-  workOrder: WorkOrder | null;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const createRecord = useCreateServiceRecord();
-  const { data: equipmentData } = useEquipment(
-    workOrder?.clientId ?? null,
-    workOrder?.branchId ?? null,
-  );
-  const equipmentList = equipmentData?.data ?? [];
-
-  const { register, handleSubmit, reset } = useForm({
-    resolver: zodResolver(createSchema),
-    defaultValues: { equipmentId: '', findings: '', activitiesPerformed: '', recommendations: '', clientSignedAt: '' },
-  });
-
-  useEffect(() => {
-    if (workOrder) reset({ equipmentId: '', findings: '', activitiesPerformed: '', recommendations: '', clientSignedAt: '' });
-  }, [workOrder, reset]);
-
-  async function onSubmit(values: CreateSchema) {
-    if (!workOrder) return;
-    const data: CreateServiceRecordData = {
-      equipmentId: values.equipmentId || undefined,
-      findings: values.findings || undefined,
-      activitiesPerformed: values.activitiesPerformed || undefined,
-      recommendations: values.recommendations || undefined,
-      clientSignedAt: values.clientSignedAt || undefined,
-    };
-    await createRecord.mutateAsync({ workOrderId: workOrder.id, data });
-    onOpenChange(false);
-  }
-
-  const SELECT_CLASS =
-    'flex h-9 w-full rounded-md border border-[hsl(var(--input))] bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]';
-
-  return (
-    <Dialog open={!!workOrder} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Crear acta técnica</DialogTitle>
-          {workOrder && (
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              {workOrder.number} — {workOrder.title}
-            </p>
-          )}
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Equipo (opcional) */}
-          <div className="space-y-1.5">
-            <Label htmlFor="equipmentId">
-              Equipo intervenido{' '}
-              <span className="text-[hsl(var(--muted-foreground))] font-normal">(genera checklist automático)</span>
-            </Label>
-            <select id="equipmentId" {...register('equipmentId')} className={SELECT_CLASS}>
-              <option value="">Sin equipo específico</option>
-              {equipmentList.map((eq) => (
-                <option key={eq.id} value={eq.id}>
-                  {eq.type.replace(/_/g, ' ')} — {eq.brand ?? ''} {eq.model ?? ''}{eq.location ? ` (${eq.location})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Hallazgos */}
-          <div className="space-y-1.5">
-            <Label htmlFor="findings">Hallazgos</Label>
-            <Textarea id="findings" {...register('findings')} rows={3} placeholder="Descripción del estado encontrado en el equipo o instalación…" />
-          </div>
-
-          {/* Actividades realizadas */}
-          <div className="space-y-1.5">
-            <Label htmlFor="activitiesPerformed">Actividades realizadas</Label>
-            <Textarea id="activitiesPerformed" {...register('activitiesPerformed')} rows={3} placeholder="Detalle de los trabajos ejecutados durante la visita…" />
-          </div>
-
-          {/* Recomendaciones */}
-          <div className="space-y-1.5">
-            <Label htmlFor="recommendations">Recomendaciones</Label>
-            <Textarea id="recommendations" {...register('recommendations')} rows={2} placeholder="Acciones correctivas o preventivas sugeridas…" />
-          </div>
-
-          {/* Firma cliente */}
-          <div className="space-y-1.5">
-            <Label htmlFor="clientSignedAt">Fecha firma cliente</Label>
-            <Input id="clientSignedAt" type="date" {...register('clientSignedAt')} className="max-w-xs" />
-          </div>
-
-          {createRecord.error && (
-            <p className="text-sm text-[hsl(var(--destructive))]">{createRecord.error.message}</p>
-          )}
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={createRecord.isPending}>Cancelar</Button>
-            </DialogClose>
-            <Button type="submit" disabled={createRecord.isPending}>
-              {createRecord.isPending ? 'Creando…' : 'Crear acta'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 // ─── ViewServiceRecordModal ───────────────────────────────────────────────────
 
@@ -442,69 +318,93 @@ function ViewServiceRecordModal({
 
         {record && (
           <div className="space-y-6">
-            {/* Narrativa */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
+            {/* Firma cliente — ServiceRecord es el "sobre" del Acta */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-1.5">
+              <div className="flex items-end gap-4">
                 <div className="space-y-1.5">
-                  <Label>Hallazgos</Label>
-                  <Textarea {...register('findings')} rows={3} placeholder="Estado encontrado…" />
+                  <Label>Fecha firma cliente</Label>
+                  <Input type="date" {...register('clientSignedAt')} className="max-w-xs" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Actividades realizadas</Label>
-                  <Textarea {...register('activitiesPerformed')} rows={3} placeholder="Trabajos ejecutados…" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Recomendaciones</Label>
-                  <Textarea {...register('recommendations')} rows={2} placeholder="Acciones sugeridas…" />
-                </div>
-                <div className="flex items-end gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Fecha firma cliente</Label>
-                    <Input type="date" {...register('clientSignedAt')} className="max-w-xs" />
-                  </div>
-                  <Button type="submit" variant="outline" size="sm" disabled={updateRecord.isPending} className="mb-0.5">
-                    {updateRecord.isPending ? 'Guardando…' : 'Guardar narrativa'}
-                  </Button>
-                </div>
+                <Button type="submit" variant="outline" size="sm" disabled={updateRecord.isPending} className="mb-0.5">
+                  {updateRecord.isPending ? 'Guardando…' : 'Guardar firma'}
+                </Button>
               </div>
             </form>
 
-            {/* Checklist */}
-            {record.checklistItems.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold">
-                    Checklist de verificación
-                    <span className="ml-2 text-[hsl(var(--muted-foreground))] font-normal">
-                      ({record.checklistItems.length} ítems)
-                    </span>
-                  </h3>
-                  <div className="flex gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
-                    {(['OK', 'WARNING', 'FAIL'] as ChecklistResult[]).map((r) => {
-                      const count = record.checklistItems.filter((i) => i.result === r).length;
-                      if (count === 0) return null;
-                      const cfg = RESULT_CONFIG[r];
-                      const Icon = cfg.icon;
-                      return (
-                        <span key={r} className={cn('flex items-center gap-1', cfg.activeClass, 'px-1.5 py-0.5 rounded border text-xs')}>
-                          <Icon className="h-3 w-3" /> {count}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="border rounded-md px-4">
-                  {record.checklistItems.map((item) => (
-                    <ChecklistRow key={item.id} item={item} workOrderId={workOrder!.id} />
-                  ))}
-                </div>
+            {/* Informe tecnico: uno por equipo realmente intervenido */}
+            {record.interventions.length > 0 ? (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold">Equipos intervenidos</h3>
+                {record.interventions.map((iv) => (
+                  <InterventionSection key={iv.id} intervention={iv} workOrderId={workOrder!.id} />
+                ))}
               </div>
-            )}
+            ) : (
+              // Acta legacy sin Intervention (previa a este modelo) — el
+              // contenido narrativo sigue viviendo en ServiceRecord.
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Hallazgos</Label>
+                    <Textarea {...register('findings')} rows={3} placeholder="Estado encontrado…" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Actividades realizadas</Label>
+                    <Textarea {...register('activitiesPerformed')} rows={3} placeholder="Trabajos ejecutados…" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Recomendaciones</Label>
+                    <Textarea {...register('recommendations')} rows={2} placeholder="Acciones sugeridas…" />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-fit"
+                    disabled={updateRecord.isPending}
+                    onClick={handleSubmit(onSubmit)}
+                  >
+                    {updateRecord.isPending ? 'Guardando…' : 'Guardar narrativa'}
+                  </Button>
+                </div>
 
-            {record.checklistItems.length === 0 && (
-              <p className="text-sm text-[hsl(var(--muted-foreground))] italic">
-                Sin checklist — el acta no tiene equipo asociado o fue creada sin ítems.
-              </p>
+                {record.checklistItems.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold">
+                        Checklist de verificación
+                        <span className="ml-2 text-[hsl(var(--muted-foreground))] font-normal">
+                          ({record.checklistItems.length} ítems)
+                        </span>
+                      </h3>
+                      <div className="flex gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+                        {(['OK', 'WARNING', 'FAIL'] as ChecklistResult[]).map((r) => {
+                          const count = record.checklistItems.filter((i) => i.result === r).length;
+                          if (count === 0) return null;
+                          const cfg = RESULT_CONFIG[r];
+                          const Icon = cfg.icon;
+                          return (
+                            <span key={r} className={cn('flex items-center gap-1', cfg.activeClass, 'px-1.5 py-0.5 rounded border text-xs')}>
+                              <Icon className="h-3 w-3" /> {count}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="border rounded-md px-4">
+                      {record.checklistItems.map((item) => (
+                        <ChecklistRow key={item.id} item={item} workOrderId={workOrder!.id} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {record.checklistItems.length === 0 && (
+                  <p className="text-sm text-[hsl(var(--muted-foreground))] italic">
+                    Sin checklist — el acta no tiene equipo asociado o fue creada sin ítems.
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Meta */}

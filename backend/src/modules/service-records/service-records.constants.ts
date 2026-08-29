@@ -21,6 +21,52 @@ export const CHECKLIST_ITEM_SELECT = {
   updatedAt: true,
 } satisfies Prisma.ChecklistItemSelect;
 
+export const INTERVENTION_SELECT = {
+  id: true,
+  workOrderId: true,
+  equipmentId: true,
+  type: true,
+  status: true,
+  findings: true,
+  activitiesPerformed: true,
+  recommendations: true,
+  occurredAt: true,
+  createdAt: true,
+  updatedAt: true,
+  primaryTechnicianId: true,
+  primaryTechnician: {
+    select: { id: true, name: true },
+  },
+  equipment: {
+    select: {
+      id: true,
+      type: true,
+      brand: true,
+      model: true,
+      serialNumber: true,
+      location: true,
+    },
+  },
+  checklistItems: {
+    select: CHECKLIST_ITEM_SELECT,
+    orderBy: { createdAt: 'asc' },
+  },
+} satisfies Prisma.InterventionSelect;
+
+export const INTERVENTION_WITH_WORK_ORDER_SELECT = {
+  ...INTERVENTION_SELECT,
+  workOrder: {
+    select: {
+      id: true,
+      number: true,
+      title: true,
+      type: true,
+      scheduledAt: true,
+      completedAt: true,
+    },
+  },
+} satisfies Prisma.InterventionSelect;
+
 export const DEFAULT_CHECKLIST: Record<EquipmentType, string[]> = {
   [EquipmentType.NURSE_CALL]: [
     'Verificar alimentación central',

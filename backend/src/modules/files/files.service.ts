@@ -112,9 +112,9 @@ export class FilesService {
 
   // Evidencia de OT/Acta (fotos, documentos) inmutable una vez la
   // intervencion esta cerrada o cancelada. WORK_ORDER se valida contra su
-  // propio estado; SERVICE_RECORD contra el estado de la OT a la que
-  // pertenece. Otros tipos de entidad (EQUIPMENT, CLIENT, QUOTATION,
-  // INVOICE) no tienen este ciclo de vida y no se restringen aqui.
+  // propio estado; SERVICE_RECORD e INTERVENTION contra el estado de la OT
+  // a la que pertenecen. Otros tipos de entidad (EQUIPMENT, CLIENT,
+  // QUOTATION, INVOICE) no tienen este ciclo de vida y no se restringen aqui.
   private async assertWorkOrderMutable(
     entityType: FileEntityType,
     entityId: string,
@@ -133,6 +133,12 @@ export class FilesService {
         select: { workOrder: { select: { status: true } } },
       });
       status = sr?.workOrder.status;
+    } else if (entityType === FileEntityType.INTERVENTION) {
+      const iv = await this.prisma.intervention.findFirst({
+        where: { id: entityId },
+        select: { workOrder: { select: { status: true } } },
+      });
+      status = iv?.workOrder.status;
     } else {
       return;
     }
@@ -164,6 +170,12 @@ export class FilesService {
         break;
       case FileEntityType.SERVICE_RECORD:
         exists = !!(await this.prisma.serviceRecord.findFirst({
+          where: { id: entityId },
+          select: { id: true },
+        }));
+        break;
+      case FileEntityType.INTERVENTION:
+        exists = !!(await this.prisma.intervention.findFirst({
           where: { id: entityId },
           select: { id: true },
         }));

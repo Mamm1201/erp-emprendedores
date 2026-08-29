@@ -95,7 +95,7 @@ export function WorkOrderDetailPage() {
             workOrderStatus={workOrder.status}
             technicians={workOrder.technicians ?? []}
           />
-          <ServiceRecordCard workOrderId={workOrder.id} />
+          <ServiceRecordCard workOrder={workOrder} />
           <BillingPreparationCard workOrder={workOrder} />
           <ExpensesCard workOrderId={workOrder.id} workOrderStatus={workOrder.status} />
         </div>

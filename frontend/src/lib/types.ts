@@ -577,10 +577,38 @@ export interface ChecklistItem {
   updatedAt: string;
 }
 
+export type InterventionStatus = 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+// Un equipo realmente intervenido durante la visita — fuente de verdad de
+// trazabilidad por activo. Ver ServiceRecord.interventions.
+export interface Intervention {
+  id: string;
+  workOrderId: string;
+  equipmentId: string;
+  type: string;
+  status: InterventionStatus;
+  findings: string | null;
+  activitiesPerformed: string | null;
+  recommendations: string | null;
+  occurredAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  primaryTechnicianId: string | null;
+  primaryTechnician: { id: string; name: string } | null;
+  equipment: {
+    id: string;
+    type: EquipmentType;
+    brand: string | null;
+    model: string | null;
+    serialNumber: string | null;
+    location: string | null;
+  };
+  checklistItems: ChecklistItem[];
+}
+
 export interface ServiceRecord {
   id: string;
   workOrderId: string;
-  equipmentId: string | null;
   findings: string | null;
   activitiesPerformed: string | null;
   recommendations: string | null;
@@ -588,6 +616,7 @@ export interface ServiceRecord {
   createdAt: string;
   updatedAt: string;
   checklistItems: ChecklistItem[];
+  interventions: Intervention[];
 }
 
 export interface Equipment {
@@ -630,7 +659,8 @@ export type FileEntityType =
   | 'SERVICE_RECORD'
   | 'CLIENT'
   | 'QUOTATION'
-  | 'INVOICE';
+  | 'INVOICE'
+  | 'INTERVENTION';
 
 export type FileCategory = 'PHOTO' | 'DOCUMENT' | 'CERTIFICATE' | 'MANUAL';
 

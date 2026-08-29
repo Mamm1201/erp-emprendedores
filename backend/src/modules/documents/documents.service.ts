@@ -25,6 +25,24 @@ function decStr(v: unknown): string {
   return v != null ? String(v) : '0';
 }
 
+const EQUIPMENT_TYPE_LABEL: Record<string, string> = {
+  NURSE_CALL: 'Llamado de enfermería',
+  MEDICAL_ALERT: 'Alerta médica',
+  GENERATOR: 'Generador',
+  UPS: 'UPS',
+  ELECTRICAL: 'Eléctrico',
+  OTHER: 'Otro',
+};
+
+// Misma convencion que WorkOrderFormFields.tsx (frontend): "Tipo · Marca
+// Modelo · S/N xxx" — una sola forma de identificar un equipo en toda la app.
+function equipmentLabel(eq: { type: string; brand: string | null; model: string | null; serialNumber: string | null }): string {
+  const type = EQUIPMENT_TYPE_LABEL[eq.type] ?? eq.type;
+  const detail = [eq.brand, eq.model].filter(Boolean).join(' ');
+  const sn = eq.serialNumber ? `S/N ${eq.serialNumber}` : null;
+  return [type, detail, sn].filter(Boolean).join(' · ');
+}
+
 // Solo estos dos formatos son soportados nativamente por el motor de PDF
 // (react-pdf/pdfkit). webp/heic (permitidos en la carga general de archivos)
 // se omiten aqui de forma defensiva, nunca rompen la generacion del acta.
@@ -163,6 +181,13 @@ export class DocumentsService {
             checklistItems: { orderBy: { createdAt: 'asc' } },
           },
         },
+        interventions: {
+          include: {
+            equipment: { select: { type: true, brand: true, model: true, serialNumber: true } },
+            checklistItems: { orderBy: { createdAt: 'asc' } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
 
@@ -191,6 +216,18 @@ export class DocumentsService {
 
       technicianName: wo.assignedTo?.name ?? null,
       technicianNames: wo.technicians.map((t) => t.user.name),
+
+      interventions: wo.interventions.map((iv) => ({
+        equipmentLabel: equipmentLabel(iv.equipment),
+        findings: iv.findings,
+        activitiesPerformed: iv.activitiesPerformed,
+        recommendations: iv.recommendations,
+        checklistItems: iv.checklistItems.map((item) => ({
+          description: item.description,
+          result: item.result as 'OK' | 'WARNING' | 'FAIL' | 'NA',
+          notes: item.notes,
+        })),
+      })),
 
       findings: sr.findings,
       activitiesPerformed: sr.activitiesPerformed,

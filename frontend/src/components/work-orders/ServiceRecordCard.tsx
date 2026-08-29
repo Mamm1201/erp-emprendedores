@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { ClipboardCheck, Loader2, Plus, PenLine, CheckCircle2 } from 'lucide-react';
 
-import type { ChecklistResult } from '@/lib/types';
+import type { WorkOrder, ChecklistResult } from '@/lib/types';
 import { FileAttachmentSection } from '@/components/shared/FileAttachmentSection';
+import { SaveableTextarea } from '@/components/shared/SaveableTextarea';
 import {
   useServiceRecord,
-  useCreateServiceRecord,
   useUpdateServiceRecord,
   useUpdateChecklistItem,
   type UpdateServiceRecordData,
 } from '@/hooks/use-service-records';
+import { CreateServiceRecordModal } from '@/components/work-orders/CreateServiceRecordModal';
+import { InterventionSection } from '@/components/work-orders/InterventionSection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-// ─── Checklist result config ──────────────────────────────────────────────────
+// ─── Checklist result config (fallback legacy sin Intervention) ───────────────
 
 const RESULT_OPTIONS: { value: ChecklistResult; label: string; classes: string }[] = [
   { value: 'OK',      label: 'OK',      classes: 'border-node-teal/30 bg-node-teal/10 text-node-teal data-[active=true]:bg-node-teal data-[active=true]:text-white data-[active=true]:border-node-teal' },
@@ -23,73 +25,7 @@ const RESULT_OPTIONS: { value: ChecklistResult; label: string; classes: string }
   { value: 'NA',      label: 'N/A',     classes: 'border-[hsl(var(--border))] bg-transparent text-[hsl(var(--muted-foreground))] data-[active=true]:bg-[hsl(var(--muted))] data-[active=true]:text-[hsl(var(--foreground))]' },
 ];
 
-// ─── SaveableTextarea ─────────────────────────────────────────────────────────
-
-function SaveableTextarea({
-  label,
-  initialValue,
-  onSave,
-  disabled,
-}: {
-  label: string;
-  initialValue: string;
-  onSave: (value: string) => Promise<void>;
-  disabled?: boolean;
-}) {
-  const [value, setValue]     = useState(initialValue);
-  const [dirty, setDirty]     = useState(false);
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState<string | null>(null);
-
-  async function handleSave() {
-    setSaving(true);
-    setError(null);
-    try {
-      await onSave(value);
-      setDirty(false);
-    } catch (err) {
-      // No limpiamos `dirty` — el texto sigue sin guardarse y el botón
-      // "Guardar" debe seguir visible para que el usuario pueda reintentar.
-      setError((err as Error)?.message ?? 'No se pudo guardar. Intenta de nuevo.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">
-          {label}
-        </p>
-        {dirty && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 text-xs px-2"
-            onClick={handleSave}
-            disabled={saving || disabled}
-          >
-            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Guardar'}
-          </Button>
-        )}
-      </div>
-      <textarea
-        className="w-full min-h-[80px] rounded-md border bg-transparent px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] disabled:opacity-50"
-        value={value}
-        onChange={(e) => { setValue(e.target.value); setDirty(true); setError(null); }}
-        disabled={disabled}
-        placeholder={`Ingresa ${label.toLowerCase()}…`}
-        rows={3}
-      />
-      {error && (
-        <p className="text-xs text-[hsl(var(--destructive))]">{error}</p>
-      )}
-    </div>
-  );
-}
-
-// ─── ChecklistRow ─────────────────────────────────────────────────────────────
+// ─── ChecklistRow (fallback legacy sin Intervention) ───────────────────────────
 
 function ChecklistRow({
   item,
@@ -131,23 +67,20 @@ function ChecklistRow({
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface ServiceRecordCardProps {
-  workOrderId: string;
+  workOrder: WorkOrder;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function ServiceRecordCard({ workOrderId }: ServiceRecordCardProps) {
+export function ServiceRecordCard({ workOrder }: ServiceRecordCardProps) {
+  const workOrderId = workOrder.id;
   const { data: record, isLoading, isError, error } = useServiceRecord(workOrderId);
-  const createRecord  = useCreateServiceRecord();
   const updateRecord  = useUpdateServiceRecord();
+  const [creating, setCreating] = useState(false);
 
   // 404 means the record doesn't exist yet — any other error is a genuine failure
   const isNotFound = isError && (error as { status?: number } | null)?.status === 404;
   const isGenuineError = isError && !isNotFound;
-
-  function handleCreate() {
-    createRecord.mutate({ workOrderId, data: {} });
-  }
 
   function saveField(field: keyof UpdateServiceRecordData) {
     return (value: string): Promise<void> =>
@@ -191,12 +124,9 @@ export function ServiceRecordCard({ workOrderId }: ServiceRecordCardProps) {
               size="sm"
               variant="outline"
               className="gap-1.5 shrink-0"
-              onClick={handleCreate}
-              disabled={createRecord.isPending}
+              onClick={() => setCreating(true)}
             >
-              {createRecord.isPending
-                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                : <Plus className="h-3.5 w-3.5" />}
+              <Plus className="h-3.5 w-3.5" />
               Crear acta
             </Button>
           </div>
@@ -206,39 +136,50 @@ export function ServiceRecordCard({ workOrderId }: ServiceRecordCardProps) {
         {record && (
           <div className="space-y-5">
 
-            {/* Narrative fields */}
-            <SaveableTextarea
-              label="Hallazgos"
-              initialValue={record.findings ?? ''}
-              onSave={saveField('findings')}
-            />
-            <SaveableTextarea
-              label="Actividades realizadas"
-              initialValue={record.activitiesPerformed ?? ''}
-              onSave={saveField('activitiesPerformed')}
-            />
-            <SaveableTextarea
-              label="Recomendaciones"
-              initialValue={record.recommendations ?? ''}
-              onSave={saveField('recommendations')}
-            />
-
-            {/* Checklist */}
-            {record.checklistItems.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-2">
-                  Checklist
-                </p>
-                <div className="divide-y rounded-md border px-4">
-                  {record.checklistItems.map((item) => (
-                    <ChecklistRow
-                      key={item.id}
-                      item={item}
-                      workOrderId={workOrderId}
-                    />
-                  ))}
-                </div>
+            {/* Informe tecnico: uno por equipo realmente intervenido */}
+            {record.interventions.length > 0 ? (
+              <div className="space-y-4">
+                {record.interventions.map((iv) => (
+                  <InterventionSection key={iv.id} intervention={iv} workOrderId={workOrderId} />
+                ))}
               </div>
+            ) : (
+              // Acta legacy sin Intervention (previa a este modelo) — el
+              // contenido narrativo sigue viviendo en ServiceRecord.
+              <>
+                <SaveableTextarea
+                  label="Hallazgos"
+                  initialValue={record.findings ?? ''}
+                  onSave={saveField('findings')}
+                />
+                <SaveableTextarea
+                  label="Actividades realizadas"
+                  initialValue={record.activitiesPerformed ?? ''}
+                  onSave={saveField('activitiesPerformed')}
+                />
+                <SaveableTextarea
+                  label="Recomendaciones"
+                  initialValue={record.recommendations ?? ''}
+                  onSave={saveField('recommendations')}
+                />
+
+                {record.checklistItems.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-2">
+                      Checklist
+                    </p>
+                    <div className="divide-y rounded-md border px-4">
+                      {record.checklistItems.map((item) => (
+                        <ChecklistRow
+                          key={item.id}
+                          item={item}
+                          workOrderId={workOrderId}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Signature status / action */}
@@ -286,6 +227,11 @@ export function ServiceRecordCard({ workOrderId }: ServiceRecordCardProps) {
           </div>
         )}
       </CardContent>
+
+      <CreateServiceRecordModal
+        workOrder={creating ? workOrder : null}
+        onOpenChange={(open) => setCreating(open)}
+      />
     </Card>
   );
 }

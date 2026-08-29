@@ -6,7 +6,7 @@ import { DocumentFooter } from '../base/DocumentFooter';
 import { InfoGrid } from '../base/InfoGrid';
 import { SectionTitle } from '../base/SectionTitle';
 import { palette, sp, fs, COMPANY } from '../base/styles';
-import type { ServiceRecordPdfDto, ChecklistItemPdfDto, ServiceRecordPhotoDto } from '../dto/service-record-pdf.dto';
+import type { ServiceRecordPdfDto, ChecklistItemPdfDto, ServiceRecordPhotoDto, InterventionPdfDto } from '../dto/service-record-pdf.dto';
 
 const RESULT_LABEL: Record<string, string> = {
   OK: 'OK',
@@ -84,6 +84,18 @@ const s = StyleSheet.create({
     color: palette.dark,
     marginBottom: sp.xs,
   },
+  interventionBlock: {
+    marginBottom: sp.sm,
+  },
+  equipmentHeader: {
+    fontSize: fs.base,
+    fontFamily: 'Helvetica-Bold',
+    color: palette.dark,
+    backgroundColor: palette.surface,
+    paddingVertical: sp.xs,
+    paddingHorizontal: sp.sm,
+    marginBottom: sp.xs,
+  },
   photoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -159,6 +171,24 @@ function ChecklistSection({ items }: { items: ChecklistItemPdfDto[] }) {
   );
 }
 
+// Un bloque por equipo realmente intervenido — encabezado con el equipo,
+// seguido de su propio informe tecnico y checklist. wrap={false} solo en el
+// encabezado evita que quede huerfano al pie de una pagina (mismo patron
+// que PhotoEvidenceSection); el contenido del bloque sigue fluyendo libre.
+function InterventionBlock({ intervention }: { intervention: InterventionPdfDto }) {
+  return (
+    <View style={s.interventionBlock}>
+      <View wrap={false} minPresenceAhead={40}>
+        <Text style={s.equipmentHeader}>{intervention.equipmentLabel}</Text>
+      </View>
+      <NarrativeField label="Hallazgos" value={intervention.findings} />
+      <NarrativeField label="Actividades realizadas" value={intervention.activitiesPerformed} />
+      <NarrativeField label="Recomendaciones" value={intervention.recommendations} />
+      <ChecklistSection items={intervention.checklistItems} />
+    </View>
+  );
+}
+
 // Evidencia fotografica — cierra el documento, siempre despues del
 // contenido tecnico. El Acta no incluye constancia/firma (eso ya se
 // resuelve en el formato fisico firmado en sitio); sin fotos, no se
@@ -227,12 +257,22 @@ export function ServiceRecordDocument({ data }: { data: ServiceRecordPdfDto }) {
         right={visitRight.length > 0 ? visitRight : [{ label: 'Técnico', value: '—' }]}
       />
 
-      <SectionTitle>Informe técnico</SectionTitle>
-      <NarrativeField label="Hallazgos" value={data.findings} />
-      <NarrativeField label="Actividades realizadas" value={data.activitiesPerformed} />
-      <NarrativeField label="Recomendaciones" value={data.recommendations} />
-
-      <ChecklistSection items={data.checklistItems} />
+      {data.interventions.length > 0 ? (
+        <>
+          <SectionTitle>Informe técnico por equipo</SectionTitle>
+          {data.interventions.map((iv, i) => (
+            <InterventionBlock key={i} intervention={iv} />
+          ))}
+        </>
+      ) : (
+        <>
+          <SectionTitle>Informe técnico</SectionTitle>
+          <NarrativeField label="Hallazgos" value={data.findings} />
+          <NarrativeField label="Actividades realizadas" value={data.activitiesPerformed} />
+          <NarrativeField label="Recomendaciones" value={data.recommendations} />
+          <ChecklistSection items={data.checklistItems} />
+        </>
+      )}
 
       {data.technicianNames.length > 0 && (
         <NarrativeField
