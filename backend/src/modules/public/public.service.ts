@@ -5,10 +5,19 @@ import {
   WorkOrderType,
 } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { EquipmentPublicDto, LastMaintenanceDto } from './dto/equipment-public.dto';
+import {
+  EquipmentPublicDto,
+  LastMaintenanceDto,
+  RelationshipStatus,
+} from './dto/equipment-public.dto';
 
-interface LastWorkOrderRow {
-  completedAt: Date | null;
+// Relacion comercial vigente = contrato de mantenimiento vigente para el
+// equipo, o al menos una Intervention completada dentro de esta ventana.
+// Especificacion cerrada 2026-08-29 — ver project_qr_closure_and_production_readiness.
+const RELATIONSHIP_GRACE_MONTHS = 12;
+
+interface LastInterventionRow {
+  occurredAt: Date | null;
   type: WorkOrderType;
 }
 
@@ -24,7 +33,7 @@ interface EquipmentPublicRow {
   status: EquipmentStatus;
   warrantyExpiresAt: Date | null;
   branch: { name: string; city: string | null };
-  workOrders: LastWorkOrderRow[];
+  interventions: LastInterventionRow[];
 }
 
 const QR_CODE_PATTERN = /^[A-Za-z0-9_-]{12}$/;
@@ -57,20 +66,19 @@ export class PublicService {
         status: true,
         warrantyExpiresAt: true,
         branch: { select: { name: true, city: true } },
-        // D-4.1: consulta directa sobre WorkOrder, sin traversar MaintenanceVisit.
-        // Cubre PREVENTIVE (generadas desde plan) y CORRECTIVE (creadas directamente).
-        // Fuente de fecha: completedAt — escrito de forma garantizada en la
-        // transición IN_PROGRESS → COMPLETED. INSPECTION excluido explícitamente.
-        workOrders: {
+        // Trazabilidad por activo (Intervention, no WorkOrder): un equipo
+        // puede intervenirse dentro de una OT de sede/multi-equipo donde
+        // WorkOrder.equipmentId queda null — Intervention.equipmentId es la
+        // fuente correcta. Fuente de fecha: occurredAt.
+        interventions: {
           where: {
             status: 'COMPLETED',
             type: { in: [WorkOrderType.PREVENTIVE, WorkOrderType.CORRECTIVE] },
-            deletedAt: null,
           },
-          orderBy: { completedAt: 'desc' },
+          orderBy: { occurredAt: 'desc' },
           take: 1,
           select: {
-            completedAt: true,
+            occurredAt: true,
             type: true,
           },
         },
@@ -81,45 +89,82 @@ export class PublicService {
       throw new NotFoundException('Equipment not found');
     }
 
-    const lastWo = equipment.workOrders[0] ?? null;
+    const lastIv = equipment.interventions[0] ?? null;
 
-    // Cuando el último mantenimiento fue correctivo, se busca además el
-    // último preventivo del mismo equipo: mostrar solo el correctivo podría
+    // Cuando la última intervención fue correctiva, se busca además la
+    // última preventiva del mismo equipo: mostrar solo la correctiva podría
     // sugerir que el activo no tiene plan preventivo vigente cuando sí lo
-    // tiene. En los demás casos (preventivo ya es el último, o no hay
-    // ninguno) no hace falta esta segunda consulta.
-    const lastPreventiveWo: LastWorkOrderRow | null =
-      lastWo?.type === WorkOrderType.CORRECTIVE
-        ? await this.prisma.workOrder.findFirst({
+    // tiene. En los demás casos (preventiva ya es la última, o no hay
+    // ninguna) no hace falta esta segunda consulta.
+    const lastPreventiveIv: LastInterventionRow | null =
+      lastIv?.type === WorkOrderType.CORRECTIVE
+        ? await this.prisma.intervention.findFirst({
             where: {
               equipmentId: equipment.id,
               status: 'COMPLETED',
               type: WorkOrderType.PREVENTIVE,
-              deletedAt: null,
             },
-            orderBy: { completedAt: 'desc' },
-            select: { completedAt: true, type: true },
+            orderBy: { occurredAt: 'desc' },
+            select: { occurredAt: true, type: true },
           })
         : null;
 
-    return this.toPublicDto(equipment, lastPreventiveWo);
+    const relationshipStatus = await this.resolveRelationshipStatus(equipment.id, lastIv);
+
+    return this.toPublicDto(equipment, lastPreventiveIv, relationshipStatus);
   }
 
-  private toMaintenanceDto(wo: LastWorkOrderRow | null): LastMaintenanceDto | null {
-    return wo?.completedAt
+  // Relacion comercial vigente (especificacion cerrada 2026-08-29):
+  // contrato de mantenimiento ACTIVE vigente hoy para el equipo, o al menos
+  // una Intervention completada dentro de los ultimos RELATIONSHIP_GRACE_MONTHS.
+  private async resolveRelationshipStatus(
+    equipmentId: string,
+    lastIntervention: LastInterventionRow | null,
+  ): Promise<RelationshipStatus> {
+    const now = new Date();
+
+    if (lastIntervention?.occurredAt) {
+      const graceLimit = new Date(lastIntervention.occurredAt);
+      graceLimit.setMonth(graceLimit.getMonth() + RELATIONSHIP_GRACE_MONTHS);
+      if (graceLimit >= now) return 'CURRENT';
+    }
+
+    const activeContract = await this.prisma.contractEquipment.findFirst({
+      where: {
+        equipmentId,
+        contract: {
+          status: 'ACTIVE',
+          startDate: { lte: now },
+          endDate: { gte: now },
+          deletedAt: null,
+        },
+      },
+      select: { id: true },
+    });
+
+    return activeContract ? 'CURRENT' : 'LAPSED';
+  }
+
+  private toMaintenanceDto(iv: LastInterventionRow | null): LastMaintenanceDto | null {
+    return iv?.occurredAt
       ? {
-          date: wo.completedAt.toISOString().split('T')[0],
-          type: wo.type as 'PREVENTIVE' | 'CORRECTIVE',
+          date: iv.occurredAt.toISOString().split('T')[0],
+          type: iv.type as 'PREVENTIVE' | 'CORRECTIVE',
         }
       : null;
   }
 
   private toPublicDto(
     equipment: EquipmentPublicRow,
-    lastPreventiveWo: LastWorkOrderRow | null,
+    lastPreventiveIv: LastInterventionRow | null,
+    relationshipStatus: RelationshipStatus,
   ): EquipmentPublicDto {
-    const lastMaintenance = this.toMaintenanceDto(equipment.workOrders[0] ?? null);
-    const lastPreventiveMaintenance = this.toMaintenanceDto(lastPreventiveWo);
+    // LAPSED: nunca se expone informacion tecnica, aunque exista historial
+    // real internamente (el historial no se borra, solo deja de publicarse).
+    const lastMaintenance =
+      relationshipStatus === 'CURRENT' ? this.toMaintenanceDto(equipment.interventions[0] ?? null) : null;
+    const lastPreventiveMaintenance =
+      relationshipStatus === 'CURRENT' ? this.toMaintenanceDto(lastPreventiveIv) : null;
 
     return {
       qrCode: equipment.qrCode as string,
@@ -139,6 +184,7 @@ export class PublicService {
         name: equipment.branch.name,
         city: equipment.branch.city,
       },
+      relationshipStatus,
       lastMaintenance,
       lastPreventiveMaintenance,
     };

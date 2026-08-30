@@ -66,8 +66,8 @@ function getAlert(state: PortalState): AlertConfig | null {
       };
     case 'contract_expired':
       return {
-        variant: 'warn',
-        message: 'Sin contrato de mantenimiento vigente. El historial de servicio puede estar desactualizado.',
+        variant: 'neutral',
+        message: 'Este activo cuenta con historial técnico registrado con STECH NODES. Contáctanos para restablecer el seguimiento.',
       };
     case 'decommissioned':
       return {
@@ -145,8 +145,10 @@ function EquipmentView({ equipment }: { equipment: EquipmentPublicDto }) {
       <PortalHeader />
       <main className="portal-content">
         <div className="desktop-grid">
-          {/* Left column — always shown */}
-          <div className="desktop-left">
+          {/* Left column — always shown. Ocupa el ancho completo cuando la
+              columna derecha no se renderiza (contract_expired), para no
+              dejar espacio vacio en el layout de escritorio. */}
+          <div className="desktop-left" style={state === 'contract_expired' ? { gridColumn: '1 / -1', borderRight: 'none' } : undefined}>
             {/* Hero */}
             <div className="equipment-hero">
               <h1 className="equipment-name">{name}</h1>
@@ -167,8 +169,13 @@ function EquipmentView({ equipment }: { equipment: EquipmentPublicDto }) {
               <SectionBlock label="Mantenimiento" rows={maintenanceRows} />
             )}
 
-            {/* Last maintenance (D-4 / D-4.1 + distinción preventivo/correctivo) */}
-            {state !== 'decommissioned' && (
+            {/* Last maintenance (D-4 / D-4.1 + distinción preventivo/correctivo).
+                No se muestra en contract_expired: relacion comercial LAPSED
+                significa "sin informacion tecnica", no solo sin datos —
+                el backend ya envia lastMaintenance null en ese caso. offline
+                (fuera de servicio) es un estado operativo distinto, no toca
+                la relacion comercial, conserva su comportamiento previo. */}
+            {state !== 'decommissioned' && state !== 'contract_expired' && (
               equipment.lastMaintenance ? (
                 <>
                   <SectionBlock
@@ -216,40 +223,43 @@ function EquipmentView({ equipment }: { equipment: EquipmentPublicDto }) {
             />
           </div>
 
-          {/* Right column — desktop only */}
-          <div className="desktop-right">
-            <div className="desktop-right-label">Historial de mantenimientos</div>
-            <div className="timeline">
-              {equipment.lastMaintenance ? (
-                <div className="timeline-item">
-                  <div className="timeline-dot-wrap">
-                    <div className="timeline-dot" />
-                  </div>
-                  <div>
-                    <div className="timeline-date">{formatDate(equipment.lastMaintenance.date)}</div>
-                    <div className="timeline-title">
-                      {MAINTENANCE_TYPE_LABEL[equipment.lastMaintenance.type] ?? equipment.lastMaintenance.type}
+          {/* Right column — desktop only. Oculta en contract_expired: sin
+              informacion tecnica cuando la relacion comercial es LAPSED. */}
+          {state !== 'contract_expired' && (
+            <div className="desktop-right">
+              <div className="desktop-right-label">Historial de mantenimientos</div>
+              <div className="timeline">
+                {equipment.lastMaintenance ? (
+                  <div className="timeline-item">
+                    <div className="timeline-dot-wrap">
+                      <div className="timeline-dot" />
+                    </div>
+                    <div>
+                      <div className="timeline-date">{formatDate(equipment.lastMaintenance.date)}</div>
+                      <div className="timeline-title">
+                        {MAINTENANCE_TYPE_LABEL[equipment.lastMaintenance.type] ?? equipment.lastMaintenance.type}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="timeline-item">
-                  <div className="timeline-dot-wrap">
-                    <div className="timeline-dot muted" />
-                  </div>
-                  <div>
-                    <div className="timeline-date">—</div>
-                    <div className="timeline-title" style={{ color: 'var(--text-3)', fontWeight: 400 }}>
-                      Sin mantenimientos registrados
+                ) : (
+                  <div className="timeline-item">
+                    <div className="timeline-dot-wrap">
+                      <div className="timeline-dot muted" />
+                    </div>
+                    <div>
+                      <div className="timeline-date">—</div>
+                      <div className="timeline-title" style={{ color: 'var(--text-3)', fontWeight: 400 }}>
+                        Sin mantenimientos registrados
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              <div className="timeline-phase2-note">
+                El historial completo de mantenimientos estará disponible en la siguiente versión del portal.
+              </div>
             </div>
-            <div className="timeline-phase2-note">
-              El historial completo de mantenimientos estará disponible en la siguiente versión del portal.
-            </div>
-          </div>
+          )}
         </div>
       </main>
       <PortalFooter />

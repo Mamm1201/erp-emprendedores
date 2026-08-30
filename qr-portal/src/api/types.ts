@@ -10,6 +10,12 @@ export interface LastMaintenanceDto {
   type: 'PREVENTIVE' | 'CORRECTIVE';
 }
 
+// Relacion comercial del activo con STECH NODES. NO confundir con
+// EquipmentStatus (estado operativo interno, mismos strings ACTIVE/
+// INACTIVE pero significado distinto) — por eso el nombre y los valores
+// del campo son deliberadamente distintos.
+export type RelationshipStatus = 'CURRENT' | 'LAPSED';
+
 export interface EquipmentPublicDto {
   qrCode: string;
   type: string;
@@ -21,6 +27,7 @@ export interface EquipmentPublicDto {
   status: EquipmentStatus;
   warrantyExpiresAt: string | null;
   branch: BranchPublicDto;
+  relationshipStatus: RelationshipStatus;
   lastMaintenance: LastMaintenanceDto | null;
   lastPreventiveMaintenance: LastMaintenanceDto | null;
 }
@@ -34,9 +41,6 @@ export type PortalState =
 export function derivePortalState(eq: EquipmentPublicDto): PortalState {
   if (eq.status === 'DECOMMISSIONED') return 'decommissioned';
   if (eq.status === 'INACTIVE') return 'offline';
-  if (eq.warrantyExpiresAt) {
-    const expiry = new Date(eq.warrantyExpiresAt);
-    if (expiry < new Date()) return 'contract_expired';
-  }
+  if (eq.relationshipStatus === 'LAPSED') return 'contract_expired';
   return 'active';
 }

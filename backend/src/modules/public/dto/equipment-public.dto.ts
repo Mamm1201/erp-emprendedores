@@ -1,7 +1,14 @@
 export class LastMaintenanceDto {
-  date: string; // YYYY-MM-DD — WorkOrder.completedAt (D-4.1)
+  date: string; // YYYY-MM-DD — Intervention.occurredAt
   type: 'PREVENTIVE' | 'CORRECTIVE';
 }
+
+// Relación comercial del activo con STECH NODES — NO confundir con
+// Equipment.status (estado operativo interno, mismos strings ACTIVE/
+// INACTIVE pero significado distinto). CURRENT: contrato de mantenimiento
+// vigente para el equipo, o al menos una Intervention completada en los
+// ultimos 12 meses. LAPSED: ninguna de las dos condiciones.
+export type RelationshipStatus = 'CURRENT' | 'LAPSED';
 
 export class BranchPublicDto {
   name: string;
@@ -12,18 +19,18 @@ export class BranchPublicDto {
  * DTO de salida para el portal QR público.
  *
  * Contrato explícito: solo los campos definidos aquí llegan al cliente.
- * Excluidos: id, branchId, criticality, notes, deletedAt, createdAt,
- * updatedAt, clientId, número de OT, técnico, hallazgos/notas de la OT,
- * cualquier dato financiero o de usuario interno.
+ * Excluidos siempre: id, branchId, criticality, notes, deletedAt,
+ * createdAt, updatedAt, clientId, número de OT, técnico, checklist,
+ * hallazgos, actividades realizadas, recomendaciones, evidencia
+ * fotográfica/documentos, cualquier dato financiero o de usuario interno.
+ * Ver [[project_qr_closure_and_production_readiness]] — especificación
+ * cerrada 2026-08-29.
  *
- * lastMaintenance (D-4 + D-4.1): última OT COMPLETED de tipo PREVENTIVE o
- * CORRECTIVE vinculada al equipo. null si no existe ninguna.
- *
- * lastPreventiveMaintenance: solo se resuelve cuando lastMaintenance es
- * CORRECTIVE — último PREVENTIVE COMPLETED del mismo equipo, para no dar a
- * entender que un activo sin plan preventivo vigente. null en cualquier otro
- * caso (preventivo ya es el último, no hay preventivo previo, o no hay
- * ningún mantenimiento).
+ * lastMaintenance / lastPreventiveMaintenance: última Intervention COMPLETED
+ * del equipo (y, si esa fue CORRECTIVE, la última PREVENTIVE previa). Solo
+ * se poblan cuando relationshipStatus es CURRENT — si es LAPSED, ambos
+ * llegan en null aunque exista historial real (el historial nunca se borra
+ * del ERP, solo deja de exponerse públicamente).
  */
 export class EquipmentPublicDto {
   qrCode: string;
@@ -36,6 +43,7 @@ export class EquipmentPublicDto {
   status: string;
   warrantyExpiresAt: string | null;
   branch: BranchPublicDto;
+  relationshipStatus: RelationshipStatus;
   lastMaintenance: LastMaintenanceDto | null;
   lastPreventiveMaintenance: LastMaintenanceDto | null;
 }

@@ -8,7 +8,7 @@ const CONFIG: Record<PortalState, { label: string; className: string; dot: boole
   active:           { label: 'ACTIVO',            className: 'active',     dot: true },
   offline:          { label: 'FUERA DE SERVICIO', className: 'offline',    dot: true },
   decommissioned:   { label: 'DADO DE BAJA',      className: 'retired',    dot: false },
-  contract_expired: { label: 'ACTIVO',            className: 'active',     dot: true },
+  contract_expired: { label: 'SIN SEGUIMIENTO',   className: 'no-history', dot: false },
 };
 
 export function StatusBadge({ state }: Props) {
