@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  OpportunityStage,
   Prisma,
   QuotationStatus,
   RetentionConcept,
@@ -25,6 +26,11 @@ import {
 } from './quotations.constants';
 import { nextQuotationNumber } from './quotations-document.service';
 import { assertStatusTransition, isEditableStatus } from './quotations.status';
+// Funcion pura, sin DI/estado — reutilizada tal cual (sin modificarla) para
+// decidir si Quotation.APPROVED puede completar automaticamente su
+// Opportunity vinculada. No introduce dependencia de modulo/runtime con
+// OpportunitiesModule (Contrato de implementacion WON automatico, 2026-09-02).
+import { isTerminalStage } from '../opportunities/opportunities.stage';
 import { CreateQuotationDto } from './dto/create-quotation.dto';
 import { QueryQuotationsDto } from './dto/query-quotations.dto';
 import { QuotationItemDto } from './dto/quotation-item.dto';
@@ -305,6 +311,50 @@ export class QuotationsService {
           select: selectPayload,
         });
       });
+    }
+
+    // CRM (F1.1-F1.8): si esta Quotation esta vinculada a una Opportunity,
+    // su aprobacion completa automaticamente el negocio (WON), salvo que la
+    // Opportunity ya este en un estado terminal (WON: no-op idempotente;
+    // LOST: se conserva LOST a proposito, sin reabrirla — la aprobacion de
+    // la Quotation nunca se bloquea por esto). Lectura de opportunityId
+    // localizada aqui a proposito: QUOTATION_SELECT no se toca, por lo que
+    // ningun endpoint existente cambia su forma de respuesta. Quotations sin
+    // opportunityId (el 100% de las anteriores a F1.1, y cualquiera creada
+    // por el flujo tradicional) nunca entran a este bloque.
+    if (dto.status === QuotationStatus.APPROVED) {
+      const link = await this.prisma.quotation.findUnique({
+        where: { id },
+        select: { opportunityId: true },
+      });
+
+      if (link?.opportunityId) {
+        const opportunityId = link.opportunityId;
+
+        return this.prisma.$transaction(async (tx) => {
+          const opportunity = await tx.opportunity.findUniqueOrThrow({
+            where: { id: opportunityId },
+            select: { stage: true },
+          });
+
+          if (!isTerminalStage(opportunity.stage)) {
+            await tx.opportunity.update({
+              where: { id: opportunityId },
+              data: { stage: OpportunityStage.WON },
+            });
+          }
+
+          return tx.quotation.update({
+            where: { id },
+            data: {
+              status: dto.status,
+              ...lifecycleData,
+              ...snapshotData,
+            },
+            select: selectPayload,
+          });
+        });
+      }
     }
 
     return this.prisma.quotation.update({
