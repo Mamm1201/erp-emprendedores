@@ -42,6 +42,10 @@ export class QueryQuotationsDto {
   clientId?: string;
 
   @IsOptional()
+  @IsString()
+  opportunityId?: string;
+
+  @IsOptional()
   @IsDateString()
   fromDate?: string;
 

@@ -391,6 +391,10 @@ export class QuotationsService {
       where.clientId = query.clientId;
     }
 
+    if (query.opportunityId) {
+      where.opportunityId = query.opportunityId;
+    }
+
     if (query.status) {
       where.status = query.status;
     }

@@ -4,6 +4,7 @@ export const QUOTATION_SELECT = {
   id: true,
   number: true,
   clientId: true,
+  opportunityId: true,
   branchId: true,
   status: true,
   issueDate: true,
