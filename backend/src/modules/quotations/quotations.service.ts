@@ -31,6 +31,11 @@ import { QuotationItemDto } from './dto/quotation-item.dto';
 import { UpdateQuotationDto } from './dto/update-quotation.dto';
 import { UpdateQuotationStatusDto } from './dto/update-quotation-status.dto';
 
+// Cliente de DB usado por create() y sus helpers: this.prisma por defecto,
+// o el Prisma.TransactionClient de una transaccion externa (F1.8 —
+// OpportunitiesService.generateQuotation) cuando se pasa explicitamente.
+type Db = PrismaService | Prisma.TransactionClient;
+
 @Injectable()
 export class QuotationsService {
   constructor(
@@ -87,9 +92,18 @@ export class QuotationsService {
     return quotation;
   }
 
-  async create(dto: CreateQuotationDto, userId: string) {
-    await this.ensureActiveClient(dto.clientId);
-    const branch = await this.resolveBranch(dto.clientId, dto.branchId);
+  // tx opcional (F1.8): si se pasa, create() participa en la transaccion
+  // externa del llamador en vez de abrir la suya propia — usado por
+  // OpportunitiesService.generateQuotation() para atomicidad Account/Client/
+  // Quotation/Opportunity. Sin tx, comportamiento identico al actual.
+  async create(
+    dto: CreateQuotationDto,
+    userId: string,
+    tx?: Prisma.TransactionClient,
+  ) {
+    const db: Db = tx ?? this.prisma;
+    await this.ensureActiveClient(dto.clientId, db);
+    const branch = await this.resolveBranch(dto.clientId, dto.branchId, db);
     const { items, totals } = this.buildItemsPayload(dto.items);
 
     const retentionsApplied = dto.retentionsApplied ?? false;
@@ -102,10 +116,10 @@ export class QuotationsService {
         })
       : [];
 
-    return this.prisma.$transaction(async (tx) => {
-      const number = await nextQuotationNumber(tx);
+    const run = async (client: Prisma.TransactionClient) => {
+      const number = await nextQuotationNumber(client);
 
-      return tx.quotation.create({
+      return client.quotation.create({
         data: {
           number,
           clientId: dto.clientId,
@@ -132,7 +146,10 @@ export class QuotationsService {
           retentionLines: { select: QUOTATION_RETENTION_LINE_SELECT },
         },
       });
-    });
+    };
+
+    if (tx) return run(tx);
+    return this.prisma.$transaction(run);
   }
 
   async update(id: string, dto: UpdateQuotationDto, userId: string) {
@@ -467,8 +484,8 @@ export class QuotationsService {
     return lines;
   }
 
-  private async ensureActiveClient(clientId: string) {
-    const client = await this.prisma.client.findFirst({
+  private async ensureActiveClient(clientId: string, db: Db = this.prisma) {
+    const client = await db.client.findFirst({
       where: { id: clientId, deletedAt: null },
       select: { id: true, legalName: true, taxId: true },
     });
@@ -480,12 +497,16 @@ export class QuotationsService {
     return client;
   }
 
-  private async resolveBranch(clientId: string, branchId?: string) {
+  private async resolveBranch(
+    clientId: string,
+    branchId?: string,
+    db: Db = this.prisma,
+  ) {
     if (!branchId) {
       return null;
     }
 
-    const branch = await this.prisma.branch.findFirst({
+    const branch = await db.branch.findFirst({
       where: { id: branchId, clientId, deletedAt: null },
       select: {
         id: true,

@@ -218,6 +218,12 @@ model User {
   resourceUtilizations ResourceUtilization[] @relation("ResourceUtilizationCreatedBy")
   billingPreparationsCreated   BillingPreparation[] @relation("BillingPreparationCreatedBy")
   billingPreparationsConfirmed BillingPreparation[] @relation("BillingPreparationConfirmedBy")
+  // CRM de Prospeccion (Fase 1) — relaciones inversas virtuales, sin columna
+  // nueva ni cambio de comportamiento en User (Contrato de Diseño Fase 0,
+  // decision F0-D01).
+  accountsOwned                Account[]             @relation("AccountOwner")
+  opportunitiesOwned           Opportunity[]         @relation("OpportunityOwner")
+  activitiesCreated            Activity[]            @relation("ActivityCreatedBy")
 
   @@map("users")
 }
@@ -244,6 +250,10 @@ model Client {
   workOrders           WorkOrder[]
   invoices             Invoice[]
   maintenanceContracts MaintenanceContract[]
+  // Relacion inversa virtual — la FK (promotedClientId) vive en Account, no
+  // aqui. Sin columna nueva ni cambio de comportamiento en Client (Contrato
+  // de Diseño Fase 0, decision F0-D01).
+  account              Account?
 
   @@index([legalName])
   @@map("clients")
@@ -269,6 +279,10 @@ model Branch {
   quotations Quotation[]
   workOrders WorkOrder[]
   equipment  Equipment[]
+  // Relacion inversa virtual — la FK (branchId) vive en Contact, no aqui.
+  // Sin columna nueva ni cambio de comportamiento en Branch (Contrato de
+  // Diseño Fase 0, decision F0-D01).
+  contacts   Contact[]
 
   @@index([clientId])
   @@index([clientId, name])
@@ -309,12 +323,18 @@ model Quotation {
   cancellationNotes   String?         @db.VarChar(500)
   createdById         String?
   updatedById         String?
+  // CRM de Prospeccion (Fase 1): vincula esta cotizacion a la Opportunity
+  // que la origino. Nullable/aditivo — cotizaciones sin Opportunity de
+  // origen (flujo actual) siguen funcionando exactamente igual. No cambia
+  // la semantica de clientId ni de ningun otro campo existente.
+  opportunityId       String?
   deletedAt           DateTime?
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
 
   client              Client              @relation(fields: [clientId], references: [id])
   branch              Branch?             @relation(fields: [branchId], references: [id])
+  opportunity         Opportunity?        @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
   workOrder           WorkOrder?
   maintenanceContract MaintenanceContract?
   items               QuotationItem[]
@@ -324,6 +344,7 @@ model Quotation {
 
   @@index([clientId, status])
   @@index([issueDate])
+  @@index([opportunityId])
   @@map("quotations")
 }
 
@@ -1006,4 +1027,239 @@ model MigrationLog {
   @@index([sourceTable, sourceId])
   @@index([targetTable, targetId])
   @@map("migration_log")
+}
+
+// ─── CRM de Prospección Comercial (Fase 1) ─────────────────────────────────────
+// Contrato de Diseño Fase 0 (2026-08-31): Account → Contact → Opportunity →
+// Activity, separado de Client (entidad financiera critica) a proposito.
+// Account se conecta a Client mediante promotedClientId cuando se genera la
+// primera Quotation desde una Opportunity — Client existente no implica
+// negocio ganado; WON depende exclusivamente de Quotation.status = APPROVED.
+
+enum LeadSource {
+  LINKEDIN
+  REFERRAL
+  INBOUND
+  EVENT
+  OTHER
+}
+
+// Tipo y tamaño de institucion — no estaban enumerados explicitamente en el
+// Contrato de Diseño (solo se aprobaron los campos institutionType y
+// sizePotential); se definen como enum aqui, consistente con el resto del
+// schema, no como String libre.
+enum InstitutionType {
+  IPS
+  CLINIC
+  HOSPITAL
+  OTHER
+}
+
+enum SizePotential {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum AccountStatus {
+  ACTIVE_PROSPECT
+  CUSTOMER
+  DORMANT
+  DISQUALIFIED
+}
+
+// Cuenta objetivo (empresa/IPS) durante la etapa de prospeccion.
+model Account {
+  id               String          @id @default(cuid())
+  legalName        String
+  nit              String?
+  city             String
+  institutionType  InstitutionType
+  sizePotential    SizePotential?
+  website          String?
+  status           AccountStatus   @default(ACTIVE_PROSPECT)
+  source           LeadSource
+  notes            String?
+  ownerId          String
+  promotedClientId String?         @unique
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  owner         User          @relation("AccountOwner", fields: [ownerId], references: [id])
+  client        Client?       @relation(fields: [promotedClientId], references: [id])
+  contacts      Contact[]
+  opportunities Opportunity[]
+  activities    Activity[]
+
+  @@index([legalName])
+  @@index([status])
+  @@index([ownerId])
+  @@map("accounts")
+}
+
+enum ContactRole {
+  IPS_MANAGER
+  ADMIN_DIRECTOR
+  INFRASTRUCTURE_DIRECTOR
+  MAINTENANCE_COORDINATOR
+  HOSPITAL_ENGINEERING
+  BIOMEDICAL_MANAGER
+  PROCUREMENT
+  QUALITY_COMPLIANCE
+  OTHER
+}
+
+enum InfluenceLevel {
+  DECISION_MAKER
+  INFLUENCER
+  GATEKEEPER
+  UNKNOWN
+}
+
+// Persona decisora/influenciadora en una Account — distinto de
+// Branch.contactName / Quotation.branchContactName (contacto operativo de
+// sitio para logistica de OT). Responsabilidades diferentes, no se unifican.
+model Contact {
+  id             String         @id @default(cuid())
+  accountId      String
+  branchId       String?
+  name           String
+  role           ContactRole
+  area           String?
+  linkedinUrl    String?
+  email          String?
+  phone          String?
+  influenceLevel InfluenceLevel @default(UNKNOWN)
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  account       Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  branch        Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  opportunities Opportunity[] @relation("OpportunityPrimaryContact")
+  activities    Activity[]
+
+  @@index([accountId])
+  @@index([branchId])
+  @@map("contacts")
+}
+
+enum OpportunityStage {
+  IDENTIFIED
+  RESEARCHING
+  CONTACTED
+  CONVERSING
+  MEETING_DIAGNOSIS
+  QUOTED
+  NEGOTIATING
+  WON
+  LOST
+}
+
+enum OpportunityPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Oportunidad comercial dentro de una Account. WON es una transicion
+// exclusivamente automatica (nunca manual), gobernada por el estado de la(s)
+// Quotation(s) vinculada(s) — ver Contrato de Diseño Fase 0, regla de
+// promocion y tabla de transiciones. nextActionAt/lastContactedAt NO existen
+// como campos: se derivan del historial de Activity.
+model Opportunity {
+  id               String              @id @default(cuid())
+  accountId        String
+  primaryContactId String?
+  title            String
+  detectedNeed     String?
+  score            Int                 @default(0)
+  priority         OpportunityPriority @default(MEDIUM)
+  stage            OpportunityStage    @default(IDENTIFIED)
+  source           LeadSource
+  probability      Int?
+  potentialValue   Decimal?            @db.Decimal(12, 2)
+  notes            String?
+  ownerId          String
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  account        Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  primaryContact Contact?    @relation("OpportunityPrimaryContact", fields: [primaryContactId], references: [id], onDelete: SetNull)
+  owner          User        @relation("OpportunityOwner", fields: [ownerId], references: [id])
+  activities     Activity[]
+  quotations     Quotation[]
+  services       Service[]
+
+  @@index([accountId])
+  @@index([stage])
+  @@index([ownerId])
+  @@map("opportunities")
+}
+
+enum ActivityType {
+  LINKEDIN
+  EMAIL
+  WHATSAPP
+  CALL
+  MEETING
+  NOTE
+  PROPOSAL
+  FOLLOW_UP
+}
+
+enum ActivityStatus {
+  PLANNED
+  COMPLETED
+  CANCELLED
+}
+
+// Registro de interaccion comercial — fuente de verdad de "ultimo contacto" y
+// "proxima accion" (derivados por consulta, no campos sueltos en Opportunity).
+// accountId siempre obligatorio; opportunityId/contactId opcionales — permite
+// registrar actividad desde la etapa inicial de prospeccion, antes de que
+// exista una Opportunity formal.
+model Activity {
+  id            String         @id @default(cuid())
+  accountId     String
+  opportunityId String?
+  contactId     String?
+  type          ActivityType
+  status        ActivityStatus @default(COMPLETED)
+  occurredAt    DateTime
+  summary       String
+  outcome       String?
+  aiGenerated   Boolean        @default(false)
+  createdById   String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  account     Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  createdBy   User         @relation("ActivityCreatedBy", fields: [createdById], references: [id])
+
+  @@index([accountId])
+  @@index([opportunityId])
+  @@index([status])
+  @@map("activities")
+}
+
+// Catalogo editable de servicios comerciales de STECH NODES — deliberadamente
+// NO EquipmentType (enum operativo: no cubre mobiliario ni biomedico via
+// integrador). Sembrado inicial: los 3 bloques vigentes del sitio (ver
+// Contrato de Diseño Fase 0). Relacion N:M implicita con Opportunity — sin
+// modelo de union explicito, sin atributos propios de la relacion.
+model Service {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  opportunities Opportunity[]
+
+  @@map("services")
 }

@@ -24,7 +24,8 @@
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
     "db:seed": "prisma db seed",
-    "bootstrap:admin": "tsx prisma/bootstrap-admin.ts"
+    "bootstrap:admin": "tsx prisma/bootstrap-admin.ts",
+    "seed:crm-catalog": "tsx prisma/seed-crm-catalog.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
