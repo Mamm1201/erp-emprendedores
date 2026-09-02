@@ -8,6 +8,9 @@ import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ClientsPage } from '@/pages/ClientsPage';
 import { ClientDetailPage } from '@/pages/ClientDetailPage';
+import { AccountsPage } from '@/pages/AccountsPage';
+import { AccountDetailPage } from '@/pages/AccountDetailPage';
+import { OpportunityDetailPage } from '@/pages/OpportunityDetailPage';
 import { WorkOrdersPage } from '@/pages/WorkOrdersPage';
 import { WorkOrderDetailPage } from '@/pages/WorkOrderDetailPage';
 import { MaintenancePlansPage } from '@/pages/MaintenancePlansPage';
@@ -39,6 +42,9 @@ const router = createBrowserRouter([
           { index: true, element: <DashboardPage /> },
           { path: 'clientes', element: <ClientsPage /> },
           { path: 'clientes/:id', element: <ClientDetailPage /> },
+          { path: 'prospeccion', element: <AccountsPage /> },
+          { path: 'prospeccion/:accountId', element: <AccountDetailPage /> },
+          { path: 'prospeccion/:accountId/oportunidades/:opportunityId', element: <OpportunityDetailPage /> },
           { path: 'cotizaciones', element: <QuotationsPage /> },
           { path: 'cotizaciones/nueva', element: <QuotationFormPage /> },
           { path: 'cotizaciones/:id', element: <QuotationFormPage /> },

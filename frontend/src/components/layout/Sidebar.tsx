@@ -13,6 +13,7 @@ import {
   FileSignature,
   LogOut,
   ShieldCheck,
+  Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +25,7 @@ import { COMPANY } from '@/config/company';
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/clientes', label: 'Clientes', icon: Users },
+  { to: '/prospeccion', label: 'Prospección', icon: Target },
   { to: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
   { to: '/cuentas-cobro', label: 'Cuentas de cobro', icon: Receipt },
   { to: '/pagos', label: 'Pagos recibidos', icon: Banknote },

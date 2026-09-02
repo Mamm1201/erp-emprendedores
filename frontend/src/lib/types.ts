@@ -285,6 +285,9 @@ export interface Quotation {
   items?: QuotationItem[];
   retentionLines?: QuotationRetentionLine[];
   workOrder?: { id: string; number: string; status: string } | null;
+  // CRM de Prospección — vínculo con la Opportunity que la originó (F1.1 /
+  // trazabilidad Opportunity↔Quotation). null para toda cotización tradicional.
+  opportunityId: string | null;
 }
 
 export type MaintenanceFrequency =
@@ -690,4 +693,133 @@ export interface DocumentShareResult {
     email: string | null;
     phone: string | null;
   };
+}
+
+// ─── CRM de Prospección Comercial (F1.1-F1.8) ──────────────────────────────────
+// Espejo exacto del schema/contratos de backend — sin propiedades hipotéticas.
+
+export type InstitutionType = 'IPS' | 'CLINIC' | 'HOSPITAL' | 'OTHER';
+export type SizePotential = 'SMALL' | 'MEDIUM' | 'LARGE';
+export type AccountStatus = 'ACTIVE_PROSPECT' | 'CUSTOMER' | 'DORMANT' | 'DISQUALIFIED';
+export type LeadSource = 'LINKEDIN' | 'REFERRAL' | 'INBOUND' | 'EVENT' | 'OTHER';
+
+export interface Account {
+  id: string;
+  legalName: string;
+  nit: string | null;
+  city: string;
+  institutionType: InstitutionType;
+  sizePotential: SizePotential | null;
+  website: string | null;
+  status: AccountStatus;
+  source: LeadSource;
+  notes: string | null;
+  ownerId: string;
+  promotedClientId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  owner: { id: string; name: string };
+}
+
+export type ContactRole =
+  | 'IPS_MANAGER'
+  | 'ADMIN_DIRECTOR'
+  | 'INFRASTRUCTURE_DIRECTOR'
+  | 'MAINTENANCE_COORDINATOR'
+  | 'HOSPITAL_ENGINEERING'
+  | 'BIOMEDICAL_MANAGER'
+  | 'PROCUREMENT'
+  | 'QUALITY_COMPLIANCE'
+  | 'OTHER';
+
+export type InfluenceLevel = 'DECISION_MAKER' | 'INFLUENCER' | 'GATEKEEPER' | 'UNKNOWN';
+
+export interface Contact {
+  id: string;
+  accountId: string;
+  branchId: string | null;
+  name: string;
+  role: ContactRole;
+  area: string | null;
+  linkedinUrl: string | null;
+  email: string | null;
+  phone: string | null;
+  influenceLevel: InfluenceLevel;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type OpportunityStage =
+  | 'IDENTIFIED'
+  | 'RESEARCHING'
+  | 'CONTACTED'
+  | 'CONVERSING'
+  | 'MEETING_DIAGNOSIS'
+  | 'QUOTED'
+  | 'NEGOTIATING'
+  | 'WON'
+  | 'LOST';
+
+export type OpportunityPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface Service {
+  id: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Opportunity {
+  id: string;
+  accountId: string;
+  primaryContactId: string | null;
+  title: string;
+  detectedNeed: string | null;
+  score: number;
+  priority: OpportunityPriority;
+  stage: OpportunityStage;
+  source: LeadSource;
+  probability: number | null;
+  potentialValue: string | null;
+  notes: string | null;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+  owner: { id: string; name: string };
+  primaryContact: { id: string; name: string } | null;
+  services: { id: string; name: string }[];
+}
+
+export type ActivityType =
+  | 'LINKEDIN'
+  | 'EMAIL'
+  | 'WHATSAPP'
+  | 'CALL'
+  | 'MEETING'
+  | 'NOTE'
+  | 'PROPOSAL'
+  | 'FOLLOW_UP';
+
+export type ActivityStatus = 'PLANNED' | 'COMPLETED' | 'CANCELLED';
+
+export interface Activity {
+  id: string;
+  accountId: string;
+  opportunityId: string | null;
+  contactId: string | null;
+  type: ActivityType;
+  status: ActivityStatus;
+  occurredAt: string;
+  summary: string;
+  outcome: string | null;
+  // Preparación del modelo para la futura integración de IA (F1.1) — no se
+  // expone en ningún formulario de F1.9, conserva su comportamiento actual.
+  aiGenerated: boolean;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: { id: string; name: string };
 }
