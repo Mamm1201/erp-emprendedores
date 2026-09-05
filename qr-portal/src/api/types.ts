@@ -44,3 +44,13 @@ export function derivePortalState(eq: EquipmentPublicDto): PortalState {
   if (eq.relationshipStatus === 'LAPSED') return 'contract_expired';
   return 'active';
 }
+
+// ─── Acreditación de personal (Fase 4) ─────────────────────────────────────────
+
+export type AccreditationVerificationStatus = 'VALID' | 'NOT_VALID';
+
+export interface AccreditationPublicDto {
+  personName: string;
+  displayRole: string;
+  status: AccreditationVerificationStatus;
+}

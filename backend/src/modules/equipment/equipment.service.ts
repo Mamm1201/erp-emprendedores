@@ -1,6 +1,6 @@
-import { randomBytes } from 'crypto';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
+import { generateOpaqueToken } from '../../common/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   EQUIPMENT_DEFAULT_LIMIT,
@@ -80,7 +80,7 @@ export class EquipmentService {
         installDate: dto.installDate ? new Date(dto.installDate) : null,
         location: dto.location ?? null,
         notes: dto.notes ?? null,
-        qrCode: this.generateQrCode(),
+        qrCode: generateOpaqueToken(),
       },
       select: EQUIPMENT_SELECT,
     });
@@ -106,13 +106,9 @@ export class EquipmentService {
 
     return this.prisma.equipment.update({
       where: { id },
-      data: { qrCode: this.generateQrCode() },
+      data: { qrCode: generateOpaqueToken() },
       select: EQUIPMENT_SELECT,
     });
-  }
-
-  private generateQrCode(): string {
-    return randomBytes(9).toString('base64url');
   }
 
   async update(

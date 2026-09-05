@@ -79,6 +79,30 @@ enum ExpenseCategory {
   OTHER
 }
 
+// ─── Enums Personal / Acreditación (Fase 4) ────────────────────────────────────
+
+enum PersonProfile {
+  TECHNICIAN_INTERNAL
+  TECHNICIAN_EXTERNAL
+  BIOMEDICAL_ENGINEER
+  INDEPENDENT_PROFESSIONAL
+  CONTRACTOR
+  ADMIN_STAFF
+  OTHER
+}
+
+enum RelationshipType {
+  EMPLOYEE
+  CONTRACTOR
+  INDEPENDENT
+  EXTERNAL_OTHER
+}
+
+enum AccreditationStatus {
+  ACTIVE
+  REVOKED
+}
+
 // ─── Enums CMMS ───────────────────────────────────────────────────────────────
 
 enum EquipmentType {
@@ -199,9 +223,12 @@ model User {
   refreshTokenHash String?
   role             UserRole @default(COMMERCIAL)
   isActive         Boolean  @default(true)
+  personId         String?  @unique
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  person             Person?               @relation(fields: [personId], references: [id])
+  accreditationsIssued Accreditation[]     @relation("AccreditationIssuedBy")
   quotationsCreated  Quotation[]           @relation("QuotationCreatedBy")
   quotationsUpdated  Quotation[]           @relation("QuotationUpdatedBy")
   workOrdersCreated  WorkOrder[]           @relation("WorkOrderCreatedBy")
@@ -226,6 +253,58 @@ model User {
   activitiesCreated            Activity[]            @relation("ActivityCreatedBy")
 
   @@map("users")
+}
+
+// ─── Personal / Acreditación (Fase 4) ──────────────────────────────────────────
+// Person = identidad de una persona que participa en la operación de STECH
+// NODES. User = cuenta opcional de acceso al ERP asociada a una Person
+// (User.personId). No toda Person tiene User. Person.profile es una
+// clasificación operacional interna, independiente de UserRole (permisos del
+// ERP) y de Accreditation.displayRole (etiqueta pública) — las tres no se
+// sincronizan entre sí. Ver Fase 3.1 / Fase 4, Contrato de Implementación.
+
+model Person {
+  id               String            @id @default(cuid())
+  fullName         String
+  email            String?
+  phone            String?
+  profile          PersonProfile
+  relationshipType RelationshipType
+  notes            String?
+  deletedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  user             User?
+  accreditations   Accreditation[]
+
+  @@map("persons")
+}
+
+// Registro temporal de autorización. Historial completo preservado — nunca se
+// borra una fila; revocar y reemitir crean/actualizan filas, no eliminan.
+// Solo puede existir una Accreditation con status=ACTIVE por Person a la vez
+// (garantizado en el servicio vía lock de la fila de Person, no por
+// constraint de base de datos — ver accreditations.service.ts).
+model Accreditation {
+  id            String              @id @default(cuid())
+  personId      String
+  qrCode        String              @unique
+  displayRole   String
+  status        AccreditationStatus @default(ACTIVE)
+  validFrom     DateTime?
+  validUntil    DateTime?
+  issuedById    String
+  revokedAt     DateTime?
+  revokedReason String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  person        Person              @relation(fields: [personId], references: [id])
+  issuedBy      User                @relation("AccreditationIssuedBy", fields: [issuedById], references: [id])
+
+  @@index([personId])
+  @@map("accreditations")
 }
 
 // ─── Maestros ────────────────────────────────────────────────────────────────

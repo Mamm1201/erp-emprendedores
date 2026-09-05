@@ -31,6 +31,8 @@ import { ContactsModule } from './modules/contacts/contacts.module';
 import { OpportunitiesModule } from './modules/opportunities/opportunities.module';
 import { ActivitiesModule } from './modules/activities/activities.module';
 import { ServicesModule } from './modules/services/services.module';
+import { PersonsModule } from './modules/persons/persons.module';
+import { AccreditationsModule } from './modules/accreditations/accreditations.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
@@ -67,6 +69,8 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     OpportunitiesModule,
     ActivitiesModule,
     ServicesModule,
+    PersonsModule,
+    AccreditationsModule,
   ],
   controllers: [AppController],
   providers: [

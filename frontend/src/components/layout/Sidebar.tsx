@@ -14,6 +14,7 @@ import {
   LogOut,
   ShieldCheck,
   Target,
+  IdCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -110,6 +111,24 @@ export function Sidebar() {
           >
             <ShieldCheck className="h-4 w-4 shrink-0" />
             Usuarios
+          </NavLink>
+        )}
+
+        {/* Enlace exclusivo para ADMIN */}
+        {isAdmin && (
+          <NavLink
+            to="/personal"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+                isActive
+                  ? 'bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))] font-medium'
+                  : 'text-[hsl(var(--sidebar-foreground)/0.65)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]',
+              )
+            }
+          >
+            <IdCard className="h-4 w-4 shrink-0" />
+            Personal
           </NavLink>
         )}
       </nav>

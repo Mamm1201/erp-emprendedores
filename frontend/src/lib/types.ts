@@ -823,3 +823,52 @@ export interface Activity {
   updatedAt: string;
   createdBy: { id: string; name: string };
 }
+
+// ─── Personal / Acreditación (Fase 4) ──────────────────────────────────────────
+// Person = identidad de una persona que participa en la operación de STECH
+// NODES. User = cuenta opcional de acceso al ERP asociada a una Person.
+// Person.profile es una clasificación operacional interna, independiente de
+// UserRole (permisos del ERP) y de Accreditation.displayRole (etiqueta
+// pública) — no se sincronizan entre sí.
+
+export type PersonProfile =
+  | 'TECHNICIAN_INTERNAL'
+  | 'TECHNICIAN_EXTERNAL'
+  | 'BIOMEDICAL_ENGINEER'
+  | 'INDEPENDENT_PROFESSIONAL'
+  | 'CONTRACTOR'
+  | 'ADMIN_STAFF'
+  | 'OTHER';
+
+export type RelationshipType = 'EMPLOYEE' | 'CONTRACTOR' | 'INDEPENDENT' | 'EXTERNAL_OTHER';
+
+export interface Person {
+  id: string;
+  fullName: string;
+  email: string | null;
+  phone: string | null;
+  profile: PersonProfile;
+  relationshipType: RelationshipType;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user: { id: string; email: string; name: string; role: UserRole } | null;
+}
+
+export type AccreditationStatus = 'ACTIVE' | 'REVOKED';
+
+export interface Accreditation {
+  id: string;
+  personId: string;
+  qrCode: string;
+  displayRole: string;
+  status: AccreditationStatus;
+  validFrom: string | null;
+  validUntil: string | null;
+  issuedById: string;
+  revokedAt: string | null;
+  revokedReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+  issuedBy: { id: string; name: string };
+}

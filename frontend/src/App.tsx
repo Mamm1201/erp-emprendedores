@@ -26,6 +26,8 @@ import { EstadoCuentasPage } from '@/pages/EstadoCuentasPage';
 import UsersPage from '@/pages/UsersPage';
 import MaintenanceContractsPage from '@/pages/MaintenanceContractsPage';
 import MaintenancePlanDetailPage from '@/pages/MaintenancePlanDetailPage';
+import { PersonsPage } from '@/pages/PersonsPage';
+import { PersonDetailPage } from '@/pages/PersonDetailPage';
 
 const router = createBrowserRouter([
   {
@@ -65,6 +67,8 @@ const router = createBrowserRouter([
             element: <RoleProtectedRoute allowedRoles={['ADMIN']} />,
             children: [
               { path: 'usuarios', element: <UsersPage /> },
+              { path: 'personal', element: <PersonsPage /> },
+              { path: 'personal/:id', element: <PersonDetailPage /> },
             ],
           },
         ],

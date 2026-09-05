@@ -4,6 +4,55 @@
 
 ---
 
+## v2.11.0 — `Person` + `Accreditation`: acreditación de personal con verificación por QR (2026-09-04)
+
+Primer incremento de la línea de trabajo "Personal / Acreditación" (Fase 3.1 → Fase 4), diseñada en varias rondas de auditoría-diagnóstico-alternativas-cierre antes de escribir código. Cierra la brecha detectada: hoy era estructuralmente imposible representar a una persona que presta servicios para STECH NODES (ej. un biomédico independiente) sin crearle una cuenta de acceso al ERP (`User`). Estrategia elegida: "C primero" — se implementa `Person`+`Accreditation`+QR de forma aislada; la migración de `WorkOrder.assignedToId`/`WorkOrderTechnician`/`Intervention.primaryTechnicianId` hacia `Person` queda **deliberadamente fuera de esta fase**, con criterio de reapertura explícito (mismo patrón que Decisión 016 de F2.1).
+
+### Decisiones de dominio (Fase 3.1, cerradas)
+- `Person` = identidad de una persona. `User` = cuenta opcional de acceso al ERP asociada a una `Person` (`User.personId? @unique`, sin `userId` en `Person`) — `User` conserva exactamente su propósito actual, no se reinterpreta.
+- Tres taxonomías deliberadamente independientes, sin sincronización de código entre ellas: `UserRole` (permisos ERP), `Person.profile` (clasificación operacional interna), `Accreditation.displayRole` (etiqueta pública, `String` libre).
+- `Accreditation` es un registro temporal de autorización (no un booleano ni un sistema de permisos por función): `status` (ACTIVE/REVOKED, administrativo) + `validFrom?`/`validUntil?` (ventana de vigencia) + historial completo preservado (revocar y reemitir nunca borran filas). Solo una `ACTIVE` por `Person` a la vez, garantizada vía lock (`SELECT ... FOR UPDATE` sobre `Person`, mismo patrón que `Opportunity` en F1.8).
+- `QR → Accreditation → Person` (no `QR → Person` directo) — el token vive en `Accreditation` porque debe poder revocarse/reemitirse independientemente de la identidad.
+- `Person.deletedAt != null` responde exactamente igual que un QR inexistente en la verificación pública (mismo error, mismo 404) — nunca se distingue "no existe" de "persona eliminada", mismo principio anti-enumeración ya usado en Equipment.
+
+### Backend
+- `prisma/schema.prisma` — nuevos modelos `Person` y `Accreditation`, enums `PersonProfile`/`RelationshipType`/`AccreditationStatus`; `User` gana `personId?` único + relación inversa `accreditationsIssued`. Migración `20260904194442_add_person_accreditation` — puramente aditiva, verificada: no toca `work_orders`, `interventions`, `work_order_technicians`, `quotations` ni ningún otro dominio existente.
+- `common/utils/opaque-token.util.ts` — `generateOpaqueToken()` extraído de `equipment.service.ts` (antes método privado duplicable); `EquipmentService` ahora importa el mismo util. Refactor mecánico, sin cambio de comportamiento — verificado con regresión en vivo (mismo formato de QR, 12 caracteres base64url).
+- Módulo `persons/` — CRUD (`ADMIN` únicamente), soft-delete, sin campo de vínculo con `User` expuesto en creación (se linkea solo desde `User`).
+- Módulo `accreditations/` — `issue` (409 si ya existe una `ACTIVE`), `revoke`, `reissue` (revoca la vigente + crea una nueva, atómico), `findByPerson` (historial completo).
+- `public.controller.ts` / `public.service.ts` — nueva ruta `GET /public/accreditation/:qrCode`, mismo patrón que Equipment (sin auth, throttled, anti-enumeración, DTO allowlist propio en `dto/accreditation-public.dto.ts`).
+- `app.module.ts` — registro de `PersonsModule` y `AccreditationsModule`.
+
+### Frontend (ERP)
+- `pages/PersonsPage.tsx` (nueva) — listado/creación/edición/eliminación de `Person`, ruta `/personal`, solo `ADMIN`.
+- `pages/PersonDetailPage.tsx` (nueva) — acreditación vigente, historial, emitir/revocar/reemitir, visor de QR (`qrcode.react`, mismo patrón que `EquipmentPage`), ruta `/personal/:id`.
+- `Sidebar.tsx` — ítem "Personal" exclusivo para `ADMIN`, mismo patrón que "Usuarios".
+- `lib/types.ts` — tipos `Person`/`Accreditation` y sus enums.
+
+### Portal QR público (`qr-portal`)
+- `pages/AccreditationPage.tsx` (nueva) — ruta `/p/:qrCode`, reutiliza `PortalHeader`/`PortalFooter`/`NotFoundPage` y las clases CSS `.status-badge` ya existentes (`active`/`expired`). Muestra únicamente nombre, etiqueta pública y estado vigente/no vigente — nunca vínculo contractual, perfil interno ni ningún otro dato de `Person`.
+
+### Pruebas realizadas (Postgres real)
+`Person` sin `User` asociado; emisión/revocación/reemisión de `Accreditation` con historial verificado; `409` al emitir sobre una `ACTIVE` existente; `400` si `validUntil < validFrom`; vigencia calculada correctamente (permanente, ventana futura, revocada); QR inexistente y formato inválido responden idéntico; `Person` con `deletedAt` responde 404 público aunque su `Accreditation` esté `ACTIVE` y vigente; regresión de `Equipment` (QR generado tras el refactor, formato idéntico, verificación pública sin cambios) y de `WorkOrder`/`/health` sin alteraciones.
+
+### Carnet PDF imprimible (`GET /accreditations/:id/card.pdf`) — cierre del pendiente (2026-09-04, mismo día)
+- `documents/templates/AccreditationCardDocument.tsx` (nuevo) — reutiliza el pipeline `@react-pdf/renderer` ya existente (`PageLayout`, `DocumentFooter`, `palette`/`sp`/`fs`/`COMPANY`), mismo motor usado por Cotización/Cuenta de Cobro/Acta Técnica. Contenido: isotipo STECH NODES, "PERSONAL AUTORIZADO", nombre, `displayRole`, badge VIGENTE/NO VIGENTE, vigencia (`validFrom`/`validUntil`, solo si aplica), QR, texto "Persona acreditada/autorizada por STECH NODES". Nunca incluye `relationshipType`, `Person.profile`, documento de identidad, correo, teléfono, ni ninguna referencia a cliente/OT/documentos personales.
+- `documents/dto/accreditation-card-pdf.dto.ts` (nuevo).
+- `documents.service.ts` — `generateAccreditationCardPdf()`: recalcula la vigencia con la misma fórmula que `/public/accreditation/:qrCode` (status + ventana + `Person.deletedAt`), nunca crea, revoca ni modifica ninguna `Accreditation`. Genera la imagen del QR server-side (`qrcode` — nueva dependencia, único equivalente Node de `qrcode.react` ya usado en frontend) codificando `PORTAL_ORIGIN + /p/ + qrCode` — mismo principio `QR → Accreditation → Person`.
+- `accreditations/accreditation-card.controller.ts` (nuevo) — ruta plana `GET /accreditations/:id/card.pdf` (no anidada bajo `/persons/:personId`, `Accreditation.id` es único globalmente), `ADMIN` únicamente. `AccreditationsModule` importa `DocumentsModule`.
+- **Corrección de fechas encontrada durante la verificación**: `validFrom`/`validUntil` son fechas-sólo guardadas como medianoche UTC; formatearlas con la función compartida `fmtDate()` (zona horaria local del proceso, `America/Bogota` = UTC-5) las mostraba un día atrás. Se añadió `fmtDateOnly()` (usa `Intl.DateTimeFormat` con `timeZone:'UTC'`, mismo principio ya usado en `qr-portal/EquipmentPage.tsx`) — corrección acotada a este campo nuevo, sin tocar `fmtDate()` ni ningún otro documento existente.
+- **Corrección de contenido encontrada durante la verificación**: el texto explicativo del carnet no cambiaba según el estado — una acreditación revocada seguía mostrando el texto de "autorizada". Corregido para reflejar VIGENTE/NO VIGENTE de forma consistente con el badge.
+
+### Pruebas del carnet PDF (Postgres real)
+PDF válido (`%PDF-1.3`) generado e inspeccionado visualmente para: acreditación vigente permanente (sin fechas), vigente con ventana temporal (fechas correctas tras el fix de zona horaria), y revocada (badge y texto en NO VIGENTE, mismo `qrCode`, ninguna fila nueva creada ni el historial alterado). QR verificado visualmente distinto entre dos acreditaciones distintas (prueba de que no es una imagen estática/cacheada). Regresión: `/public/accreditation/:qrCode` y `/public/equipment/:qrCode` sin cambios de comportamiento; `nest build` limpio; `tsc -b` en frontend y qr-portal sin errores nuevos.
+
+### Pendiente (fuera de esta fase, diferido por decisión explícita — no es brecha oculta)
+- Migración de `WorkOrder.assignedToId`/`WorkOrderTechnician`/`Intervention.primaryTechnicianId` hacia `Person` — diferida, ver Decisión de secuenciación (Fase 3.1). Se retoma solo si aparece un caso real de un externo acreditado que deba quedar registrado como ejecutor de una OT/Intervention.
+
+Con el carnet PDF cerrado, **Fase 4 queda completa contra el contrato aprobado.**
+
+---
+
 ## v2.10.0 — `WorkOrderTechnician`: ejecutores reales de la OT (2026-08-02)
 
 La Orden de Trabajo es la fuente de verdad de la ejecución (coherente con §5.2 del Modelo de Dominio, ya congelado: "quién la ejecutó o gestionó"); el Acta Técnica y su PDF son evidencia derivada — nunca almacenan ejecutores de forma independiente.

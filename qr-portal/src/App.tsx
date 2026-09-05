@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { EquipmentPage } from './pages/EquipmentPage';
+import { AccreditationPage } from './pages/AccreditationPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export function App() {
@@ -7,6 +8,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/e/:qrCode" element={<EquipmentPage />} />
+        <Route path="/p/:qrCode" element={<AccreditationPage />} />
         <Route path="/" element={<Navigate to="/e/invalid" replace />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

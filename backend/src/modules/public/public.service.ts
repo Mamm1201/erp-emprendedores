@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
+  AccreditationStatus,
   EquipmentStatus,
   EquipmentType,
   WorkOrderType,
 } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AccreditationPublicDto } from './dto/accreditation-public.dto';
 import {
   EquipmentPublicDto,
   LastMaintenanceDto,
@@ -112,6 +114,44 @@ export class PublicService {
     const relationshipStatus = await this.resolveRelationshipStatus(equipment.id, lastIv);
 
     return this.toPublicDto(equipment, lastPreventiveIv, relationshipStatus);
+  }
+
+  async findAccreditationByQrCode(qrCode: string): Promise<AccreditationPublicDto> {
+    // Mismo patron anti-enumeracion que Equipment (SEC-I3): formato invalido
+    // responde igual que "no encontrado".
+    if (!QR_CODE_PATTERN.test(qrCode)) {
+      throw new NotFoundException('Accreditation not found');
+    }
+
+    const accreditation = await this.prisma.accreditation.findUnique({
+      where: { qrCode },
+      select: {
+        status: true,
+        displayRole: true,
+        validFrom: true,
+        validUntil: true,
+        person: { select: { fullName: true, deletedAt: true } },
+      },
+    });
+
+    // Decision 4 (Fase 3.1): una Person con deletedAt != null responde
+    // exactamente igual que un QR inexistente — mismo error, mismo cuerpo.
+    // Nunca se distingue publicamente "no existe" de "persona eliminada".
+    if (!accreditation || accreditation.person.deletedAt !== null) {
+      throw new NotFoundException('Accreditation not found');
+    }
+
+    const now = new Date();
+    const withinWindow =
+      (accreditation.validFrom === null || accreditation.validFrom <= now) &&
+      (accreditation.validUntil === null || accreditation.validUntil >= now);
+    const valid = accreditation.status === AccreditationStatus.ACTIVE && withinWindow;
+
+    return {
+      personName: accreditation.person.fullName,
+      displayRole: accreditation.displayRole,
+      status: valid ? 'VALID' : 'NOT_VALID',
+    };
   }
 
   // Relacion comercial vigente (especificacion cerrada 2026-08-29):

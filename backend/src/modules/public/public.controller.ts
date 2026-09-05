@@ -13,4 +13,9 @@ export class PublicController {
   findByQrCode(@Param('qrCode') qrCode: string) {
     return this.publicService.findEquipmentByQrCode(qrCode);
   }
+
+  @Get('accreditation/:qrCode')
+  findAccreditationByQrCode(@Param('qrCode') qrCode: string) {
+    return this.publicService.findAccreditationByQrCode(qrCode);
+  }
 }

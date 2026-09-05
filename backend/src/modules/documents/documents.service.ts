@@ -3,19 +3,41 @@ import { renderToBuffer } from '@react-pdf/renderer';
 import React from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import * as QRCode from 'qrcode';
 import { PrismaService } from '../../prisma/prisma.service';
 import { STORAGE_SERVICE, IStorageService } from '../files/storage/storage.interface';
 import { QuotationDocument } from './templates/QuotationDocument';
 import { ServiceRecordDocument } from './templates/ServiceRecordDocument';
 import { InvoiceDocument } from './templates/InvoiceDocument';
+import { AccreditationCardDocument } from './templates/AccreditationCardDocument';
 import type { QuotationPdfDto } from './dto/quotation-pdf.dto';
 import type { ServiceRecordPdfDto, ServiceRecordPhotoDto } from './dto/service-record-pdf.dto';
 import type { InvoicePdfDto } from './dto/invoice-pdf.dto';
+import type { AccreditationCardPdfDto } from './dto/accreditation-card-pdf.dto';
 
 function fmtDate(d: Date | string | null | undefined): string {
   if (!d) return '—';
   try {
     return format(new Date(d), "d 'de' MMMM 'de' yyyy", { locale: es });
+  } catch {
+    return String(d);
+  }
+}
+
+// Fechas-sólo (sin componente horario, ej. Accreditation.validFrom/validUntil)
+// se guardan como medianoche UTC — formatearlas con fmtDate() las corre un
+// día hacia atrás en cualquier zona horaria negativa (server en
+// America/Bogota, UTC-5). timeZone:'UTC' evita el corrimiento; mismo
+// principio ya usado en qr-portal (EquipmentPage.tsx, formatDate()).
+function fmtDateOnly(d: Date | string | null | undefined): string | null {
+  if (!d) return null;
+  try {
+    return new Intl.DateTimeFormat('es-CO', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(d));
   } catch {
     return String(d);
   }
@@ -314,5 +336,57 @@ export class DocumentsService {
     const element = React.createElement(InvoiceDocument, { data: dto }) as any;
     const buffer = await renderToBuffer(element);
     return { buffer: Buffer.from(buffer), number: invoice.number };
+  }
+
+  // ─── Carnet de Acreditación ──────────────────────────────────────────────────
+  // Representa el estado ACTUAL de la Accreditation en el momento de
+  // generación — no crea, revoca ni modifica ningún registro. Mismo cálculo
+  // de vigencia que /public/accreditation/:qrCode (status + ventana +
+  // Person.deletedAt), para que el carnet nunca pueda mostrar un estado
+  // distinto al que vería un tercero escaneando el QR.
+
+  async generateAccreditationCardPdf(accreditationId: string): Promise<{ buffer: Buffer }> {
+    const accreditation = await this.prisma.accreditation.findUnique({
+      where: { id: accreditationId },
+      select: {
+        qrCode: true,
+        displayRole: true,
+        status: true,
+        validFrom: true,
+        validUntil: true,
+        person: { select: { fullName: true, deletedAt: true } },
+      },
+    });
+
+    if (!accreditation) {
+      throw new NotFoundException(`Accreditation con id "${accreditationId}" no encontrada`);
+    }
+
+    const now = new Date();
+    const withinWindow =
+      (accreditation.validFrom === null || accreditation.validFrom <= now) &&
+      (accreditation.validUntil === null || accreditation.validUntil >= now);
+    const vigente =
+      accreditation.status === 'ACTIVE' &&
+      accreditation.person.deletedAt === null &&
+      withinWindow;
+
+    const portalBase = process.env.PORTAL_ORIGIN ?? 'http://localhost:5174';
+    const verificationUrl = `${portalBase}/p/${accreditation.qrCode}`;
+    const qrDataUrl = await QRCode.toDataURL(verificationUrl, { margin: 1, width: 400 });
+
+    const dto: AccreditationCardPdfDto = {
+      personName: accreditation.person.fullName,
+      displayRole: accreditation.displayRole,
+      vigente,
+      validFrom: fmtDateOnly(accreditation.validFrom),
+      validUntil: fmtDateOnly(accreditation.validUntil),
+      qrDataUrl,
+      generatedAt: fmtDate(now),
+    };
+
+    const element = React.createElement(AccreditationCardDocument, { data: dto }) as any;
+    const buffer = await renderToBuffer(element);
+    return { buffer: Buffer.from(buffer) };
   }
 }
