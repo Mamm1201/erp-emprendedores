@@ -25,10 +25,29 @@ npm run build            # Compila TypeScript a dist/
 
 npm run db:migrate       # Aplica migraciones pendientes
 npm run db:generate      # Regenera el cliente Prisma
-npm run db:seed          # Carga datos iniciales en la BD
+npm run db:seed          # Carga datos de DEMOSTRACIÓN — ver advertencia abajo
+npm run seed:crm-catalog # Carga el catálogo de servicios del CRM — seguro en cualquier entorno
 npm run db:studio        # Abre Prisma Studio (GUI de la BD) en http://localhost:5555
 npm run db:validate      # Valida el schema.prisma sin aplicar cambios
 ```
+
+### ⚠️ `db:seed` — solo para bases de desarrollo/prueba vacías
+
+`npm run db:seed` (`prisma/seed.ts`) inserta clientes, sedes y equipos **ficticios** pensados únicamente para levantar un entorno local vacío. **Nunca debe ejecutarse contra una base con datos reales del ERP**: hace upsert de clientes por nombre (`legalName`, ej. "Clínica Emmanuel") — si esa base ya tiene un cliente real con ese nombre, el script reutiliza esa fila real y le agrega sedes ficticias que no coinciden con la operación real.
+
+Por eso exige, sin valores por defecto:
+
+| Variable | Descripción |
+|---|---|
+| `SEED_CONFIRM` | Debe valer exactamente `RUN_ON_TEST_DB` — confirmación deliberada de que la base es de desarrollo/prueba |
+| `SEED_ADMIN_PASSWORD` | Contraseña del usuario admin de demostración (mínimo 8 caracteres) |
+| `SEED_TECH_PASSWORD` | Contraseña del usuario técnico de demostración (mínimo 8 caracteres) |
+
+```bash
+SEED_CONFIRM=RUN_ON_TEST_DB SEED_ADMIN_PASSWORD='...' SEED_TECH_PASSWORD='...' npm run db:seed
+```
+
+Sin estas variables, el script aborta sin escribir nada. Es distinto de `npm run seed:crm-catalog` (`prisma/seed-crm-catalog.ts`): ese solo inserta el catálogo de servicios del CRM (configuración, no datos de negocio simulados) y es seguro de ejecutar en cualquier entorno, incluido producción.
 
 ## Estructura de módulos
 

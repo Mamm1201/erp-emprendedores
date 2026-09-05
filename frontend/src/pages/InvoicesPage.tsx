@@ -200,7 +200,7 @@ export function InvoicesPage() {
                     </p>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-[hsl(var(--muted-foreground))] text-xs font-mono whitespace-nowrap">
-                    {inv.workOrder.number}
+                    {inv.workOrder?.number ?? '—'}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-[hsl(var(--muted-foreground))] text-xs whitespace-nowrap">
                     {format(parseISO(inv.issueDate), 'd MMM yyyy', { locale: es })}

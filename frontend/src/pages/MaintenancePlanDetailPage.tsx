@@ -24,11 +24,7 @@ import {
   useDeleteVisit,
   type VisitFormData,
 } from '@/hooks/use-maintenance-visits';
-import {
-  useContractEquipment,
-  useAttachContractEquipment,
-  useDetachContractEquipment,
-} from '@/hooks/use-contract-equipment';
+import { useContractEquipment } from '@/hooks/use-contract-equipment';
 import {
   usePlanEquipment,
   useAttachPlanEquipment,

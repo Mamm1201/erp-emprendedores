@@ -1,3 +1,22 @@
+/**
+ * Seed de datos de DEMOSTRACIÓN (clientes/sedes/equipos ficticios) — pensado
+ * únicamente para levantar un entorno LOCAL DE DESARROLLO O PRUEBA vacío.
+ *
+ * NUNCA debe correr contra una base con datos reales del ERP: hace upsert de
+ * clientes por `legalName` (ej. "Clínica Emmanuel") — si esa base ya tiene un
+ * cliente real con ese nombre, este script reutiliza esa fila real y le
+ * agrega sedes/equipos FICTICIOS que no coinciden con la operación real.
+ *
+ * Por eso exige dos condiciones explícitas antes de escribir nada:
+ *   1. SEED_CONFIRM=RUN_ON_TEST_DB       (confirmación literal, a proposito)
+ *   2. SEED_ADMIN_PASSWORD / SEED_TECH_PASSWORD  (sin defaults hardcodeados)
+ *
+ * Uso (contra una base de prueba/desarrollo vacía):
+ *   SEED_CONFIRM=RUN_ON_TEST_DB SEED_ADMIN_PASSWORD='...' SEED_TECH_PASSWORD='...' npm run db:seed
+ *
+ * Ver prisma/seed-crm-catalog.ts para el seed de catálogo (ese sí es seguro
+ * en cualquier entorno).
+ */
 import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -11,6 +30,34 @@ import {
 } from '../src/generated/prisma/client';
 
 const BCRYPT_ROUNDS = 12;
+const REQUIRED_CONFIRMATION = 'RUN_ON_TEST_DB';
+
+function assertSafeToRun(): { adminPassword: string; techPassword: string } {
+  if (process.env.SEED_CONFIRM !== REQUIRED_CONFIRMATION) {
+    throw new Error(
+      'Seed abortado: falta la confirmacion explicita. Este script solo debe ' +
+        'correr contra una base de desarrollo o prueba VACIA, nunca contra ' +
+        'datos reales del ERP. Si estas seguro de la base a la que apunta ' +
+        `DATABASE_URL, vuelve a ejecutar con SEED_CONFIRM=${REQUIRED_CONFIRMATION}.`,
+    );
+  }
+
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  const techPassword = process.env.SEED_TECH_PASSWORD;
+
+  if (!adminPassword || adminPassword.length < 8) {
+    throw new Error(
+      'SEED_ADMIN_PASSWORD es obligatoria y debe tener al menos 8 caracteres.',
+    );
+  }
+  if (!techPassword || techPassword.length < 8) {
+    throw new Error(
+      'SEED_TECH_PASSWORD es obligatoria y debe tener al menos 8 caracteres.',
+    );
+  }
+
+  return { adminPassword, techPassword };
+}
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -34,12 +81,13 @@ function date(iso: string): Date {
 }
 
 async function main(): Promise<void> {
+  const { adminPassword, techPassword } = assertSafeToRun();
   const year = new Date().getFullYear();
 
   // ─── Usuarios ──────────────────────────────────────────────────────────────
 
-  const adminHash = await bcrypt.hash('Admin2026!', BCRYPT_ROUNDS);
-  const marioHash = await bcrypt.hash('Mario2026!', BCRYPT_ROUNDS);
+  const adminHash = await bcrypt.hash(adminPassword, BCRYPT_ROUNDS);
+  const marioHash = await bcrypt.hash(techPassword, BCRYPT_ROUNDS);
 
   await prisma.user.upsert({
     where: { email: 'admin@erp.local' },

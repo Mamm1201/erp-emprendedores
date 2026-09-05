@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, parseISO } from 'date-fns';
@@ -201,10 +201,14 @@ function ContractFormModal({ open, onClose, editing }: ContractFormModalProps) {
     register,
     handleSubmit,
     reset,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ContractSchemaType>({
-    resolver: zodResolver(contractSchema),
+    // Cast puntual: zodResolver (zod v4 + @hookform/resolvers v5) infiere el
+    // Resolver contra el tipo de entrada de z.coerce.number() (unknown), no
+    // contra el tipo de salida (number) que usa ContractSchemaType en todo
+    // el resto del archivo. Desajuste de tipos entre librerias, no un bug
+    // funcional — en runtime zod coacciona el valor igual que siempre.
+    resolver: zodResolver(contractSchema) as Resolver<ContractSchemaType>,
     defaultValues: buildDefaults(editing),
   });
 

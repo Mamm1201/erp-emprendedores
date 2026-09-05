@@ -8,6 +8,7 @@ Sistema de gestión para la empresa de Mario Alejandro Márquez Moreno. Cubre co
 erp-emprendedores/
 ├── backend/      NestJS 11 + Prisma 7 + PostgreSQL 16
 ├── frontend/     React 19 + Vite + Tailwind 4
+├── qr-portal/    React 19 + Vite — portal público de verificación por QR (equipos y acreditaciones)
 └── docker-compose.yml   (solo base de datos)
 ```
 
@@ -34,7 +35,11 @@ cd backend
 cp .env.example .env        # ajustar credenciales si es necesario
 npm install
 npm run db:migrate           # crea las tablas
-npm run db:seed              # carga los datos iniciales (clientes, equipos, planes)
+
+# Datos de demostración — SOLO sobre una base de desarrollo/prueba VACÍA.
+# NUNCA ejecutar contra una base con datos reales del ERP (ver backend/README.md).
+SEED_CONFIRM=RUN_ON_TEST_DB SEED_ADMIN_PASSWORD='TuClaveDev123' SEED_TECH_PASSWORD='TuClaveDev123' npm run db:seed
+
 npm run start:dev            # http://localhost:3000
 
 # 4. En otra terminal — arrancar el frontend
@@ -42,6 +47,12 @@ cd ../frontend
 cp .env.example .env         # ajustar si el backend corre en otro puerto
 npm install
 npm run dev                  # http://localhost:5173
+
+# 5. (Opcional) En otra terminal — arrancar el portal QR público
+cd ../qr-portal
+cp .env.example .env         # ajustar si el backend corre en otro puerto
+npm install
+npm run dev                  # http://localhost:5174
 ```
 
 ## Uso diario (ya configurado)
@@ -55,6 +66,9 @@ cd backend && npm run start:dev
 
 # Terminal 3 — frontend
 cd frontend && npm run dev
+
+# Terminal 4 (opcional) — portal QR público
+cd qr-portal && npm run dev
 ```
 
 Abrir el navegador en **http://localhost:5173**

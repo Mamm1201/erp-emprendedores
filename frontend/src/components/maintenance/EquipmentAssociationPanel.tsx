@@ -25,7 +25,11 @@ function equipmentLabel(eq: Equipment | AssociatedEquipment['equipment']): strin
 interface EquipmentAssociationPanelProps {
   title: string;
   associated: AssociatedEquipment[];
-  availableEquipment: Equipment[];
+  // Union con AssociatedEquipment['equipment'] (forma mas angosta, ya
+  // aceptada por equipmentLabel() arriba): MaintenancePlanDetailPage pasa
+  // aqui contractEquipment.map(e => e.equipment), que no trae todos los
+  // campos de Equipment.
+  availableEquipment: (Equipment | AssociatedEquipment['equipment'])[];
   isLoading: boolean;
   isAttaching: boolean;
   isDetaching: boolean;

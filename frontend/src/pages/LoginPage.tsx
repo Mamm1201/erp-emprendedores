@@ -37,10 +37,7 @@ export function LoginPage() {
 
         {/* Marca */}
         <div className="flex flex-col items-center gap-3 mb-8">
-          <NodeMark
-            className="h-14 w-14"
-            style={{ color: '#378ADD' } as React.CSSProperties}
-          />
+          <NodeMark className="h-14 w-14" />
           <div className="text-center">
             <p
               className="text-base font-extrabold tracking-widest uppercase leading-none"
