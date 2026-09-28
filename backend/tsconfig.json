@@ -2,6 +2,9 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "strict": false,
+    "types": ["*"],
     "resolvePackageJsonExports": false,
     "esModuleInterop": true,
     "isolatedModules": true,
@@ -13,6 +16,7 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
