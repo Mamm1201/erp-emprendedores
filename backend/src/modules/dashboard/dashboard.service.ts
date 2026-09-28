@@ -7,6 +7,10 @@ import {
 } from '../../generated/prisma/client';
 import { toMoney, sumMoney } from '../../common/utils/money.util';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  VisitDeadline,
+  visitDeadline,
+} from '../maintenance-visits/maintenance-visits.domain';
 
 @Injectable()
 export class DashboardService {
@@ -25,12 +29,11 @@ export class DashboardService {
       partialPaidAgg,
       overdueAgg,
       recentPayments,
-      upcomingVisits,
+      openVisitRows,
       completedWithoutInvoice,
       approvedQuotations,
       activeContracts,
       activePlans,
-      overdueVisits,
     ] = await Promise.all([
       this.prisma.quotation.groupBy({
         by: ['status'],
@@ -85,21 +88,35 @@ export class DashboardService {
           },
         },
       }),
+      // Visitas abiertas cuyo periodo ya empezo o empieza en 30 dias. Incluye
+      // las vencidas: el plazo se mide contra periodEnd, no scheduledDate.
       this.prisma.maintenanceVisit.findMany({
         where: {
-          status: { in: ['PENDING', 'GENERATED'] },
-          scheduledDate: { gte: now, lte: next30Days },
+          status: { in: ['PENDING', 'IN_PROGRESS'] },
+          periodStart: { lte: next30Days },
           plan: { isActive: true },
         },
-        orderBy: { scheduledDate: 'asc' },
-        take: 8,
+        orderBy: [{ periodEnd: 'asc' }, { scheduledDate: 'asc' }],
         select: {
           id: true,
+          periodStart: true,
+          periodEnd: true,
           scheduledDate: true,
           status: true,
+          workOrder: { select: { id: true, number: true } },
+          equipment: {
+            select: {
+              origin: true,
+              status: true,
+              earlyExecutionNote: true,
+              intervention: { select: { occurredAt: true } },
+            },
+          },
           plan: {
             select: {
+              id: true,
               frequency: true,
+              branch: { select: { id: true, name: true } },
               contract: {
                 select: {
                   client: { select: { legalName: true, tradeName: true } },
@@ -129,10 +146,40 @@ export class DashboardService {
       this.prisma.maintenancePlan.count({
         where: { isActive: true },
       }),
-      this.prisma.maintenanceVisit.count({
-        where: { status: 'PENDING', scheduledDate: { lt: now }, plan: { isActive: true } },
-      }),
     ]);
+
+    // Una fila por visita (sede + periodo), ordenadas por urgencia de plazo.
+    const DEADLINE_ORDER: Record<VisitDeadline, number> = {
+      OVERDUE: 0,
+      DUE_SOON: 1,
+      PENDING: 2,
+      EXECUTED_PENDING_CLOSE: 3,
+    };
+    const openVisits = openVisitRows.map((v) => {
+      const scheduled = v.equipment.filter((e) => e.origin === 'SCHEDULED');
+      return {
+        id: v.id,
+        planId: v.plan.id,
+        periodStart: v.periodStart,
+        periodEnd: v.periodEnd,
+        scheduledDate: v.scheduledDate,
+        status: v.status,
+        deadline: visitDeadline(v),
+        frequency: v.plan.frequency,
+        branch: v.plan.branch,
+        client: v.plan.contract.client,
+        workOrder: v.workOrder,
+        equipmentTotal: scheduled.length,
+        equipmentAttended: scheduled.filter((e) => e.status === 'ATTENDED')
+          .length,
+      };
+    });
+    const overdueVisits = openVisits.filter(
+      (v) => v.deadline === 'OVERDUE',
+    ).length;
+    const upcomingVisits = [...openVisits]
+      .sort((a, b) => DEADLINE_ORDER[a.deadline] - DEADLINE_ORDER[b.deadline])
+      .slice(0, 8);
 
     // Build lookup maps
     const qMap = Object.fromEntries(

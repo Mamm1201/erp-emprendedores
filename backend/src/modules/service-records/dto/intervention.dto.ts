@@ -1,6 +1,8 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
+  IsDateString,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -43,9 +45,35 @@ export class InterventionInputDto {
   @IsOptional()
   @IsString()
   primaryTechnicianId?: string;
+
+  // Fecha real de atencion del equipo ('YYYY-MM-DD' = ese dia en Colombia, o
+  // instante ISO). Por defecto, ahora. No puede ser futura.
+  @IsOptional()
+  @IsDateString()
+  occurredAt?: string;
+
+  // R7: obligatoria si el equipo programado se atiende antes del periodo.
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  earlyExecutionNote?: string;
+}
+
+// Agregar intervenciones a un Acta existente mientras la OT esta abierta
+// (ejecucion en varias jornadas — R14).
+export class AddInterventionsDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => InterventionInputDto)
+  interventions: InterventionInputDto[];
 }
 
 export class UpdateInterventionDto {
+  @IsOptional()
+  @IsDateString()
+  occurredAt?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(4000)

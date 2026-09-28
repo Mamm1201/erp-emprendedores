@@ -14,11 +14,17 @@ export class CreateMaintenancePlanDto {
   @IsNotEmpty()
   contractId: string;
 
+  // Sede del plan (R1): todos sus equipos deben pertenecer a ella.
+  @IsString()
+  @IsNotEmpty()
+  branchId: string;
+
   @IsEnum(MaintenanceFrequency)
   frequency: MaintenanceFrequency;
 
+  // Mes ancla del ciclo; se normaliza al dia 1.
   @IsDateString()
-  startDate: string;
+  firstPeriodStart: string;
 
   @IsOptional()
   @IsBoolean()

@@ -1,22 +1,16 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ServiceRecordsService } from './service-records.service';
 import { CreateServiceRecordDto } from './dto/create-service-record.dto';
 import { UpdateServiceRecordDto } from './dto/update-service-record.dto';
 import { UpdateChecklistItemDto } from './dto/checklist-item.dto';
-import { UpdateInterventionDto } from './dto/intervention.dto';
+import {
+  AddInterventionsDto,
+  UpdateInterventionDto,
+} from './dto/intervention.dto';
 
 @Controller()
 export class ServiceRecordsController {
-  constructor(
-    private readonly serviceRecordsService: ServiceRecordsService,
-  ) {}
+  constructor(private readonly serviceRecordsService: ServiceRecordsService) {}
 
   @Post('work-orders/:workOrderId/service-record')
   create(
@@ -55,6 +49,25 @@ export class ServiceRecordsController {
   @Get('equipment/:equipmentId/service-records')
   findByEquipment(@Param('equipmentId') equipmentId: string) {
     return this.serviceRecordsService.findByEquipment(equipmentId);
+  }
+
+  @Post('work-orders/:workOrderId/interventions')
+  addInterventions(
+    @Param('workOrderId') workOrderId: string,
+    @Body() dto: AddInterventionsDto,
+  ) {
+    return this.serviceRecordsService.addInterventions(workOrderId, dto);
+  }
+
+  @Patch('work-orders/:workOrderId/interventions/:interventionId/cancel')
+  cancelIntervention(
+    @Param('workOrderId') workOrderId: string,
+    @Param('interventionId') interventionId: string,
+  ) {
+    return this.serviceRecordsService.cancelIntervention(
+      workOrderId,
+      interventionId,
+    );
   }
 
   @Patch('work-orders/:workOrderId/interventions/:interventionId')

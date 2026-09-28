@@ -1,5 +1,13 @@
+import { format } from 'date-fns';
 import type { Intervention, ChecklistResult } from '@/lib/types';
-import { useUpdateIntervention, useUpdateChecklistItem } from '@/hooks/use-service-records';
+import {
+  useCancelIntervention,
+  useUpdateIntervention,
+  useUpdateChecklistItem,
+} from '@/hooks/use-service-records';
+import { fmtInstantDate, todayIso } from '@/lib/maintenance';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useTechnicians } from '@/hooks/use-users';
 import { SaveableTextarea } from '@/components/shared/SaveableTextarea';
 import { FileAttachmentSection } from '@/components/shared/FileAttachmentSection';
@@ -68,15 +76,33 @@ function ChecklistRow({
 // tecnico editable en linea y su propio checklist. Usado tanto en el detalle
 // de la OT (ServiceRecordCard) como en el modal "Ver acta" (ServiceRecordsPage)
 // — una sola implementacion para no duplicar la logica de edicion.
+//
+// Con la OT abierta (workOrderOpen) la fecha real es editable y la
+// intervencion se puede anular (nunca se borra; queda CANCELLED).
 export function InterventionSection({
   intervention,
   workOrderId,
+  workOrderOpen = false,
 }: {
   intervention: Intervention;
   workOrderId: string;
+  workOrderOpen?: boolean;
 }) {
   const updateIntervention = useUpdateIntervention();
+  const cancelIntervention = useCancelIntervention();
   const { data: technicians = [] } = useTechnicians();
+  const cancelled = intervention.status === 'CANCELLED';
+  const editable = workOrderOpen && !cancelled;
+
+  function saveOccurredAt(date: string) {
+    if (!date) return;
+    updateIntervention.mutate({ workOrderId, interventionId: intervention.id, data: { occurredAt: date } });
+  }
+
+  function handleCancel() {
+    if (!window.confirm('¿Anular esta intervención? No se borra: queda anulada y el equipo vuelve a pendiente en la visita.')) return;
+    cancelIntervention.mutate({ workOrderId, interventionId: intervention.id });
+  }
 
   function saveField(field: 'findings' | 'activitiesPerformed' | 'recommendations') {
     return (value: string): Promise<void> =>
@@ -94,10 +120,41 @@ export function InterventionSection({
   }
 
   return (
-    <div className="rounded-md border p-4 space-y-4">
+    <div className={cn('rounded-md border p-4 space-y-4', cancelled && 'opacity-60')}>
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm font-semibold">{equipmentLabel(intervention.equipment)}</p>
+        <div className="space-y-0.5">
+          <p className="text-sm font-semibold">
+            {equipmentLabel(intervention.equipment)}
+            {cancelled && <Badge variant="secondary" className="ml-2 text-xs">Anulada</Badge>}
+          </p>
+          <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+            <span>Fecha real:</span>
+            {editable ? (
+              <input
+                type="date"
+                max={todayIso()}
+                defaultValue={format(new Date(intervention.occurredAt), 'yyyy-MM-dd')}
+                onBlur={(e) => saveOccurredAt(e.target.value)}
+                disabled={updateIntervention.isPending}
+                className="h-6 rounded border border-[hsl(var(--input))] bg-transparent px-1 text-xs"
+              />
+            ) : (
+              <span>{fmtInstantDate(intervention.occurredAt)}</span>
+            )}
+          </div>
+        </div>
         <div className="flex items-center gap-2">
+          {editable && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs text-[hsl(var(--destructive))]"
+              disabled={cancelIntervention.isPending}
+              onClick={handleCancel}
+            >
+              Anular
+            </Button>
+          )}
           <label className="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">
             Técnico
           </label>

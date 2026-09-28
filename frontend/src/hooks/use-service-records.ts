@@ -11,6 +11,10 @@ export interface InterventionInputData {
   activitiesPerformed?: string;
   recommendations?: string;
   primaryTechnicianId?: string;
+  // Fecha real de atencion ('YYYY-MM-DD'); por defecto hoy.
+  occurredAt?: string;
+  // Obligatoria si el equipo programado se atiende antes del periodo.
+  earlyExecutionNote?: string;
 }
 
 export interface CreateServiceRecordData {
@@ -26,6 +30,7 @@ export interface UpdateServiceRecordData {
 }
 
 export interface UpdateInterventionData {
+  occurredAt?: string;
   findings?: string;
   activitiesPerformed?: string;
   recommendations?: string;
@@ -57,6 +62,7 @@ export function useCreateServiceRecord() {
     onSuccess: (_r, vars) => {
       qc.invalidateQueries({ queryKey: ['service-record', vars.workOrderId] });
       qc.invalidateQueries({ queryKey: ['work-orders'] });
+      qc.invalidateQueries({ queryKey: ['maintenance-visits'] });
     },
   });
 }
@@ -96,6 +102,44 @@ export function useUpdateIntervention() {
       ),
     onSuccess: (_r, vars) => {
       qc.invalidateQueries({ queryKey: ['service-record', vars.workOrderId] });
+    },
+  });
+}
+
+// Varias jornadas: agregar intervenciones al acta mientras la OT esta abierta.
+export function useAddInterventions() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      workOrderId,
+      interventions,
+    }: {
+      workOrderId: string;
+      interventions: InterventionInputData[];
+    }) =>
+      api.post<ServiceRecord>(`/work-orders/${workOrderId}/interventions`, { interventions }),
+    onSuccess: (_r, vars) => {
+      qc.invalidateQueries({ queryKey: ['service-record', vars.workOrderId] });
+      qc.invalidateQueries({ queryKey: ['work-orders'] });
+      qc.invalidateQueries({ queryKey: ['maintenance-visits'] });
+    },
+  });
+}
+
+// Anular nunca borra: la intervencion queda CANCELLED y su equipo en la visita
+// vuelve a pendiente.
+export function useCancelIntervention() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ workOrderId, interventionId }: { workOrderId: string; interventionId: string }) =>
+      api.patch<Intervention>(
+        `/work-orders/${workOrderId}/interventions/${interventionId}/cancel`,
+        {},
+      ),
+    onSuccess: (_r, vars) => {
+      qc.invalidateQueries({ queryKey: ['service-record', vars.workOrderId] });
+      qc.invalidateQueries({ queryKey: ['work-orders'] });
+      qc.invalidateQueries({ queryKey: ['maintenance-visits'] });
     },
   });
 }

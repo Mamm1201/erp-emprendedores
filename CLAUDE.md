@@ -55,7 +55,7 @@ Reglas clave:
 | `quotations` | controller, service, dto, quotations-document.service | `nextDocumentNumber(tx, docType, prefix)` para auto-numeración |
 | `work-orders` | controller, service, dto, constants | `WORK_ORDER_SELECT` incluye `invoice` |
 | `invoices` | controller, service, dto, constants | `INVOICE_SELECT`, `PAYMENT_SELECT`, `recalculateInvoiceStatus` |
-| `maintenance-plans` | controller, service, dto | `nextVisitDate` avanza al ejecutar OT |
+| `maintenance-plans` | controller, service, dto | Plan por **sede**. Visitas generadas por período (`firstPeriodStart` + k × frecuencia, mes calendario); la ejecución real **nunca** desplaza el ciclo. Ver `docs/domain/maintenance-by-branch-contract-v1.0.md` |
 | `service-records` | controller, service, dto | Acta técnica con checklist |
 | `equipment` | controller, service, dto | Hoja de vida por sede |
 | `dashboard` | controller, service | `GET /dashboard` con 10 queries en `Promise.all` |

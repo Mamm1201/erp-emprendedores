@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { Plus, Pencil, ToggleLeft, ToggleRight, CalendarClock, ChevronRight } from 'lucide-react';
 
 import {
@@ -14,6 +12,8 @@ import {
   type MaintenancePlanFormData,
 } from '@/hooks/use-maintenance-plans';
 import { useMaintenanceContracts } from '@/hooks/use-maintenance-contracts';
+import { useBranches } from '@/hooks/use-branches';
+import { FREQUENCY_LABELS, periodLabel } from '@/lib/maintenance';
 import type { MaintenancePlan, MaintenanceFrequency } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,14 +32,6 @@ import {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FREQUENCY_LABELS: Record<MaintenanceFrequency, string> = {
-  MONTHLY: 'Mensual',
-  QUARTERLY: 'Trimestral',
-  EVERY_4_MONTHS: 'Cuatrimestral',
-  BIANNUAL: 'Semestral',
-  ANNUAL: 'Anual',
-};
-
 const FREQUENCY_OPTIONS: MaintenanceFrequency[] = [
   'MONTHLY',
   'QUARTERLY',
@@ -55,8 +47,10 @@ const SELECT_CLASS =
 
 const planSchema = z.object({
   contractId: z.string().min(1, 'Selecciona un contrato'),
+  branchId: z.string().min(1, 'Selecciona la sede'),
   frequency: z.enum(['MONTHLY', 'QUARTERLY', 'EVERY_4_MONTHS', 'BIANNUAL', 'ANNUAL']),
-  startDate: z.string().min(1, 'La fecha de inicio es obligatoria'),
+  // Mes ancla del ciclo ('YYYY-MM'): los periodos son este mes + k * frecuencia.
+  firstPeriodMonth: z.string().regex(/^\d{4}-\d{2}$/, 'Selecciona el mes del primer período'),
   notes: z.string().max(2000).optional().or(z.literal('')),
 });
 
@@ -65,8 +59,9 @@ type PlanSchema = z.infer<typeof planSchema>;
 function toFormValues(plan: MaintenancePlan): PlanSchema {
   return {
     contractId: plan.contractId,
+    branchId: plan.branchId,
     frequency: plan.frequency,
-    startDate: plan.startDate.slice(0, 10),
+    firstPeriodMonth: plan.firstPeriodStart.slice(0, 7),
     notes: plan.notes ?? '',
   };
 }
@@ -93,30 +88,42 @@ function PlanFormModal({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<PlanSchema>({ resolver: zodResolver(planSchema) });
+
+  // R1: la sede del plan debe ser del cliente del contrato.
+  const selectedContractId = useWatch({ control, name: 'contractId' });
+  const selectedContract = contracts.find((c) => c.id === selectedContractId);
+  const { data: branches = [] } = useBranches(selectedContract?.client.id ?? null);
 
   useEffect(() => {
     if (open) {
       reset(
         editing
           ? toFormValues(editing)
-          : { contractId: '', frequency: 'QUARTERLY', startDate: '', notes: '' },
+          : { contractId: '', branchId: '', frequency: 'QUARTERLY', firstPeriodMonth: '', notes: '' },
       );
     }
   }, [open, editing, reset]);
 
   async function onSubmit(values: PlanSchema) {
-    const dto: MaintenancePlanFormData = {
-      contractId: values.contractId,
-      frequency: values.frequency,
-      startDate: values.startDate,
-      notes: values.notes || undefined,
-    };
+    const firstPeriodStart = `${values.firstPeriodMonth}-01`;
 
     if (editing) {
-      await updatePlan.mutateAsync({ id: editing.id, data: dto });
+      // Contrato y sede no cambian; ancla/frecuencia regeneran solo visitas futuras sin OT.
+      await updatePlan.mutateAsync({
+        id: editing.id,
+        data: { frequency: values.frequency, firstPeriodStart, notes: values.notes || undefined },
+      });
     } else {
+      const dto: MaintenancePlanFormData = {
+        contractId: values.contractId,
+        branchId: values.branchId,
+        frequency: values.frequency,
+        firstPeriodStart,
+        notes: values.notes || undefined,
+      };
       await createPlan.mutateAsync(dto);
     }
     onOpenChange(false);
@@ -153,6 +160,29 @@ function PlanFormModal({
             )}
           </div>
 
+          {/* Sede */}
+          <div className="space-y-1.5">
+            <Label htmlFor="branchId">Sede *</Label>
+            <select
+              id="branchId"
+              className={SELECT_CLASS}
+              disabled={isEditing || !selectedContract}
+              {...register('branchId')}
+            >
+              {isEditing && editing ? (
+                <option value={editing.branchId}>{editing.branch.name}</option>
+              ) : (
+                <option value="">{selectedContract ? 'Seleccionar sede…' : 'Selecciona primero el contrato'}</option>
+              )}
+              {!isEditing && branches.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+            {errors.branchId && (
+              <p className="text-xs text-[hsl(var(--destructive))]">{errors.branchId.message}</p>
+            )}
+          </div>
+
           {/* Frecuencia */}
           <div className="space-y-1.5">
             <Label htmlFor="frequency">Frecuencia *</Label>
@@ -163,12 +193,15 @@ function PlanFormModal({
             </select>
           </div>
 
-          {/* Fecha inicio */}
+          {/* Mes ancla */}
           <div className="space-y-1.5">
-            <Label htmlFor="startDate">Fecha de inicio *</Label>
-            <Input id="startDate" type="date" {...register('startDate')} />
-            {errors.startDate && (
-              <p className="text-xs text-[hsl(var(--destructive))]">{errors.startDate.message}</p>
+            <Label htmlFor="firstPeriodMonth">Mes del primer período *</Label>
+            <Input id="firstPeriodMonth" type="month" {...register('firstPeriodMonth')} />
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">
+              Ancla del ciclo: cada visita corresponde a un mes completo. La fecha real de ejecución no desplaza el ciclo.
+            </p>
+            {errors.firstPeriodMonth && (
+              <p className="text-xs text-[hsl(var(--destructive))]">{errors.firstPeriodMonth.message}</p>
             )}
           </div>
 
@@ -242,7 +275,7 @@ export function MaintenancePlansPage() {
         <div>
           <h1 className="text-2xl font-bold">Planes de mantenimiento</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-            Frecuencias de visita por contrato activo
+            Programación preventiva por sede
           </p>
         </div>
         <Button onClick={openCreate}>
@@ -276,8 +309,9 @@ export function MaintenancePlansPage() {
             <tr className="border-b bg-[hsl(var(--muted)/0.4)]">
               <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))]">Contrato</th>
               <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))]">Cliente</th>
+              <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))]">Sede</th>
               <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))]">Frecuencia</th>
-              <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))] hidden md:table-cell">Inicio</th>
+              <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))] hidden md:table-cell">Ciclo desde</th>
               <th className="px-4 py-3 text-left font-medium text-[hsl(var(--muted-foreground))]">Estado</th>
               <th className="px-4 py-3 text-right font-medium text-[hsl(var(--muted-foreground))]">Acciones</th>
             </tr>
@@ -285,17 +319,17 @@ export function MaintenancePlansPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">Cargando…</td>
+                <td colSpan={7} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">Cargando…</td>
               </tr>
             )}
             {isError && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-[hsl(var(--destructive))]">Error al cargar los planes.</td>
+                <td colSpan={7} className="px-4 py-10 text-center text-[hsl(var(--destructive))]">Error al cargar los planes.</td>
               </tr>
             )}
             {!isLoading && !isError && plans.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">
+                <td colSpan={7} className="px-4 py-10 text-center text-[hsl(var(--muted-foreground))]">
                   <CalendarClock className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   No hay planes registrados
                 </td>
@@ -316,10 +350,16 @@ export function MaintenancePlansPage() {
                   {plan.contract.client.tradeName ?? plan.contract.client.legalName}
                 </td>
                 <td className="px-4 py-3">
+                  {plan.branch.name}
+                  <span className="block text-xs text-[hsl(var(--muted-foreground))]">
+                    {plan._count.planEquipment} equipo{plan._count.planEquipment !== 1 ? 's' : ''}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
                   <Badge variant="secondary">{FREQUENCY_LABELS[plan.frequency]}</Badge>
                 </td>
-                <td className="px-4 py-3 hidden md:table-cell text-[hsl(var(--muted-foreground))] text-xs">
-                  {format(parseISO(plan.startDate.slice(0, 10)), 'dd/MM/yyyy', { locale: es })}
+                <td className="px-4 py-3 hidden md:table-cell text-[hsl(var(--muted-foreground))] text-xs capitalize">
+                  {periodLabel(plan.firstPeriodStart)}
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant={plan.isActive ? 'success' : 'secondary'}>

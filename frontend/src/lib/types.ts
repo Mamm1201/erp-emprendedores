@@ -106,7 +106,7 @@ export interface DashboardData {
       client: { legalName: string; tradeName: string | null };
     };
   }>;
-  upcomingVisits: UpcomingVisit[];
+  upcomingVisits: DashboardVisit[];
   maintenance: {
     activeContracts: number;
     activePlans: number;
@@ -389,48 +389,116 @@ export interface MaintenanceContract {
   }>;
 }
 
+// Plan de mantenimiento de UNA sede. Los periodos son firstPeriodStart +
+// k * frecuencia; la ejecucion real nunca desplaza el ciclo.
 export interface MaintenancePlan {
   id: string;
   contractId: string;
+  branchId: string;
   frequency: MaintenanceFrequency;
-  startDate: string;
+  firstPeriodStart: string;
   isActive: boolean;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+  branch: { id: string; name: string; city: string | null };
   contract: {
     id: string;
     number: string;
     status: ContractStatus;
+    startDate: string;
+    endDate: string;
     client: { id: string; legalName: string; tradeName: string | null };
   };
+  _count: { planEquipment: number };
 }
 
-export type MaintenanceVisitStatus = 'PENDING' | 'GENERATED' | 'COMPLETED' | 'CANCELLED';
+export type MaintenanceVisitStatus = 'PENDING' | 'IN_PROGRESS' | 'CLOSED' | 'CANCELLED';
+export type VisitCompliance = 'FULFILLED' | 'NOT_FULFILLED';
+// Etiqueta de plazo derivada (solo visitas abiertas); se mide contra periodEnd.
+export type VisitDeadline = 'EXECUTED_PENDING_CLOSE' | 'OVERDUE' | 'DUE_SOON' | 'PENDING';
+export type VisitEquipmentOrigin = 'SCHEDULED' | 'ADDED';
+export type VisitEquipmentStatus = 'PENDING' | 'ATTENDED' | 'NOT_ATTENDED';
+export type NotAttendedReason =
+  | 'IN_USE'
+  | 'OUT_OF_SERVICE'
+  | 'DECOMMISSIONED'
+  | 'NO_ACCESS'
+  | 'CLIENT_REQUEST'
+  | 'ATTENDED_NEXT_PERIOD'
+  | 'OTHER';
 
+// Equipo programado (o agregado) en una visita y su conciliacion. La fecha
+// real de atencion es intervention.occurredAt.
+export interface VisitEquipment {
+  id: string;
+  equipmentId: string;
+  origin: VisitEquipmentOrigin;
+  status: VisitEquipmentStatus;
+  notAttendedReason: NotAttendedReason | null;
+  notAttendedNote: string | null;
+  earlyExecutionNote: string | null;
+  equipment: {
+    id: string;
+    type: EquipmentType;
+    brand: string | null;
+    model: string | null;
+    serialNumber: string | null;
+    location: string | null;
+  };
+  intervention: { id: string; occurredAt: string; status: InterventionStatus } | null;
+}
+
+// Obligacion de mantenimiento de una sede durante un periodo (mes calendario).
 export interface MaintenanceVisit {
   id: string;
   planId: string;
+  periodStart: string;
+  periodEnd: string;
   scheduledDate: string;
-  windowEnd: string | null;
   status: MaintenanceVisitStatus;
-  completedAt: string | null;
+  compliance: VisitCompliance | null;
+  closedAt: string | null;
+  cancelReason: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
   workOrder: { id: string; number: string; status: string } | null;
+  equipment: VisitEquipment[];
+  deadline: VisitDeadline | null;
 }
 
 export interface UpcomingVisit {
   id: string;
+  periodStart: string;
+  periodEnd: string;
   scheduledDate: string;
-  status: string;
+  status: MaintenanceVisitStatus;
   plan: {
+    id: string;
     frequency: MaintenanceFrequency;
+    branch: { id: string; name: string };
     contract: {
       client: { legalName: string; tradeName: string | null };
     };
   };
+}
+
+// Fila del dashboard: una por visita (sede + periodo).
+export interface DashboardVisit {
+  id: string;
+  planId: string;
+  periodStart: string;
+  periodEnd: string;
+  scheduledDate: string;
+  status: MaintenanceVisitStatus;
+  deadline: VisitDeadline;
+  frequency: MaintenanceFrequency;
+  branch: { id: string; name: string };
+  client: { legalName: string; tradeName: string | null };
+  workOrder: { id: string; number: string } | null;
+  equipmentTotal: number;
+  equipmentAttended: number;
 }
 
 export interface UpcomingVisitsResponse {
@@ -564,6 +632,15 @@ export interface WorkOrder {
   serviceRecord: { id: string } | null;
   invoice: { id: string; number: string; status: string; total?: string; paidTotal?: string } | null;
   quotation: { id: string; number: string } | null;
+  // Visita de mantenimiento que origino la OT (null si no viene de un plan).
+  maintenanceVisit: {
+    id: string;
+    planId: string;
+    periodStart: string;
+    periodEnd: string;
+    status: MaintenanceVisitStatus;
+    equipment: VisitEquipment[];
+  } | null;
   items?: WorkOrderItem[];
   technicians?: { id: string; name: string }[];
 }
@@ -593,7 +670,7 @@ export interface Intervention {
   findings: string | null;
   activitiesPerformed: string | null;
   recommendations: string | null;
-  occurredAt: string | null;
+  occurredAt: string;
   createdAt: string;
   updatedAt: string;
   primaryTechnicianId: string | null;

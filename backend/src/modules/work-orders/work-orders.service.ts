@@ -3,7 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, WorkOrderStatus, InterventionStatus } from '../../generated/prisma/client';
+import {
+  Prisma,
+  WorkOrderStatus,
+  InterventionStatus,
+} from '../../generated/prisma/client';
 import {
   calculateLineTotals,
   sumMoney,
@@ -25,11 +29,24 @@ import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { UpdateWorkOrderStatusDto } from './dto/update-work-order-status.dto';
 import { UpdateWorkOrderTechniciansDto } from './dto/update-work-order-technicians.dto';
 import { WorkOrderItemDto } from './dto/work-order-item.dto';
+import {
+  RECONCILE_VISIT_SELECT,
+  reconcileForClose,
+} from '../maintenance-visits/maintenance-visits.domain';
 
 const ALLOWED_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
-  [WorkOrderStatus.DRAFT]: [WorkOrderStatus.SCHEDULED, WorkOrderStatus.CANCELLED],
-  [WorkOrderStatus.SCHEDULED]: [WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.CANCELLED],
-  [WorkOrderStatus.IN_PROGRESS]: [WorkOrderStatus.COMPLETED, WorkOrderStatus.CANCELLED],
+  [WorkOrderStatus.DRAFT]: [
+    WorkOrderStatus.SCHEDULED,
+    WorkOrderStatus.CANCELLED,
+  ],
+  [WorkOrderStatus.SCHEDULED]: [
+    WorkOrderStatus.IN_PROGRESS,
+    WorkOrderStatus.CANCELLED,
+  ],
+  [WorkOrderStatus.IN_PROGRESS]: [
+    WorkOrderStatus.COMPLETED,
+    WorkOrderStatus.CANCELLED,
+  ],
   [WorkOrderStatus.COMPLETED]: [],
   [WorkOrderStatus.CANCELLED]: [],
 };
@@ -135,7 +152,9 @@ export class WorkOrdersService {
     }
 
     await this.prisma.$transaction([
-      this.prisma.workOrderTechnician.deleteMany({ where: { workOrderId: id } }),
+      this.prisma.workOrderTechnician.deleteMany({
+        where: { workOrderId: id },
+      }),
       this.prisma.workOrderTechnician.createMany({
         data: technicianIds.map((userId) => ({ workOrderId: id, userId })),
       }),
@@ -212,6 +231,19 @@ export class WorkOrdersService {
       await this.resolveBranch(workOrder.clientId, dto.branchId);
     }
 
+    // R13: la sede de la OT de una visita es la sede del plan.
+    if (dto.branchId !== undefined && dto.branchId !== workOrder.branchId) {
+      const visit = await this.prisma.maintenanceVisit.findUnique({
+        where: { workOrderId: id },
+        select: { id: true },
+      });
+      if (visit) {
+        throw new BadRequestException(
+          'La OT pertenece a una visita de mantenimiento: su sede es la del plan y no se puede cambiar.',
+        );
+      }
+    }
+
     if (dto.equipmentId) {
       await this.resolveEquipment(dto.equipmentId, dto.branchId);
     }
@@ -228,11 +260,15 @@ export class WorkOrdersService {
         data: {
           ...(dto.branchId !== undefined && { branchId: dto.branchId }),
           ...(dto.title !== undefined && { title: dto.title }),
-          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.description !== undefined && {
+            description: dto.description,
+          }),
           ...(dto.scheduledAt !== undefined && {
             scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
           }),
-          ...(dto.assignedToId !== undefined && { assignedToId: dto.assignedToId }),
+          ...(dto.assignedToId !== undefined && {
+            assignedToId: dto.assignedToId,
+          }),
           ...(dto.equipmentId !== undefined && {
             equipmentId: dto.equipmentId || null,
           }),
@@ -290,11 +326,36 @@ export class WorkOrdersService {
       }
 
       const notTerminal = interventions.filter(
-        (i) => i.status !== InterventionStatus.COMPLETED && i.status !== InterventionStatus.CANCELLED,
+        (i) =>
+          i.status !== InterventionStatus.COMPLETED &&
+          i.status !== InterventionStatus.CANCELLED,
       );
       if (notTerminal.length > 0) {
         throw new BadRequestException(
           `No se puede completar la OT: ${notTerminal.length} intervención(es) siguen en estado IN_PROGRESS. Cierra o cancela cada intervención antes de completar la OT.`,
+        );
+      }
+    }
+
+    // OT de una visita de mantenimiento: el cierre concilia la visita (R11,
+    // R7, R9) y la cancelacion la devuelve a PENDING solo si no hay
+    // intervenciones completadas (R15).
+    const visit = await this.prisma.maintenanceVisit.findUnique({
+      where: { workOrderId: id },
+      select: RECONCILE_VISIT_SELECT,
+    });
+    const visitCompliance =
+      visit && dto.status === WorkOrderStatus.COMPLETED
+        ? reconcileForClose(visit)
+        : null;
+
+    if (visit && dto.status === WorkOrderStatus.CANCELLED) {
+      const completed = await this.prisma.intervention.count({
+        where: { workOrderId: id, status: InterventionStatus.COMPLETED },
+      });
+      if (completed > 0) {
+        throw new BadRequestException(
+          `No se puede cancelar la OT de una visita con ${completed} intervención(es) completadas. Anúlalas primero o completa la OT.`,
         );
       }
     }
@@ -313,16 +374,31 @@ export class WorkOrdersService {
         data: { status: dto.status, ...timestamps },
         select: {
           ...WORK_ORDER_SELECT,
-          items: { select: WORK_ORDER_ITEM_SELECT, orderBy: { lineOrder: 'asc' } },
+          items: {
+            select: WORK_ORDER_ITEM_SELECT,
+            orderBy: { lineOrder: 'asc' },
+          },
           invoice: { select: { id: true, number: true, status: true } },
           serviceRecord: { select: { id: true } },
         },
       });
 
-      if (dto.status === WorkOrderStatus.COMPLETED) {
-        await tx.maintenanceVisit.updateMany({
-          where: { workOrderId: id, status: 'GENERATED' },
-          data: { status: 'COMPLETED', completedAt: new Date() },
+      if (visit && visitCompliance) {
+        await tx.maintenanceVisit.update({
+          where: { id: visit.id },
+          data: {
+            status: 'CLOSED',
+            compliance: visitCompliance,
+            closedAt: new Date(),
+          },
+        });
+      }
+
+      if (visit && dto.status === WorkOrderStatus.CANCELLED) {
+        // H2: se libera workOrderId para poder generar otra OT.
+        await tx.maintenanceVisit.update({
+          where: { id: visit.id },
+          data: { status: 'PENDING', workOrderId: null },
         });
       }
 
@@ -339,6 +415,18 @@ export class WorkOrdersService {
       );
     }
 
+    // H1: la OT de una visita no se elimina (el borrado es logico y dejaria
+    // la visita apuntando a una OT eliminada); solo se cancela.
+    const visit = await this.prisma.maintenanceVisit.findUnique({
+      where: { workOrderId: id },
+      select: { id: true },
+    });
+    if (visit) {
+      throw new BadRequestException(
+        'La OT pertenece a una visita de mantenimiento: no se elimina, se cancela.',
+      );
+    }
+
     return this.prisma.workOrder.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -346,7 +434,9 @@ export class WorkOrdersService {
     });
   }
 
-  private buildListWhere(query: QueryWorkOrdersDto): Prisma.WorkOrderWhereInput {
+  private buildListWhere(
+    query: QueryWorkOrdersDto,
+  ): Prisma.WorkOrderWhereInput {
     const where: Prisma.WorkOrderWhereInput = { deletedAt: null };
 
     if (query.clientId) where.clientId = query.clientId;
@@ -410,7 +500,12 @@ export class WorkOrdersService {
       const discountAmount = toMoney(item.discountAmount ?? 0);
       const taxRate = toMoney(item.taxRate ?? 0);
 
-      const totals = calculateLineTotals({ quantity, unitPrice, discountAmount, taxRate });
+      const totals = calculateLineTotals({
+        quantity,
+        unitPrice,
+        discountAmount,
+        taxRate,
+      });
 
       return {
         create: {

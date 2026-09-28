@@ -156,9 +156,35 @@ enum ServiceHoursLevel {
 
 enum MaintenanceVisitStatus {
   PENDING
-  GENERATED
-  COMPLETED
+  IN_PROGRESS
+  CLOSED
   CANCELLED
+}
+
+enum VisitCompliance {
+  FULFILLED
+  NOT_FULFILLED
+}
+
+enum VisitEquipmentOrigin {
+  SCHEDULED
+  ADDED
+}
+
+enum VisitEquipmentStatus {
+  PENDING
+  ATTENDED
+  NOT_ATTENDED
+}
+
+enum NotAttendedReason {
+  IN_USE
+  OUT_OF_SERVICE
+  DECOMMISSIONED
+  NO_ACCESS
+  CLIENT_REQUEST
+  ATTENDED_NEXT_PERIOD
+  OTHER
 }
 
 enum ChecklistResult {
@@ -358,6 +384,7 @@ model Branch {
   quotations Quotation[]
   workOrders WorkOrder[]
   equipment  Equipment[]
+  maintenancePlans MaintenancePlan[]
   // Relacion inversa virtual — la FK (branchId) vive en Contact, no aqui.
   // Sin columna nueva ni cambio de comportamiento en Branch (Contrato de
   // Diseño Fase 0, decision F0-D01).
@@ -818,6 +845,7 @@ model Equipment {
   contractEquipment ContractEquipment[]
   planEquipment     MaintenancePlanEquipment[]
   interventions     Intervention[]
+  visitEquipment    MaintenanceVisitEquipment[]
 
   @@index([branchId])
   @@index([type])
@@ -883,29 +911,37 @@ model ContractEquipment {
 // ─── Plan de mantenimiento preventivo ────────────────────────────────────────
 
 model MaintenancePlan {
-  id          String               @id @default(cuid())
-  contractId  String
-  frequency   MaintenanceFrequency
-  startDate   DateTime             @db.Date
-  isActive    Boolean              @default(true)
-  notes       String?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  id               String               @id @default(cuid())
+  contractId       String
+  // Sede del plan (R1): todos sus equipos pertenecen a esta sede.
+  branchId         String
+  frequency        MaintenanceFrequency
+  // Dia 1 del mes ancla del ciclo. Los periodos son
+  // firstPeriodStart + k * frecuencia; la ejecucion real nunca los desplaza.
+  firstPeriodStart DateTime             @db.Date
+  isActive         Boolean              @default(true)
+  notes            String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 
   contract      MaintenanceContract       @relation(fields: [contractId], references: [id])
+  branch        Branch                    @relation(fields: [branchId], references: [id])
   visits        MaintenanceVisit[]
   planEquipment MaintenancePlanEquipment[]
 
   @@index([contractId])
+  @@index([branchId])
   @@index([isActive])
   @@map("maintenance_plans")
 }
 
 model MaintenancePlanEquipment {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   planId      String
   equipmentId String
-  addedAt     DateTime @default(now())
+  addedAt     DateTime  @default(now())
+  // Baja logica: el equipo salio del programa sin perder que estuvo en el.
+  removedAt   DateTime?
   notes       String?
 
   plan      MaintenancePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -918,24 +954,64 @@ model MaintenancePlanEquipment {
 
 // ─── Visitas de mantenimiento ─────────────────────────────────────────────────
 
+// Obligacion de mantenimiento de una sede durante un periodo (mes
+// calendario). Puede ejecutarse en una o varias jornadas dentro de una
+// unica OT. La trazabilidad tecnica NO vive aqui: vive en Intervention.
 model MaintenanceVisit {
   id            String                 @id @default(cuid())
   planId        String
+  // Ventana valida de cumplimiento. Inmutables una vez generada la visita.
+  periodStart   DateTime               @db.Date
+  periodEnd     DateTime               @db.Date
+  // Fecha tentativa de planificacion. No afecta estado ni cumplimiento.
   scheduledDate DateTime               @db.Date
-  windowEnd     DateTime?              @db.Date
   status        MaintenanceVisitStatus @default(PENDING)
+  // Se calcula y congela al pasar a CLOSED. Null en CANCELLED y legado.
+  compliance    VisitCompliance?
   workOrderId   String?                @unique
-  completedAt   DateTime?
+  // Conciliacion de la obligacion (administrativo), no fecha de ejecucion.
+  closedAt      DateTime?
+  cancelReason  String?
   notes         String?
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
 
-  plan      MaintenancePlan @relation(fields: [planId], references: [id])
-  workOrder WorkOrder?      @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
+  plan      MaintenancePlan             @relation(fields: [planId], references: [id])
+  workOrder WorkOrder?                  @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
+  equipment MaintenanceVisitEquipment[]
 
-  @@index([planId, scheduledDate])
-  @@index([status, scheduledDate])
+  @@unique([planId, periodStart])
+  @@index([status, periodEnd])
   @@map("maintenance_visits")
+}
+
+// Equipo programado (o agregado) en una visita y su conciliacion. La fecha
+// real de atencion se lee de Intervention.occurredAt — no se duplica aqui.
+model MaintenanceVisitEquipment {
+  id                 String               @id @default(cuid())
+  visitId            String
+  equipmentId        String
+  origin             VisitEquipmentOrigin @default(SCHEDULED)
+  status             VisitEquipmentStatus @default(PENDING)
+  interventionId     String?              @unique
+  notAttendedReason  NotAttendedReason?
+  notAttendedNote    String?
+  earlyExecutionNote String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  visit        MaintenanceVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  equipment    Equipment        @relation(fields: [equipmentId], references: [id])
+  // FK compuesta (H3): la intervencion ligada debe ser del mismo equipo.
+  intervention Intervention?    @relation(fields: [interventionId, equipmentId], references: [id, equipmentId], onDelete: Restrict)
+
+  @@unique([visitId, equipmentId])
+  // Requerido por Prisma para la relacion 1:1 compuesta (H3); la unicidad
+  // real de R6 la da interventionId @unique.
+  @@unique([interventionId, equipmentId])
+  @@index([equipmentId])
+  @@index([visitId, status])
+  @@map("maintenance_visit_equipment")
 }
 
 // ─── Acta técnica de la visita ────────────────────────────────────────────────
@@ -1072,7 +1148,7 @@ model Intervention {
   findings                    String?
   activitiesPerformed          String?
   recommendations             String?
-  occurredAt                  DateTime?
+  occurredAt                  DateTime
   primaryTechnicianId          String?
   // Auditoria de migracion: solo poblado en Intervention creadas por la
   // migracion automatica desde ServiceRecord — null para las nativas.
@@ -1084,7 +1160,9 @@ model Intervention {
   equipment          Equipment       @relation(fields: [equipmentId], references: [id])
   primaryTechnician   User?           @relation("InterventionPrimaryTechnician", fields: [primaryTechnicianId], references: [id])
   checklistItems     ChecklistItem[]
+  visitEquipment     MaintenanceVisitEquipment?
 
+  @@unique([id, equipmentId])
   @@index([workOrderId])
   @@index([equipmentId])
   @@map("interventions")

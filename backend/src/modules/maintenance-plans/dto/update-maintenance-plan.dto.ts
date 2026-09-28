@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsDateString,
   IsEnum,
   IsOptional,
   IsString,
@@ -11,6 +12,11 @@ export class UpdateMaintenancePlanDto {
   @IsOptional()
   @IsEnum(MaintenanceFrequency)
   frequency?: MaintenanceFrequency;
+
+  // Cambiar ancla o frecuencia regenera solo visitas futuras PENDING sin OT (C7).
+  @IsOptional()
+  @IsDateString()
+  firstPeriodStart?: string;
 
   @IsOptional()
   @IsBoolean()

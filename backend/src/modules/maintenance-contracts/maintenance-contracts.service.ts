@@ -17,6 +17,7 @@ import { UpdateMaintenanceContractDto } from './dto/update-maintenance-contract.
 import { QueryMaintenanceContractsDto } from './dto/query-maintenance-contracts.dto';
 import { AttachContractEquipmentDto } from './dto/attach-contract-equipment.dto';
 import { nextDocumentNumber } from '../quotations/quotations-document.service';
+import { MaintenancePlansService } from '../maintenance-plans/maintenance-plans.service';
 
 const CONTRACT_EQUIPMENT_SELECT = {
   equipmentId: true,
@@ -38,7 +39,10 @@ const CONTRACT_EQUIPMENT_SELECT = {
 
 @Injectable()
 export class MaintenanceContractsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly maintenancePlansService: MaintenancePlansService,
+  ) {}
 
   async findAll(query: QueryMaintenanceContractsDto) {
     const page = query.page ?? CONTRACT_DEFAULT_PAGE;
@@ -143,13 +147,17 @@ export class MaintenanceContractsService {
       return this.findOne(id);
     }
 
-    return this.prisma.maintenanceContract.update({
+    const updated = await this.prisma.maintenanceContract.update({
       where: { id },
       data: {
         ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.billingCycle !== undefined && { billingCycle: dto.billingCycle }),
+        ...(dto.billingCycle !== undefined && {
+          billingCycle: dto.billingCycle,
+        }),
         ...(dto.value !== undefined && { value: dto.value }),
-        ...(dto.startDate !== undefined && { startDate: new Date(dto.startDate) }),
+        ...(dto.startDate !== undefined && {
+          startDate: new Date(dto.startDate),
+        }),
         ...(dto.endDate !== undefined && { endDate: new Date(dto.endDate) }),
         ...(dto.signedById !== undefined && { signedById: dto.signedById }),
         ...(dto.signedAt !== undefined && {
@@ -158,15 +166,21 @@ export class MaintenanceContractsService {
         ...(dto.correctiveIncluded !== undefined && {
           correctiveIncluded: dto.correctiveIncluded,
         }),
-        ...(dto.partsIncluded !== undefined && { partsIncluded: dto.partsIncluded }),
+        ...(dto.partsIncluded !== undefined && {
+          partsIncluded: dto.partsIncluded,
+        }),
         ...(dto.transportIncluded !== undefined && {
           transportIncluded: dto.transportIncluded,
         }),
-        ...(dto.serviceHours !== undefined && { serviceHours: dto.serviceHours }),
+        ...(dto.serviceHours !== undefined && {
+          serviceHours: dto.serviceHours,
+        }),
         ...(dto.slaHoursCritical !== undefined && {
           slaHoursCritical: dto.slaHoursCritical,
         }),
-        ...(dto.slaHoursHigh !== undefined && { slaHoursHigh: dto.slaHoursHigh }),
+        ...(dto.slaHoursHigh !== undefined && {
+          slaHoursHigh: dto.slaHoursHigh,
+        }),
         ...(dto.slaHoursMedium !== undefined && {
           slaHoursMedium: dto.slaHoursMedium,
         }),
@@ -175,6 +189,20 @@ export class MaintenanceContractsService {
       },
       select: CONTRACT_SELECT,
     });
+
+    // Renovacion / cambio de vigencia: generar las visitas de los nuevos
+    // periodos de cada plan activo (seccion 5, idempotente).
+    if (dto.startDate !== undefined || dto.endDate !== undefined) {
+      const plans = await this.prisma.maintenancePlan.findMany({
+        where: { contractId: id, isActive: true },
+        select: { id: true },
+      });
+      for (const plan of plans) {
+        await this.maintenancePlansService.syncVisits(plan.id);
+      }
+    }
+
+    return updated;
   }
 
   async remove(id: string) {
@@ -240,7 +268,10 @@ export class MaintenanceContractsService {
     return { contractId, equipmentId, removed: true };
   }
 
-  private async resolveEquipmentForClient(equipmentId: string, clientId: string) {
+  private async resolveEquipmentForClient(
+    equipmentId: string,
+    clientId: string,
+  ) {
     const equipment = await this.prisma.equipment.findFirst({
       where: { id: equipmentId, deletedAt: null, branch: { clientId } },
       select: { id: true },

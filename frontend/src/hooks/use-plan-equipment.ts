@@ -18,6 +18,7 @@ export function useAttachPlanEquipment(planId: string) {
       api.post<AssociatedEquipment>(`/maintenance-plans/${planId}/equipment`, { equipmentId }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['maintenance-plans', 'equipment', planId] });
+      qc.invalidateQueries({ queryKey: ['maintenance-visits', planId] });
     },
   });
 }
@@ -31,6 +32,7 @@ export function useDetachPlanEquipment(planId: string) {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['maintenance-plans', 'equipment', planId] });
+      qc.invalidateQueries({ queryKey: ['maintenance-visits', planId] });
     },
   });
 }

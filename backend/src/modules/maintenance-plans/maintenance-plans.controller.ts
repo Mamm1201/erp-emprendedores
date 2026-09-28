@@ -48,6 +48,13 @@ export class MaintenancePlansController {
     return this.maintenancePlansService.update(id, dto);
   }
 
+  // Genera las visitas faltantes por periodo (idempotente).
+  @Post(':id/sync-visits')
+  @HttpCode(HttpStatus.OK)
+  syncVisits(@Param('id') id: string) {
+    return this.maintenancePlansService.syncVisits(id);
+  }
+
   @Get(':id/equipment')
   findEquipment(@Param('id') id: string) {
     return this.maintenancePlansService.findEquipment(id);

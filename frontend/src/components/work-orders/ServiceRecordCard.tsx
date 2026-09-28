@@ -76,7 +76,9 @@ export function ServiceRecordCard({ workOrder }: ServiceRecordCardProps) {
   const workOrderId = workOrder.id;
   const { data: record, isLoading, isError, error } = useServiceRecord(workOrderId);
   const updateRecord  = useUpdateServiceRecord();
-  const [creating, setCreating] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'add' | null>(null);
+  // Con la OT abierta se pueden agregar/anular intervenciones (varias jornadas).
+  const workOrderOpen = workOrder.status !== 'COMPLETED' && workOrder.status !== 'CANCELLED';
 
   // 404 means the record doesn't exist yet — any other error is a genuine failure
   const isNotFound = isError && (error as { status?: number } | null)?.status === 404;
@@ -124,7 +126,7 @@ export function ServiceRecordCard({ workOrder }: ServiceRecordCardProps) {
               size="sm"
               variant="outline"
               className="gap-1.5 shrink-0"
-              onClick={() => setCreating(true)}
+              onClick={() => setModalMode('create')}
             >
               <Plus className="h-3.5 w-3.5" />
               Crear acta
@@ -137,10 +139,29 @@ export function ServiceRecordCard({ workOrder }: ServiceRecordCardProps) {
           <div className="space-y-5">
 
             {/* Informe tecnico: uno por equipo realmente intervenido */}
+            {workOrderOpen && (
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  onClick={() => setModalMode('add')}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Agregar intervenciones
+                </Button>
+              </div>
+            )}
+
             {record.interventions.length > 0 ? (
               <div className="space-y-4">
                 {record.interventions.map((iv) => (
-                  <InterventionSection key={iv.id} intervention={iv} workOrderId={workOrderId} />
+                  <InterventionSection
+                    key={iv.id}
+                    intervention={iv}
+                    workOrderId={workOrderId}
+                    workOrderOpen={workOrderOpen}
+                  />
                 ))}
               </div>
             ) : (
@@ -229,8 +250,9 @@ export function ServiceRecordCard({ workOrder }: ServiceRecordCardProps) {
       </CardContent>
 
       <CreateServiceRecordModal
-        workOrder={creating ? workOrder : null}
-        onOpenChange={(open) => setCreating(open)}
+        workOrder={modalMode ? workOrder : null}
+        mode={modalMode ?? 'create'}
+        onOpenChange={(open) => { if (!open) setModalMode(null); }}
       />
     </Card>
   );

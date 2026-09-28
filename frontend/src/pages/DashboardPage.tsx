@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { differenceInDays, format, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   AlertTriangle,
@@ -15,21 +15,20 @@ import {
 } from 'lucide-react';
 
 import { useDashboard } from '@/hooks/use-dashboard';
-import type { MaintenanceFrequency, PaymentMethod } from '@/lib/types';
+import type { PaymentMethod } from '@/lib/types';
+import {
+  DEADLINE_BADGE,
+  DEADLINE_LABELS,
+  FREQUENCY_LABELS,
+  fmtCalendarDate,
+  periodLabel,
+} from '@/lib/maintenance';
 import { formatMoney } from '@/lib/money';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const FREQ_LABELS: Record<MaintenanceFrequency, string> = {
-  MONTHLY: 'Mensual',
-  QUARTERLY: 'Trimestral',
-  EVERY_4_MONTHS: 'Cuatrimestral',
-  BIANNUAL: 'Semestral',
-  ANNUAL: 'Anual',
-};
 
 const METHOD_LABELS: Record<PaymentMethod, string> = {
   CASH: 'Efectivo',
@@ -305,7 +304,7 @@ export function DashboardPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold flex items-center gap-2">
               <CalendarClock className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-              Próximas visitas (30 días)
+              Visitas de mantenimiento
             </h2>
             <Button
               variant="ghost"
@@ -319,39 +318,38 @@ export function DashboardPage() {
 
           {upcomingVisits.length === 0 ? (
             <p className="text-sm text-[hsl(var(--muted-foreground))] py-4 text-center">
-              Sin visitas programadas en los próximos 30 días
+              Sin visitas abiertas en los próximos 30 días
             </p>
           ) : (
             <div className="space-y-0 divide-y">
-              {upcomingVisits.map((v) => {
-                const daysLeft = differenceInDays(parseISO(v.scheduledDate.slice(0, 10)), today);
-                return (
-                  <div key={v.id} className="py-2.5 flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {v.plan.contract.client.tradeName ?? v.plan.contract.client.legalName}
-                      </p>
-                      <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                        {FREQ_LABELS[v.plan.frequency]}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      {daysLeft < 0 ? (
-                        <Badge variant="danger">Vencida</Badge>
-                      ) : daysLeft <= 7 ? (
-                        <Badge variant="danger">Esta semana</Badge>
-                      ) : daysLeft <= 14 ? (
-                        <Badge variant="warning">Prox. semana</Badge>
-                      ) : (
-                        <Badge variant="secondary">En {daysLeft}d</Badge>
-                      )}
-                      <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
-                        {format(parseISO(v.scheduledDate.slice(0, 10)), 'd MMM', { locale: es })}
-                      </p>
-                    </div>
+              {/* Una fila por visita = sede + período. El plazo se mide contra
+                  el fin del período, no contra la fecha tentativa. */}
+              {upcomingVisits.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => navigate(v.workOrder ? `/ordenes/${v.workOrder.id}` : `/planes/${v.planId}`)}
+                  className="w-full text-left py-2.5 flex items-start justify-between gap-2 hover:bg-[hsl(var(--muted)/0.3)] rounded-sm"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {v.client.tradeName ?? v.client.legalName} — Sede {v.branch.name}
+                    </p>
+                    <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                      <span className="capitalize">{periodLabel(v.periodStart)}</span>
+                      {' · '}{FREQUENCY_LABELS[v.frequency]}
+                      {' · '}{v.equipmentAttended} de {v.equipmentTotal} equipos
+                      {' · '}{v.workOrder ? v.workOrder.number : 'Sin OT'}
+                    </p>
                   </div>
-                );
-              })}
+                  <div className="text-right shrink-0">
+                    <Badge variant={DEADLINE_BADGE[v.deadline]}>{DEADLINE_LABELS[v.deadline]}</Badge>
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
+                      vence {fmtCalendarDate(v.periodEnd, 'd MMM')}
+                    </p>
+                  </div>
+                </button>
+              ))}
             </div>
           )}
         </div>
