@@ -53,7 +53,7 @@ Reglas clave:
 | `clients` | controller, service, dto | CRUD + soft-delete |
 | `branches` | controller, service, dto | Pertenecen a un cliente |
 | `quotations` | controller, service, dto, quotations-document.service | `nextDocumentNumber(tx, docType, prefix)` para auto-numeración |
-| `work-orders` | controller, service, dto, constants | `WORK_ORDER_SELECT` incluye `invoice` |
+| `work-orders` | controller, service, dto, constants | `WORK_ORDER_SELECT` incluye `invoice` y `type`. Naturaleza elegible al crear: `CORRECTIVE`/`INSPECTION`/`SUPPLY` (`PREVENTIVE` solo desde visitas). Suministro: ver `docs/domain/supply-line-contract-v1.0.md` |
 | `invoices` | controller, service, dto, constants | `INVOICE_SELECT`, `PAYMENT_SELECT`, `recalculateInvoiceStatus` |
 | `maintenance-plans` | controller, service, dto | Plan por **sede**. Visitas generadas por período (`firstPeriodStart` + k × frecuencia, mes calendario); la ejecución real **nunca** desplaza el ciclo. Ver `docs/domain/maintenance-by-branch-contract-v1.0.md` |
 | `service-records` | controller, service, dto | Acta técnica con checklist |
