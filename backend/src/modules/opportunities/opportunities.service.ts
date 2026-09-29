@@ -13,6 +13,7 @@ import { UpdateOpportunityDto } from './dto/update-opportunity.dto';
 import { UpdateOpportunityStageDto } from './dto/update-opportunity-stage.dto';
 import { QueryOpportunitiesDto } from './dto/query-opportunities.dto';
 import { GenerateQuotationDto } from './dto/generate-quotation.dto';
+import { createPrincipalBranch } from '../branches/principal-branch.util';
 
 @Injectable()
 export class OpportunitiesService {
@@ -210,7 +211,12 @@ export class OpportunitiesService {
 
       const account = await tx.account.findUniqueOrThrow({
         where: { id: accountId },
-        select: { legalName: true, nit: true, promotedClientId: true },
+        select: {
+          legalName: true,
+          nit: true,
+          city: true,
+          promotedClientId: true,
+        },
       });
 
       let clientId: string | null = null;
@@ -252,6 +258,9 @@ export class OpportunitiesService {
             data: { legalName: account.legalName, taxId: account.nit },
             select: { id: true },
           });
+          // C1: el cliente promovido desde el CRM tambien nace con su sede
+          // de referencia `Principal` (ciudad de la cuenta).
+          await createPrincipalBranch(tx, created.id, account.city);
           clientId = created.id;
         }
 

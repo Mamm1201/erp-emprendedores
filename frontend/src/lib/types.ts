@@ -304,6 +304,10 @@ export type WorkOrderStatus =
   | 'COMPLETED'
   | 'CANCELLED';
 
+// Naturaleza de la OT. PREVENTIVE: solo OTs de visitas de mantenimiento.
+// SUPPLY: suministro/entrega, con o sin instalacion.
+export type WorkOrderType = 'PREVENTIVE' | 'CORRECTIVE' | 'INSPECTION' | 'SUPPLY';
+
 export type EquipmentType =
   | 'NURSE_CALL'
   | 'MEDICAL_ALERT'
@@ -611,6 +615,7 @@ export interface WorkOrder {
   clientId: string;
   branchId: string | null;
   quotationId: string | null;
+  type: WorkOrderType;
   status: WorkOrderStatus;
   title: string;
   description: string | null;

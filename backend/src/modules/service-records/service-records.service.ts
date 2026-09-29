@@ -11,6 +11,7 @@ import {
   WorkOrderType,
 } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { generateOpaqueToken } from '../../common/utils';
 import {
   businessMidnight,
   linkInterventionToVisit,
@@ -327,20 +328,25 @@ export class ServiceRecordsService {
     items: InterventionInputDto[],
   ) {
     for (const item of items) {
-      await this.assertEquipmentOfWorkOrder(item.equipmentId, workOrder);
+      const equipmentId = await this.resolveInterventionEquipment(
+        tx,
+        item,
+        workOrder,
+      );
       const occurredAt = item.occurredAt
         ? this.parseOccurredAt(item.occurredAt)
         : new Date();
 
       const checklistItems = await this.resolveChecklistItems(
         item.checklistItems,
-        item.equipmentId,
+        equipmentId,
+        workOrder.type,
       );
 
       const intervention = await tx.intervention.create({
         data: {
           workOrderId: workOrder.id,
-          equipmentId: item.equipmentId,
+          equipmentId,
           type: workOrder.type,
           // Nace COMPLETED: este formulario ya provee hallazgos/
           // actividades/checklist en un solo paso. Necesario para que la
@@ -370,11 +376,70 @@ export class ServiceRecordsService {
       await linkInterventionToVisit(tx, {
         workOrderId: workOrder.id,
         interventionId: intervention.id,
-        equipmentId: item.equipmentId,
+        equipmentId,
         occurredAt,
         earlyExecutionNote: item.earlyExecutionNote,
       });
     }
+  }
+
+  /**
+   * Equipo de la intervencion: uno existente (R13) o, en OTs de Suministro,
+   * uno nuevo que nace con la entrega (C2), creado en el cliente + sede de la
+   * OT dentro de la misma transaccion — sin equipos huerfanos si el acta falla.
+   */
+  private async resolveInterventionEquipment(
+    tx: Prisma.TransactionClient,
+    item: InterventionInputDto,
+    workOrder: {
+      type: WorkOrderType;
+      clientId: string;
+      branchId: string | null;
+    },
+  ): Promise<string> {
+    if (!!item.equipmentId === !!item.newEquipment) {
+      throw new BadRequestException(
+        'Cada intervención debe indicar un equipo existente o un equipo nuevo (no ambos).',
+      );
+    }
+
+    if (item.equipmentId) {
+      await this.assertEquipmentOfWorkOrder(item.equipmentId, workOrder);
+      return item.equipmentId;
+    }
+
+    const eq = item.newEquipment!;
+    if (workOrder.type !== WorkOrderType.SUPPLY) {
+      throw new BadRequestException(
+        'Solo una OT de Suministro puede registrar un equipo nuevo desde el acta.',
+      );
+    }
+    if (!workOrder.branchId) {
+      throw new BadRequestException(
+        'La OT no tiene sede: asígnala antes de registrar equipos nuevos.',
+      );
+    }
+
+    const created = await tx.equipment.create({
+      data: {
+        branchId: workOrder.branchId,
+        type: eq.type,
+        criticality: eq.criticality ?? undefined,
+        status: eq.status ?? undefined,
+        warrantyExpiresAt: eq.warrantyExpiresAt
+          ? new Date(eq.warrantyExpiresAt)
+          : null,
+        brand: eq.brand ?? null,
+        model: eq.model ?? null,
+        serialNumber: eq.serialNumber ?? null,
+        installDate: eq.installDate ? new Date(eq.installDate) : null,
+        location: eq.location ?? null,
+        notes: eq.notes ?? null,
+        qrCode: generateOpaqueToken(),
+      },
+      select: { id: true },
+    });
+    return created.id;
   }
 
   // R14: solo se registran/anulan intervenciones con la OT abierta.
@@ -450,6 +515,7 @@ export class ServiceRecordsService {
   private async resolveChecklistItems(
     provided?: { description: string; result?: string; notes?: string }[],
     equipmentId?: string,
+    workOrderType?: WorkOrderType,
   ) {
     if (provided && provided.length > 0) {
       return provided.map((item) => ({
@@ -458,6 +524,10 @@ export class ServiceRecordsService {
         notes: item.notes ?? null,
       }));
     }
+
+    // El checklist estandar es de mantenimiento: una entrega/incorporacion
+    // (SUPPLY) no lo precarga.
+    if (workOrderType === WorkOrderType.SUPPLY) return [];
 
     if (equipmentId) {
       const equipment = await this.prisma.equipment.findFirst({

@@ -8,6 +8,7 @@ import { getApiToken } from '@/lib/api';
 import { ShareDocumentButton } from '@/components/shared/ShareDocumentButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { WORK_ORDER_TYPE_LABELS } from '@/lib/work-order-types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -150,6 +151,9 @@ export function WorkOrderHeader({ workOrder, onCreateInvoice, onViewInvoice, onE
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold font-mono tracking-tight">{number}</h1>
             <Badge variant={STATUS_VARIANT[status]}>{STATUS_LABEL[status]}</Badge>
+            {workOrder.type && (
+              <Badge variant="secondary">{WORK_ORDER_TYPE_LABELS[workOrder.type]}</Badge>
+            )}
           </div>
           <p className="text-sm text-[hsl(var(--muted-foreground))] truncate mt-0.5">
             {workOrder.title}

@@ -1,9 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { WorkOrder, WorkOrderStatus, PaginatedResponse } from '@/lib/types';
+import type { WorkOrder, WorkOrderStatus, WorkOrderType, PaginatedResponse } from '@/lib/types';
 
 export interface WorkOrderFormData {
   clientId: string;
+  // Naturaleza (solo al crear; no editable). Sin valor, el backend usa CORRECTIVE.
+  type?: WorkOrderType;
+  // Sin sede, el backend usa la de la cotizacion o la principal del cliente.
   branchId?: string;
   quotationId?: string;
   equipmentId?: string;

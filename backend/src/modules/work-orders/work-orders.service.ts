@@ -6,6 +6,7 @@ import {
 import {
   Prisma,
   WorkOrderStatus,
+  WorkOrderType,
   InterventionStatus,
 } from '../../generated/prisma/client';
 import {
@@ -165,9 +166,21 @@ export class WorkOrdersService {
 
   async create(dto: CreateWorkOrderDto, userId: string) {
     await this.ensureActiveClient(dto.clientId);
-    await this.resolveBranch(dto.clientId, dto.branchId);
+    const type = dto.type ?? WorkOrderType.CORRECTIVE;
+
+    // C1 (solo SUPPLY): sede indicada -> sede de la cotizacion -> sede
+    // principal del cliente. Una OT de Suministro necesita una ubicacion valida
+    // para registrar los equipos entregados. Los demas tipos usan solo la sede
+    // indicada (o ninguna), como antes.
+    const branchId = await this.resolveWorkOrderBranch(dto, type);
+    await this.resolveBranch(dto.clientId, branchId);
+    if (type === WorkOrderType.SUPPLY && !branchId) {
+      throw new BadRequestException(
+        'La OT de Suministro requiere una sede: el cliente no tiene sedes registradas.',
+      );
+    }
     if (dto.equipmentId) {
-      await this.resolveEquipment(dto.equipmentId, dto.branchId);
+      await this.resolveEquipment(dto.equipmentId, branchId);
     }
 
     // Al convertir una cotización sin ítems explícitos, la OT hereda las líneas
@@ -198,8 +211,9 @@ export class WorkOrdersService {
         data: {
           number,
           clientId: dto.clientId,
-          branchId: dto.branchId ?? null,
+          branchId,
           quotationId: dto.quotationId ?? null,
+          type,
           status: WorkOrderStatus.DRAFT,
           title: dto.title,
           description: dto.description ?? null,
@@ -548,7 +562,32 @@ export class WorkOrdersService {
     return client;
   }
 
-  private async resolveBranch(clientId: string, branchId?: string) {
+  // Sede explicita; si no hay y la OT es SUPPLY (C1): sede de la cotizacion ->
+  // sede principal del cliente (isPrimary, o la primera activa).
+  private async resolveWorkOrderBranch(
+    dto: CreateWorkOrderDto,
+    type: WorkOrderType,
+  ): Promise<string | null> {
+    if (dto.branchId) return dto.branchId;
+    if (type !== WorkOrderType.SUPPLY) return null;
+
+    if (dto.quotationId) {
+      const quotation = await this.prisma.quotation.findUnique({
+        where: { id: dto.quotationId },
+        select: { branchId: true },
+      });
+      if (quotation?.branchId) return quotation.branchId;
+    }
+
+    const primary = await this.prisma.branch.findFirst({
+      where: { clientId: dto.clientId, deletedAt: null },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+      select: { id: true },
+    });
+    return primary?.id ?? null;
+  }
+
+  private async resolveBranch(clientId: string, branchId?: string | null) {
     if (!branchId) return null;
 
     const branch = await this.prisma.branch.findFirst({
@@ -565,7 +604,10 @@ export class WorkOrdersService {
     return branch;
   }
 
-  private async resolveEquipment(equipmentId: string, branchId?: string) {
+  private async resolveEquipment(
+    equipmentId: string,
+    branchId?: string | null,
+  ) {
     const equipment = await this.prisma.equipment.findFirst({
       where: { id: equipmentId, deletedAt: null },
       select: { id: true, branchId: true },

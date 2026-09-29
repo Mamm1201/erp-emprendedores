@@ -15,7 +15,7 @@ import {
   useUpdateQuotationStatus,
   type QuotationFormData,
 } from '@/hooks/use-quotations';
-import { useCreateWorkOrder } from '@/hooks/use-work-orders';
+import { ConvertToWorkOrderDialog } from '@/components/quotations/ConvertToWorkOrderDialog';
 import { useClients } from '@/hooks/use-clients';
 import { useBranches } from '@/hooks/use-branches';
 import { useRetentionRates } from '@/hooks/use-retention-rates';
@@ -284,9 +284,9 @@ export function QuotationFormPage() {
   const createQ = useCreateQuotation();
   const updateQ = useUpdateQuotation();
   const updateStatus = useUpdateQuotationStatus();
-  const createWO = useCreateWorkOrder();
+  const [converting, setConverting] = useState(false);
   const isPending = createQ.isPending || updateQ.isPending;
-  const isStatusBusy = updateStatus.isPending || createWO.isPending;
+  const isStatusBusy = updateStatus.isPending;
 
   const { data: clientsData } = useClients('', 1);
   const clients = clientsData?.data ?? [];
@@ -384,16 +384,6 @@ export function QuotationFormPage() {
     }
   }
 
-  async function convertToWorkOrder() {
-    if (!existing) return;
-    await createWO.mutateAsync({
-      clientId: existing.clientId,
-      branchId: existing.branchId ?? undefined,
-      quotationId: existing.id,
-      title: `Visita técnica — ${existing.clientLegalName ?? existing.client.legalName}`,
-    });
-    navigate('/ordenes');
-  }
 
   async function handleNotesConfirm(notes?: string) {
     if (!id || !notesDialog) return;
@@ -503,10 +493,16 @@ export function QuotationFormPage() {
               <Button type="button" size="sm"
                 className="gap-1 bg-node-teal hover:bg-node-teal-deep text-white"
                 disabled={isStatusBusy}
-                onClick={convertToWorkOrder}>
-                {createWO.isPending ? 'Creando OT…' : 'Generar OT'}
+                onClick={() => setConverting(true)}>
+                Generar OT
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
+            )}
+            {existing.status === 'APPROVED' && (
+              <ConvertToWorkOrderDialog
+                quotation={converting ? existing : null}
+                onOpenChange={(open) => { if (!open) setConverting(false); }}
+              />
             )}
             {(existing.status === 'SENT' || existing.status === 'APPROVED') && (
               <Button type="button" size="sm" variant="ghost"

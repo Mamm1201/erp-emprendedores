@@ -33,6 +33,11 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { WorkOrderFormFields } from '@/components/work-orders/WorkOrderFormFields';
+import {
+  SELECTABLE_WORK_ORDER_TYPES,
+  WORK_ORDER_TYPE_HELP,
+  WORK_ORDER_TYPE_LABELS,
+} from '@/lib/work-order-types';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -73,6 +78,8 @@ const STATUS_FILTERS: { value: WorkOrderStatus | ''; label: string }[] = [
 
 const workOrderSchema = z.object({
   clientId: z.string().min(1, 'Selecciona un cliente'),
+  // Naturaleza elegible al crear (PREVENTIVE solo desde visitas).
+  type: z.enum(['CORRECTIVE', 'INSPECTION', 'SUPPLY']),
   branchId: z.string().optional(),
   equipmentId: z.string().optional(),
   title: z.string().min(1, 'El título es obligatorio').max(300),
@@ -105,10 +112,11 @@ function WorkOrderFormModal({
     formState: { errors },
   } = useForm<WorkOrderSchema>({
     resolver: zodResolver(workOrderSchema),
-    defaultValues: { clientId: '', branchId: '', title: '', description: '', scheduledAt: '', assignedToId: '' },
+    defaultValues: { clientId: '', type: 'CORRECTIVE', branchId: '', title: '', description: '', scheduledAt: '', assignedToId: '' },
   });
 
   const selectedClientId = watch('clientId');
+  const selectedType = watch('type');
   const selectedBranchId = watch('branchId');
   const { data: branches } = useBranches(selectedClientId || null);
   const { data: equipmentData } = useEquipment(
@@ -118,12 +126,13 @@ function WorkOrderFormModal({
   const equipmentList = equipmentData?.data ?? [];
 
   useEffect(() => {
-    if (open) reset({ clientId: '', branchId: '', equipmentId: '', title: '', description: '', scheduledAt: '', assignedToId: '' });
+    if (open) reset({ clientId: '', type: 'CORRECTIVE', branchId: '', equipmentId: '', title: '', description: '', scheduledAt: '', assignedToId: '' });
   }, [open, reset]);
 
   async function onSubmit(values: WorkOrderSchema) {
     const dto: WorkOrderFormData = {
       clientId: values.clientId,
+      type: values.type,
       branchId: values.branchId || undefined,
       equipmentId: values.equipmentId || undefined,
       title: values.title,
@@ -161,6 +170,24 @@ function WorkOrderFormModal({
             {errors.clientId && (
               <p className="text-xs text-[hsl(var(--destructive))]">{errors.clientId.message}</p>
             )}
+          </div>
+
+          {/* Naturaleza (solo en creación; no editable después) */}
+          <div className="space-y-1.5">
+            <Label htmlFor="type">Naturaleza *</Label>
+            <select
+              id="type"
+              {...register('type')}
+              className="flex h-9 w-full rounded-md border border-[hsl(var(--input))] bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
+            >
+              {SELECTABLE_WORK_ORDER_TYPES.map((t) => (
+                <option key={t} value={t}>{WORK_ORDER_TYPE_LABELS[t]}</option>
+              ))}
+            </select>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">
+              {WORK_ORDER_TYPE_HELP[selectedType ?? 'CORRECTIVE']}
+              {selectedType === 'SUPPLY' && ' Sin sede, se usa la sede principal del cliente.'}
+            </p>
           </div>
 
           <WorkOrderFormFields
@@ -428,6 +455,11 @@ export function WorkOrdersPage() {
                 </td>
                 <td className="px-4 py-3">
                   <p className="font-medium line-clamp-1">{wo.title}</p>
+                  {wo.type && (
+                    <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                      {WORK_ORDER_TYPE_LABELS[wo.type]}
+                    </p>
+                  )}
                   {wo.description && (
                     <p className="text-xs text-[hsl(var(--muted-foreground))] line-clamp-1 mt-0.5">
                       {wo.description}

@@ -26,6 +26,7 @@ const TYPE_LABEL: Record<string, string> = {
   PREVENTIVE: 'Preventivo',
   CORRECTIVE: 'Correctivo',
   INSPECTION: 'Inspección',
+  SUPPLY: 'Suministro',
 };
 
 const s = StyleSheet.create({
@@ -232,7 +233,7 @@ export function ServiceRecordDocument({ data }: { data: ServiceRecordPdfDto }) {
   ].filter((f) => f.value);
 
   const visitRight = [
-    { label: 'Tipo de mantenimiento', value: TYPE_LABEL[data.workOrderType] ?? data.workOrderType },
+    { label: 'Tipo de servicio', value: TYPE_LABEL[data.workOrderType] ?? data.workOrderType },
     { label: 'Técnico asignado', value: data.technicianName },
     { label: 'Fecha programada', value: data.scheduledAt },
     { label: 'Fecha de inicio', value: data.startedAt },

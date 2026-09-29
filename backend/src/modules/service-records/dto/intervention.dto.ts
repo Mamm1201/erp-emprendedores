@@ -10,14 +10,27 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ChecklistItemDto } from './checklist-item.dto';
+import { CreateEquipmentDto } from '../../equipment/dto/create-equipment.dto';
 
 // Un equipo realmente intervenido durante la visita — solo estos generan una
 // Intervention. Equipos programados/asociados a la visita que no se
 // intervinieron no deben aparecer aqui.
+//
+// Exactamente uno de `equipmentId` (equipo existente) o `newEquipment` (equipo
+// entregado que nace con el suministro; solo en OTs SUPPLY).
 export class InterventionInputDto {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  equipmentId: string;
+  equipmentId?: string;
+
+  // C2: unidad tecnica mantenible entregada en un Suministro. Se crea en el
+  // cliente + sede de la OT, en la misma transaccion que su intervencion.
+  // installDate = fecha de entrega o puesta en servicio (haya o no instalacion).
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateEquipmentDto)
+  newEquipment?: CreateEquipmentDto;
 
   @IsOptional()
   @IsString()

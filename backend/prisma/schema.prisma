@@ -47,10 +47,14 @@ enum WorkOrderStatus {
   CANCELLED
 }
 
+// SUPPLY: suministro/entrega de un equipo, modulo o periferico, con o sin
+// instalacion (docs/domain/supply-line-contract-v1.0.md). PREVENTIVE queda
+// reservado a las OTs generadas por MaintenanceVisit.
 enum WorkOrderType {
   PREVENTIVE
   CORRECTIVE
   INSPECTION
+  SUPPLY
 }
 
 enum InvoiceStatus {

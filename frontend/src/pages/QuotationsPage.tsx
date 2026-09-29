@@ -9,7 +9,7 @@ import {
   useUpdateQuotationStatus,
   useDeleteQuotation,
 } from '@/hooks/use-quotations';
-import { useCreateWorkOrder } from '@/hooks/use-work-orders';
+import { ConvertToWorkOrderDialog } from '@/components/quotations/ConvertToWorkOrderDialog';
 import type { Quotation, QuotationStatus } from '@/lib/types';
 import { formatMoney } from '@/lib/money';
 import { Button } from '@/components/ui/button';
@@ -129,22 +129,15 @@ function QuotationActions({
   onNoteAction: (pending: PendingAction) => void;
 }) {
   const updateStatus = useUpdateQuotationStatus();
-  const createWO = useCreateWorkOrder();
-  const navigate = useNavigate();
-  const isBusy = updateStatus.isPending || createWO.isPending;
-
-  async function convertToWorkOrder() {
-    await createWO.mutateAsync({
-      clientId: quotation.clientId,
-      branchId: quotation.branchId ?? undefined,
-      quotationId: quotation.id,
-      title: `Visita técnica — ${quotation.clientLegalName ?? quotation.client.legalName}`,
-    });
-    navigate('/ordenes');
-  }
+  const [converting, setConverting] = useState(false);
+  const isBusy = updateStatus.isPending;
 
   return (
     <div className="flex justify-end gap-1 flex-wrap">
+      <ConvertToWorkOrderDialog
+        quotation={converting ? quotation : null}
+        onOpenChange={(open) => { if (!open) setConverting(false); }}
+      />
       {quotation.status === 'DRAFT' && (
         <Button size="sm" variant="outline" className="text-xs h-7 gap-1" disabled={isBusy}
           onClick={() => updateStatus.mutate({ id: quotation.id, status: 'SENT' })}>
@@ -165,8 +158,8 @@ function QuotationActions({
       )}
       {quotation.status === 'APPROVED' && (
         <Button size="sm" className="text-xs h-7 gap-1 bg-node-teal hover:bg-node-teal-deep text-white" disabled={isBusy}
-          onClick={convertToWorkOrder}>
-          {createWO.isPending ? 'Creando OT…' : 'Generar OT'}
+          onClick={() => setConverting(true)}>
+          Generar OT
           <ChevronRight className="h-3 w-3" />
         </Button>
       )}

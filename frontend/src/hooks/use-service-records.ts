@@ -1,12 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { ServiceRecord, Intervention, ChecklistResult } from '@/lib/types';
+import type { ServiceRecord, Intervention, ChecklistResult, EquipmentType } from '@/lib/types';
+
+// Equipo que nace con un Suministro (solo OTs SUPPLY). installDate = fecha de
+// entrega o puesta en servicio, haya o no instalacion.
+export interface NewEquipmentData {
+  type: EquipmentType;
+  brand?: string;
+  model?: string;
+  serialNumber?: string;
+  installDate?: string;
+  warrantyExpiresAt?: string;
+  location?: string;
+  notes?: string;
+}
 
 // Un equipo realmente intervenido durante la visita — solo estos deben
 // enviarse aqui. Equipos programados/asociados que no se intervinieron no
-// van en esta lista.
+// van en esta lista. Exactamente uno de equipmentId o newEquipment.
 export interface InterventionInputData {
-  equipmentId: string;
+  equipmentId?: string;
+  newEquipment?: NewEquipmentData;
   findings?: string;
   activitiesPerformed?: string;
   recommendations?: string;
@@ -63,6 +77,8 @@ export function useCreateServiceRecord() {
       qc.invalidateQueries({ queryKey: ['service-record', vars.workOrderId] });
       qc.invalidateQueries({ queryKey: ['work-orders'] });
       qc.invalidateQueries({ queryKey: ['maintenance-visits'] });
+      // Un Suministro puede registrar equipos nuevos desde el acta.
+      qc.invalidateQueries({ queryKey: ['equipment'] });
     },
   });
 }
@@ -122,6 +138,7 @@ export function useAddInterventions() {
       qc.invalidateQueries({ queryKey: ['service-record', vars.workOrderId] });
       qc.invalidateQueries({ queryKey: ['work-orders'] });
       qc.invalidateQueries({ queryKey: ['maintenance-visits'] });
+      qc.invalidateQueries({ queryKey: ['equipment'] });
     },
   });
 }

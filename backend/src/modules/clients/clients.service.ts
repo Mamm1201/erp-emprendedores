@@ -9,6 +9,7 @@ import {
 import { CreateClientDto } from './dto/create-client.dto';
 import { QueryClientsDto } from './dto/query-clients.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { createPrincipalBranch } from '../branches/principal-branch.util';
 
 @Injectable()
 export class ClientsService {
@@ -57,19 +58,26 @@ export class ClientsService {
   }
 
   create(dto: CreateClientDto) {
-    return this.prisma.client.create({
-      data: {
-        legalName: dto.legalName,
-        tradeName: dto.tradeName,
-        taxId: dto.taxId,
-        email: dto.email,
-        phone: dto.phone,
-        notes: dto.notes,
-        type: dto.type,
-        isIncomeTaxRetentionAgent: dto.isIncomeTaxRetentionAgent,
-        isIcaRetentionAgent: dto.isIcaRetentionAgent,
-      },
-      select: CLIENT_SELECT,
+    // C1: todo cliente nuevo nace con su sede de referencia `Principal`.
+    return this.prisma.$transaction(async (tx) => {
+      const client = await tx.client.create({
+        data: {
+          legalName: dto.legalName,
+          tradeName: dto.tradeName,
+          taxId: dto.taxId,
+          email: dto.email,
+          phone: dto.phone,
+          notes: dto.notes,
+          type: dto.type,
+          isIncomeTaxRetentionAgent: dto.isIncomeTaxRetentionAgent,
+          isIcaRetentionAgent: dto.isIcaRetentionAgent,
+        },
+        select: CLIENT_SELECT,
+      });
+
+      await createPrincipalBranch(tx, client.id);
+
+      return client;
     });
   }
 

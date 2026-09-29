@@ -7,6 +7,8 @@ export const WORK_ORDER_SELECT = {
   clientId: true,
   branchId: true,
   quotationId: true,
+  // Naturaleza: PREVENTIVE (visitas), CORRECTIVE, INSPECTION o SUPPLY.
+  type: true,
   status: true,
   title: true,
   description: true,
